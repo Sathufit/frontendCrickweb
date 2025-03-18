@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // ✅ **Set API Base URL (Ensure this is correct)**
-const API_URL = "https://friendspherecricweb.onrender.com";  // ✅ Update this with your deployed backend URL
+const API_URL = "https://friendspherecricweb.onrender.com"; // ✅ Update this with your deployed backend URL
 
 // ✅ **Fetch Runs**
 export const fetchRuns = async () => {
@@ -10,7 +10,7 @@ export const fetchRuns = async () => {
         console.log("📌 Fetched Runs Data (Frontend):", response.data);
         return response.data;
     } catch (error) {
-        console.error("❌ Error fetching runs:", error);
+        console.error("❌ Error fetching runs:", error.response?.data || error);
         return [];
     }
 };
@@ -22,15 +22,22 @@ export const fetchWickets = async () => {
         console.log("📌 Fetched Wickets Data:", response.data);
         return response.data;
     } catch (error) {
-        console.error("❌ Error fetching wickets:", error);
+        console.error("❌ Error fetching wickets:", error.response?.data || error);
         return [];
     }
 };
 
-// ✅ **Add a New Run**
+// ✅ **Add a New Run (Fixed Field Names)**
 export const addRun = async (runData) => {
     try {
-        const response = await axios.post(`${API_URL}/runs`, runData);
+        const response = await axios.post(`${API_URL}/runs`, {
+            name: runData.batsman_name,  // ✅ FIXED (Send "name" instead of "batsman_name")
+            venue: runData.venue,
+            runs: runData.runs,
+            innings: runData.innings,
+            outs: runData.outs,
+            date: runData.date,
+        });
         console.log("✅ Run Added:", response.data);
         return response.data;
     } catch (error) {
@@ -39,10 +46,16 @@ export const addRun = async (runData) => {
     }
 };
 
-// ✅ **Add a New Wicket**
+// ✅ **Add a New Wicket (Ensure Correct Field)**
 export const addWicket = async (wicketData) => {
     try {
-        const response = await axios.post(`${API_URL}/wickets`, wicketData);
+        const response = await axios.post(`${API_URL}/wickets`, {
+            bowler_name: wicketData.bowler_name, // ✅ Ensures correct bowler_name field
+            venue: wicketData.venue,
+            wickets: wicketData.wickets,
+            innings: wicketData.innings,
+            date: wicketData.date,
+        });
         console.log("✅ Wicket Added:", response.data);
         return response.data;
     } catch (error) {
@@ -104,7 +117,7 @@ export const fetchPlayerStats = async () => {
         console.log("📌 Player Stats Fetched:", response.data);
         return response.data;
     } catch (error) {
-        console.error("❌ Error fetching player stats:", error);
+        console.error("❌ Error fetching player stats:", error.response?.data || error);
         throw error;
     }
 };
