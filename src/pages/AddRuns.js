@@ -294,25 +294,6 @@ const AddRuns = () => {
         </form>
         <div className="flex space-x-4 mt-4">
   
-        <button
-      type="button"
-      onClick={() => navigate("/admin-dashboard/manage-runs")} // ✅ Admin Dashboard Path
-      style={{
-        padding: "0.6rem 1rem",
-        backgroundColor: "#8B5CF6",
-        color: "white",
-        borderRadius: "0.375rem",
-        fontWeight: "500",
-        fontSize: "0.875rem",
-        border: "none",
-        cursor: "pointer",
-        transition: "all 0.2s",
-      }}
-      onMouseOver={(e) => (e.target.style.backgroundColor = "#7C3AED")}
-      onMouseOut={(e) => (e.target.style.backgroundColor = "#8B5CF6")}
-    >
-      Manage Runs
-    </button>
 </div>
       </Paper>
       
