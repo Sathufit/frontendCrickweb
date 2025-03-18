@@ -19,24 +19,27 @@ const AddWickets = () => {
     setError(null);
   };
 
-  const API_URL = "https://frontendcrickweb.onrender.com"; // Ensure this is correct
-
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setSuccess(false);
     setError(null);
-
+    
     try {
-      const response = await axios.post(`${API_URL}/wickets`, formData);
-      console.log("✅ Wicket Added:", response.data);
+      const response = await axios.post("http://localhost:5001/wickets", formData);
+      console.log("📌 Response:", response.data);
       setSuccess(true);
-
-      // ✅ Update UI Immediately
-      setWickets(prevWickets => [...prevWickets, response.data.newWicket]);
-
-      setFormData({ bowler_name: "", venue: "", wickets: "", innings: "", date: "" });
-
+      
+      // Reset form after successful submission
+      setFormData({
+        bowler_name: "",
+        venue: "",
+        wickets: "",
+        innings: "",
+        date: "",
+      });
+      
+      // Clear success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       console.error("❌ Error adding wicket:", error);
@@ -44,8 +47,7 @@ const handleSubmit = async (e) => {
     } finally {
       setLoading(false);
     }
-};
-
+  };
 
   // Shared styles as objects
   const styles = {

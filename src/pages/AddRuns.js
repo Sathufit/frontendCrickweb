@@ -45,19 +45,14 @@ const AddRuns = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_URL}/runs`, formData);
+      const response = await axios.post("http://localhost:5001/runs", formData);
       console.log("✅ Run Added:", response.data);
-
-      // ✅ Update UI Immediately
-      setRuns(prevRuns => [...prevRuns, response.data.newRun]);
-
       setSnackbar({
         open: true,
         message: "Batting statistics added successfully!",
         severity: "success"
       });
-
-      // ✅ Reset form after successful submission
+      // Reset form
       setFormData({
         name: "",
         venue: "",
@@ -67,14 +62,14 @@ const AddRuns = () => {
         date: "",
       });
     } catch (error) {
-      console.error("❌ Error adding run:", error.response?.data || error);
+      console.error("❌ Error adding run:", error.response ? error.response.data : error.message);
       setSnackbar({
         open: true,
         message: "Error adding batting statistics. Please try again.",
         severity: "error"
       });
     }
-};
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -117,7 +112,7 @@ const AddRuns = () => {
             <Grid item xs={12}>
               <TextField 
                 label="Batsman Name" 
-                name="name" 
+                name="batsman_name" 
                 value={formData.name}
                 onChange={handleChange} 
                 fullWidth 

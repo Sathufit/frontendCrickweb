@@ -37,7 +37,7 @@ const ViewWickets = () => {
   const fetchWickets = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/wickets`);
+      const response = await axios.get("http://localhost:5001/wickets");
       setWickets(response.data);
       setError(null);
     } catch (err) {
