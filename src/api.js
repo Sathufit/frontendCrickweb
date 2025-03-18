@@ -30,15 +30,7 @@ export const fetchWickets = async () => {
 // ✅ **Add a New Run (Fixed Field Names)**
 export const addRun = async (runData) => {
     try {
-        const response = await axios.post(`${API_URL}/runs`, {
-            name: runData.name,  // ✅ FIXED (Ensure "name" field matches backend)
-            venue: runData.venue,
-            runs: runData.runs,
-            innings: runData.innings,
-            outs: runData.outs,
-            date: runData.date,
-        });
-        console.log("✅ Run Added:", response.data);
+        const response = await axios.post(`${API_URL}/runs`, runData);
         return response.data;
     } catch (error) {
         console.error("❌ Error adding run:", error.response?.data || error);
