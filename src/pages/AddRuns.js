@@ -24,7 +24,7 @@ import axios from "axios";
 
 const AddRuns = () => {
   const [formData, setFormData] = useState({
-    batsman_name: "",
+    name: "",
     venue: "",
     runs: "",
     innings: "",
@@ -54,7 +54,7 @@ const AddRuns = () => {
       });
       // Reset form
       setFormData({
-        batsman_name: "",
+        name: "",
         venue: "",
         runs: "",
         innings: "",
@@ -112,8 +112,8 @@ const AddRuns = () => {
             <Grid item xs={12}>
               <TextField 
                 label="Batsman Name" 
-                name="batsman_name" 
-                value={formData.batsman_name}
+                name="name" 
+                value={formData.name}
                 onChange={handleChange} 
                 fullWidth 
                 required

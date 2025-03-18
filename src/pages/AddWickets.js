@@ -3,7 +3,7 @@ import axios from "axios";
 
 const AddWickets = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    bowler_name: "",
     venue: "",
     wickets: "",
     innings: "",
