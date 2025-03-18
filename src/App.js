@@ -8,8 +8,10 @@ import ManageWickets from "./pages/ManageWickets";
 import ViewRuns from "./pages/ViewRuns";
 import ViewWickets from "./pages/ViewWickets";
 import PlayerStats from "./pages/PlayerStats";
-import Analyst from "./pages/Analyst"; // ✅ Corrected Import
+import Analyst from "./pages/Analyst";
 import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute"; // ✅ Import Protected Route
 
 import "./styles.css";
 
@@ -17,16 +19,22 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/add-runs" element={<AddRuns />} />
-        <Route path="/add-wickets" element={<AddWickets />} />
-        <Route path="/manage-runs" element={<ManageRuns />} />
-        <Route path="/manage-wickets" element={<ManageWickets />} />
         <Route path="/view-runs" element={<ViewRuns />} />
         <Route path="/view-wickets" element={<ViewWickets />} />
         <Route path="/stats" element={<PlayerStats />} />
-        <Route path="/analyst" element={<Analyst />} /> {/* ✅ Corrected Route */}
+        <Route path="/analyst" element={<Analyst />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+
+        {/* Admin Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/add-runs" element={<AddRuns />} />
+          <Route path="/admin/add-wickets" element={<AddWickets />} />
+          <Route path="/admin/manage-runs" element={<ManageRuns />} />
+          <Route path="/admin/manage-wickets" element={<ManageWickets />} />
+        </Route>
       </Routes>
     </Router>
   );

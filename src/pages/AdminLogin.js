@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../config";
 
-const AdminLogin = ({ setAuthToken }) => {
+const AdminLogin = () => {
     const [formData, setFormData] = useState({ username: "", password: "" });
     const [error, setError] = useState("");
+    const navigate = useNavigate(); // ✅ Redirect after login
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,7 +17,7 @@ const AdminLogin = ({ setAuthToken }) => {
         try {
             const response = await axios.post(`${API_URL}/login`, formData);
             localStorage.setItem("token", response.data.token);
-            setAuthToken(response.data.token);
+            navigate("/admin"); // ✅ Redirect to Admin Dashboard after login
         } catch (error) {
             setError("Invalid credentials");
         }
