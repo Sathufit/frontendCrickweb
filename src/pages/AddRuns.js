@@ -44,7 +44,7 @@ const AddRuns = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  cconst handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
