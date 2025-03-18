@@ -44,18 +44,21 @@ const AddRuns = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  cconst handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
         const response = await axios.post(`${API_URL}/runs`, formData);
         console.log("✅ Run Added:", response.data);
+
+        // ✅ Only log and set success after a successful request
+        console.log("✅ Runs Added Successfully:", response.data); 
+        setSuccess(true);
     } catch (error) {
         console.error("❌ Error adding run:", error.response?.data || error);
     }
-    console.log("✅ Wicket Added Successfully:", response.data); // ✅ Debug Log
-        setSuccess(true);
 };
+
 
 
   const handleCloseSnackbar = () => {
@@ -294,6 +297,25 @@ const AddRuns = () => {
         </form>
         <div className="flex space-x-4 mt-4">
   
+        <button
+      type="button"
+      onClick={() => navigate("/admin-dashboard/manage-runs")} // ✅ Admin Dashboard Path
+      style={{
+        padding: "0.6rem 1rem",
+        backgroundColor: "#8B5CF6",
+        color: "white",
+        borderRadius: "0.375rem",
+        fontWeight: "500",
+        fontSize: "0.875rem",
+        border: "none",
+        cursor: "pointer",
+        transition: "all 0.2s",
+      }}
+      onMouseOver={(e) => (e.target.style.backgroundColor = "#7C3AED")}
+      onMouseOut={(e) => (e.target.style.backgroundColor = "#8B5CF6")}
+    >
+      Manage Runs
+    </button>
 </div>
       </Paper>
       
