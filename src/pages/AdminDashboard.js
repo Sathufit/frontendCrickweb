@@ -21,17 +21,6 @@ const AdminDashboard = () => {
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
-  // Card data for dynamic rendering
-  const cardData = [
-    { id: "runs", title: "Total Runs", value: "12,543", trend: "+12.6%", isUp: true,
-      icon: <path fill="currentColor" d="M3.5,18.5L9.5,12.5L13.5,16.5L22,6.92L20.59,5.5L13.5,13.5L9.5,9.5L2,17L3.5,18.5Z" /> },
-    { id: "wickets", title: "Wickets", value: "857", trend: "+3.2%", isUp: true,
-      icon: <path fill="currentColor" d="M9,7H11L12,9.5L13,7H15L13,12L15,17H13L12,14.5L11,17H9L11,12L9,7M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z" /> },
-    { id: "matches", title: "Matches", value: "238", trend: "-1.8%", isUp: false,
-      icon: <path fill="currentColor" d="M19 3H5C3.89 3 3 3.89 3 5V19C3 20.11 3.89 21 5 21H19C20.11 21 21 20.11 21 19V5C21 3.89 20.11 3 19 3M19 19H5V5H19V19M17 12H12V17H17V12Z" /> },
-    { id: "players", title: "Players", value: "342", trend: "+5.4%", isUp: true,
-      icon: <path fill="currentColor" d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" /> }
-  ];
 
   // Menu items for dynamic rendering
   const menuItems = [
@@ -153,31 +142,6 @@ const AdminDashboard = () => {
                 <span>Reports</span>
               </button>
             </div>
-          </div>
-          
-          {/* Dashboard Cards - Dynamically generated */}
-          <div className="dashboard-cards">
-            {cardData.map(card => (
-              <div className="dashboard-card" key={card.id}>
-                <div className={`card-icon ${card.id}`}>
-                  <svg viewBox="0 0 24 24">
-                    {card.icon}
-                  </svg>
-                </div>
-                <div className="card-content">
-                  <h3>{card.title}</h3>
-                  <p className="card-value">{card.value}</p>
-                </div>
-                <div className={`card-trend ${card.isUp ? 'up' : 'down'}`}>
-                  <svg viewBox="0 0 24 24">
-                    <path fill="currentColor" d={card.isUp 
-                      ? "M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.71L22,12V6H16Z" 
-                      : "M16,18L18.29,15.71L13.41,10.83L9.41,14.83L2,7.41L3.41,6L9.41,12L13.41,8L19.71,14.29L22,12V18H16Z"} />
-                  </svg>
-                  <span>{card.trend}</span>
-                </div>
-              </div>
-            ))}
           </div>
           
           {/* Mobile Menu Toggle Button */}
