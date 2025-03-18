@@ -1,50 +1,61 @@
 import axios from "axios";
 
 // ✅ **Set API Base URL (Ensure this is correct)**
-const API_URL = "https://friendspherecricweb.onrender.com"; // ✅ Update this with your deployed backend URL
+const API_URL = "https://frontendcrickweb.onrender.com"; // Ensure this is correct
+
+await axios.post(`${API_URL}/runs`, formData); 
 
 // ✅ **Fetch Runs**
-export const fetchRuns = async () => {
+export const fetchRuns = async (setRuns) => {
     try {
         const response = await axios.get(`${API_URL}/runs`);
-        console.log("📌 Fetched Runs Data (Frontend):", response.data);
-        return response.data;
+        console.log("📌 Updated Runs Data:", response.data);
+        setRuns(response.data);  // ✅ Updates UI state with latest runs
     } catch (error) {
         console.error("❌ Error fetching runs:", error.response?.data || error);
-        return [];
     }
 };
 
+
 // ✅ **Fetch Wickets**
-export const fetchWickets = async () => {
+const fetchWickets = async () => {
+    setLoading(true);
     try {
-        const response = await axios.get(`${API_URL}/wickets`);
-        console.log("📌 Fetched Wickets Data:", response.data);
-        return response.data;
-    } catch (error) {
-        console.error("❌ Error fetching wickets:", error.response?.data || error);
-        return [];
+      const response = await axios.get(`${API_URL}/wickets`);
+      setWickets(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("❌ Error fetching wickets:", err);
+      setError("Failed to load wickets data. Please try again later.");
+    } finally {
+      setLoading(false);
     }
 };
 
 // ✅ **Add a New Run (Fixed Field Names)**
-export const addRun = async (runData) => {
+export const addRun = async (runData, setRuns) => {
     try {
         const response = await axios.post(`${API_URL}/runs`, {
-            name: runData.name,  // ✅ FIXED (Ensure "name" field matches backend)
+            name: runData.name,
             venue: runData.venue,
-            runs: runData.runs,
-            innings: runData.innings,
-            outs: runData.outs,
+            runs: Number(runData.runs),
+            innings: Number(runData.innings),
+            outs: Number(runData.outs),
             date: runData.date,
         });
+
         console.log("✅ Run Added:", response.data);
+
+        // ✅ Immediately update the UI
+        setRuns(prevRuns => [...prevRuns, response.data.newRun]);
+
         return response.data;
     } catch (error) {
         console.error("❌ Error adding run:", error.response?.data || error);
         throw error;
     }
 };
+
 
 // ✅ **Add a New Wicket (Ensure Correct Field)**
 export const addWicket = async (wicketData) => {
