@@ -1,24 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import AddRuns from "./pages/AddRuns";
+import AddWickets from "./pages/AddWickets";
+import ManageRuns from "./pages/ManageRuns";
+import ManageWickets from "./pages/ManageWickets";
+import ViewRuns from "./pages/ViewRuns";
+import ViewWickets from "./pages/ViewWickets";
+import PlayerStats from "./pages/PlayerStats";
+import "./styles.css";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/add-runs" element={<AddRuns />} />
+        <Route path="/add-wickets" element={<AddWickets />} />
+        <Route path="/manage-runs" element={<ManageRuns />} />
+        <Route path="/manage-wickets" element={<ManageWickets />} />
+        <Route path="/view-runs" element={<ViewRuns />} />
+        <Route path="/view-wickets" element={<ViewWickets />} />
+        <Route path="/stats" element={<PlayerStats />} />
+      </Routes>
+    </Router>
   );
 }
 
