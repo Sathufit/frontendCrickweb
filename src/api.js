@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5001"; // Ensure this matches your backend server port
+const API_URL = "https://friendspherecricweb.onrender.com"
 
 // ✅ Fetch Runs
 export const fetchRuns = async () => {
