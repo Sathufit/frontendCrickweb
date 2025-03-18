@@ -3,11 +3,17 @@ import axios from "axios";
 // ✅ **Set API Base URL (Ensure this is correct)**
 const API_URL = "https://friendspherecricweb.onrender.com"; // ✅ Update this with your deployed backend URL
 
+// ✅ **Function to Get Auth Headers**
+const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
 // ✅ **Fetch Runs**
 export const fetchRuns = async () => {
     try {
         const response = await axios.get(`${API_URL}/runs`);
-        console.log("📌 Fetched Runs Data (Frontend):", response.data);
+        console.log("📌 Fetched Runs Data:", response.data);
         return response.data;
     } catch (error) {
         console.error("❌ Error fetching runs:", error.response?.data || error);
@@ -27,10 +33,11 @@ export const fetchWickets = async () => {
     }
 };
 
-// ✅ **Add a New Run (Fixed Field Names)**
+// ✅ **Add a New Run (Fixed Field Names & Auth)**
 export const addRun = async (runData) => {
     try {
-        const response = await axios.post(`${API_URL}/runs`, runData);
+        const response = await axios.post(`${API_URL}/runs`, runData, getAuthHeaders());
+        console.log("✅ Run Added:", response.data);
         return response.data;
     } catch (error) {
         console.error("❌ Error adding run:", error.response?.data || error);
@@ -38,16 +45,10 @@ export const addRun = async (runData) => {
     }
 };
 
-// ✅ **Add a New Wicket (Ensure Correct Field)**
+// ✅ **Add a New Wicket (Fixed Fields & Auth)**
 export const addWicket = async (wicketData) => {
     try {
-        const response = await axios.post(`${API_URL}/wickets`, {
-            bowler_name: wicketData.bowler_name, // ✅ Ensures correct bowler_name field
-            venue: wicketData.venue,
-            wickets: wicketData.wickets,
-            innings: wicketData.innings,
-            date: wicketData.date,
-        });
+        const response = await axios.post(`${API_URL}/wickets`, wicketData, getAuthHeaders());
         console.log("✅ Wicket Added:", response.data);
         return response.data;
     } catch (error) {
@@ -56,32 +57,32 @@ export const addWicket = async (wicketData) => {
     }
 };
 
-// ✅ **Delete a Run**
+// ✅ **Delete a Run (Fixed Auth)**
 export const deleteRun = async (id) => {
     try {
-        await axios.delete(`${API_URL}/runs/${id}`);
+        await axios.delete(`${API_URL}/runs/${id}`, getAuthHeaders());
         console.log(`✅ Run with ID ${id} deleted.`);
     } catch (error) {
-        console.error(`❌ Error deleting run with ID ${id}:`, error);
+        console.error(`❌ Error deleting run with ID ${id}:`, error.response?.data || error);
         throw error;
     }
 };
 
-// ✅ **Delete a Wicket**
+// ✅ **Delete a Wicket (Fixed Auth)**
 export const deleteWicket = async (id) => {
     try {
-        await axios.delete(`${API_URL}/wickets/${id}`);
+        await axios.delete(`${API_URL}/wickets/${id}`, getAuthHeaders());
         console.log(`✅ Wicket with ID ${id} deleted.`);
     } catch (error) {
-        console.error(`❌ Error deleting wicket with ID ${id}:`, error);
+        console.error(`❌ Error deleting wicket with ID ${id}:`, error.response?.data || error);
         throw error;
     }
 };
 
-// ✅ **Update a Run**
+// ✅ **Update a Run (Fixed Auth)**
 export const updateRun = async (id, updatedData) => {
     try {
-        const response = await axios.put(`${API_URL}/runs/${id}`, updatedData);
+        const response = await axios.put(`${API_URL}/runs/${id}`, updatedData, getAuthHeaders());
         console.log("✅ Run Updated:", response.data);
         return response.data;
     } catch (error) {
@@ -90,10 +91,10 @@ export const updateRun = async (id, updatedData) => {
     }
 };
 
-// ✅ **Update a Wicket**
+// ✅ **Update a Wicket (Fixed Auth)**
 export const updateWicket = async (id, updatedData) => {
     try {
-        const response = await axios.put(`${API_URL}/wickets/${id}`, updatedData);
+        const response = await axios.put(`${API_URL}/wickets/${id}`, updatedData, getAuthHeaders());
         console.log("✅ Wicket Updated:", response.data);
         return response.data;
     } catch (error) {
