@@ -86,6 +86,15 @@ const AdminDashboard = () => {
         <nav className={`sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
           <div className="sidebar-header">
             <h2 className="sidebar-title">Management Console</h2>
+            <button 
+              className="close-mobile-menu" 
+              onClick={toggleMobileMenu}
+              aria-label="Close menu"
+            >
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+              </svg>
+            </button>
             <div className="sidebar-divider"></div>
           </div>
           
@@ -97,7 +106,7 @@ const AdminDashboard = () => {
                 </li>
                 {section.items.map((item) => (
                   <li key={item.path}>
-                    <Link to={item.path} className="menu-link" onClick={() => setMobileMenuOpen(false)}>
+                    <Link to={item.path} className="menu-link" onClick={toggleMobileMenu}>
                       <svg className="menu-icon" viewBox="0 0 24 24">
                         {item.icon}
                       </svg>
@@ -111,13 +120,13 @@ const AdminDashboard = () => {
           </ul>
           
           <div className="sidebar-footer">
-            <Link to="settings" className="settings-link">
+            <Link to="settings" className="settings-link" onClick={toggleMobileMenu}>
               <svg className="settings-icon" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
               </svg>
               <span>Settings</span>
             </Link>
-            <Link to="logout" className="logout-link">
+            <Link to="logout" className="logout-link" onClick={toggleMobileMenu}>
               <svg className="logout-icon" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z" />
               </svg>
@@ -129,7 +138,7 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <main className="main-content">
           <div className="content-header">
-            <h2 className="page-title">Dashboard Overview</h2>
+            <h2 className="page-title">Cricket Statistics</h2>
             <div className="quick-actions">
               <button className="action-button">
                 <svg viewBox="0 0 24 24">
@@ -144,15 +153,6 @@ const AdminDashboard = () => {
                 <span>Reports</span>
               </button>
             </div>
-          </div>
-          
-          <div className="info-banner">
-            <div className="banner-icon">
-              <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,13H13V17H11V13Z" />
-              </svg>
-            </div>
-            <p>Select an option from the menu to manage cricket statistics</p>
           </div>
           
           {/* Dashboard Cards - Dynamically generated */}
@@ -193,6 +193,12 @@ const AdminDashboard = () => {
           </div>
         </main>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <div 
+        className={`mobile-menu-overlay ${mobileMenuOpen ? 'show' : ''}`} 
+        onClick={toggleMobileMenu}
+      ></div>
 
       {/* Footer */}
       <footer className="dashboard-footer">
@@ -386,6 +392,9 @@ const AdminDashboard = () => {
         
         .sidebar-header {
           margin-bottom: 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
         }
         
         .sidebar-title {
@@ -395,6 +404,20 @@ const AdminDashboard = () => {
           text-transform: uppercase;
           letter-spacing: 0.05em;
           font-weight: 500;
+        }
+        
+        .close-mobile-menu {
+          display: none;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          color: #94a3b8;
+          padding: 0.5rem;
+        }
+        
+        .close-mobile-menu svg {
+          width: 1.25rem;
+          height: 1.25rem;
         }
         
         .sidebar-divider {
@@ -553,76 +576,45 @@ const AdminDashboard = () => {
           background: white;
           border: 1px solid #e2e8f0;
           border-radius: 8px;
-          font-size: 0.875rem;
-          font-weight: 500;
           color: #3b82f6;
+          font-weight: 500;
           cursor: pointer;
           transition: all 0.2s ease;
         }
         
         .action-button:hover {
-          background: #f8fafc;
-          box-shadow: 0 2px 8px rgba(203, 213, 225, 0.4);
-          transform: translateY(-1px);
+          background: #f0f9ff;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
         }
         
         .action-button svg {
-          width: 1rem;
-          height: 1rem;
-        }
-        
-        .info-banner {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 1rem 1.5rem;
-          background: linear-gradient(135deg, #eff6ff, #dbeafe);
-          border-radius: 12px;
-          border: 1px solid rgba(219, 234, 254, 0.8);
-        }
-        
-        .banner-icon {
-          width: 2rem;
-          height: 2rem;
-          color: #3b82f6;
-          flex-shrink: 0;
-        }
-        
-        .info-banner p {
-          margin: 0;
-          font-size: 0.875rem;
-          color: #1e40af;
+          width: 1.25rem;
+          height: 1.25rem;
         }
         
         /* Dashboard Cards */
         .dashboard-cards {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
           gap: 1.5rem;
           margin-bottom: 1.5rem;
         }
         
         .dashboard-card {
-          display: flex;
-          align-items: center;
-          padding: 1.5rem;
           background: white;
           border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(148, 163, 184, 0.05);
-          border: 1px solid rgba(226, 232, 240, 0.8);
+          padding: 1.5rem;
+          display: flex;
+          align-items: center;
           position: relative;
+          box-shadow: 0 4px 15px rgba(148, 163, 184, 0.05);
+          border: 1px solid rgba(226, 232, 240, 0.8);
           overflow: hidden;
         }
         
-        .dashboard-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: linear-gradient(90deg, #3b82f6, #2563eb);
-          opacity: 0.7;
+        .dashboard-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(148, 163, 184, 0.1);
         }
         
         .card-icon {
@@ -633,34 +625,32 @@ const AdminDashboard = () => {
           justify-content: center;
           border-radius: 12px;
           margin-right: 1rem;
-          background: rgba(219, 234, 254, 0.5);
-          color: #3b82f6;
           flex-shrink: 0;
         }
         
         .card-icon svg {
-          width: 1.5rem;
-          height: 1.5rem;
+          width: 1.75rem;
+          height: 1.75rem;
         }
         
         .card-icon.runs {
-          background: rgba(236, 253, 245, 0.5);
-          color: #10b981;
-        }
-        
-        .card-icon.wickets {
-          background: rgba(254, 243, 199, 0.5);
-          color: #f59e0b;
-        }
-        
-        .card-icon.matches {
-          background: rgba(239, 246, 255, 0.5);
+          background: rgba(59, 130, 246, 0.1);
           color: #3b82f6;
         }
         
+        .card-icon.wickets {
+          background: rgba(16, 185, 129, 0.1);
+          color: #10b981;
+        }
+        
+        .card-icon.matches {
+          background: rgba(139, 92, 246, 0.1);
+          color: #8b5cf6;
+        }
+        
         .card-icon.players {
-          background: rgba(254, 226, 226, 0.5);
-          color: #ef4444;
+          background: rgba(249, 115, 22, 0.1);
+          color: #f97316;
         }
         
         .card-content {
@@ -668,10 +658,10 @@ const AdminDashboard = () => {
         }
         
         .card-content h3 {
-          margin: 0 0 0.25rem;
+          margin: 0 0 0.25rem 0;
           font-size: 0.875rem;
-          font-weight: 500;
           color: #64748b;
+          font-weight: 500;
         }
         
         .card-value {
@@ -684,26 +674,28 @@ const AdminDashboard = () => {
         .card-trend {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
-          font-size: 0.75rem;
-          font-weight: 500;
+          font-size: 0.875rem;
           padding: 0.25rem 0.5rem;
-          border-radius: 100px;
-        }
-        
-        .card-trend.up {
-          color: #10b981;
-          background: rgba(236, 253, 245, 0.5);
-        }
-        
-        .card-trend.down {
-          color: #ef4444;
-          background: rgba(254, 226, 226, 0.5);
+          border-radius: 6px;
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
         }
         
         .card-trend svg {
           width: 1rem;
           height: 1rem;
+          margin-right: 0.25rem;
+        }
+        
+        .card-trend.up {
+          color: #10b981;
+          background-color: rgba(16, 185, 129, 0.1);
+        }
+        
+        .card-trend.down {
+          color: #ef4444;
+          background-color: rgba(239, 68, 68, 0.1);
         }
         
         /* Content Area */
@@ -711,31 +703,70 @@ const AdminDashboard = () => {
           background: white;
           border-radius: 12px;
           padding: 1.5rem;
-          margin-bottom: 1.5rem;
-          box-shadow: 0 2px 10px rgba(148, 163, 184, 0.05);
+          box-shadow: 0 4px 15px rgba(148, 163, 184, 0.05);
           border: 1px solid rgba(226, 232, 240, 0.8);
+          flex: 1;
+        }
+        
+        /* Mobile Menu */
+        .mobile-toggle-container {
+          display: none;
+          margin-bottom: 1rem;
+        }
+        
+        .mobile-toggle-button {
+          width: 100%;
+          padding: 0.75rem;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          color: #64748b;
+          font-weight: 500;
+          cursor: pointer;
+          text-align: center;
+        }
+        
+        .mobile-toggle-button:hover {
+          background: #f8fafc;
+          color: #3b82f6;
+        }
+        
+        .mobile-menu-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          backdrop-filter: blur(3px);
+          z-index: 90;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+        }
+        
+        .mobile-menu-overlay.show {
+          opacity: 1;
+          pointer-events: auto;
         }
         
         /* Footer */
         .dashboard-footer {
           margin-top: auto;
-          padding: 1.5rem 2rem;
-          background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-          border-top: 1px solid #e2e8f0;
+          padding: 1rem 2rem;
+          background: white;
+          border-radius: 20px 20px 0 0;
+          box-shadow: 0 -4px 20px rgba(148, 163, 184, 0.05);
+          border-top: 1px solid #f1f5f9;
+          margin-top: 1.5rem;
         }
         
         .footer-content {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          max-width: 1400px;
-          margin: 0 auto;
           font-size: 0.875rem;
-        }
-        
-        .footer-content p {
           color: #64748b;
-          margin: 0;
         }
         
         .footer-links {
@@ -746,58 +777,55 @@ const AdminDashboard = () => {
         .footer-links a {
           color: #64748b;
           text-decoration: none;
+          transition: color 0.2s ease;
         }
         
         .footer-links a:hover {
           color: #3b82f6;
-          text-decoration: underline;
         }
         
-        /* Mobile Toggle */
-        .mobile-toggle-container {
-          display: none;
-        }
-        
-        .mobile-toggle-button {
-          width: 100%;
-          padding: 0.75rem;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-weight: 500;
-          cursor: pointer;
-          margin-bottom: 1rem;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 1024px) {
+        /* Responsive Styles */
+        @media (max-width: 992px) {
           .dashboard-cards {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          }
+          
+          .time-display {
+            display: none;
           }
         }
         
         @media (max-width: 768px) {
+          .dashboard-container {
+            padding: 0;
+          }
+          
+          .dashboard-header {
+            padding: 1rem;
+            border-radius: 0;
+          }
+          
           .dashboard-content {
-            flex-direction: column;
+            padding: 0 1rem;
           }
           
           .sidebar {
-            width: 100%;
             position: fixed;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            left: -280px;
+            height: 100vh;
             z-index: 100;
-            transform: translateX(-100%);
-            border-radius: 0;
-            min-height: 100vh;
-            transition: transform 0.3s ease;
+            border-radius: 0 16px 16px 0;
+            transition: left 0.3s ease;
+            padding: 2rem 1rem;
           }
           
           .sidebar.mobile-open {
-            transform: translateX(0);
+            left: 0;
+          }
+          
+          .close-mobile-menu {
+            display: block;
           }
           
           .mobile-menu-button {
@@ -808,55 +836,39 @@ const AdminDashboard = () => {
             display: block;
           }
           
-          .dashboard-header {
-            padding: 1rem;
-          }
-          
-          .header-right {
+          .content-header {
+            flex-direction: column;
+            align-items: flex-start;
             gap: 1rem;
           }
           
-          .time-display {
-            display: none;
+          .quick-actions {
+            width: 100%;
+            justify-content: space-between;
+          }
+          
+          .action-button {
+            flex: 1;
+            justify-content: center;
           }
           
           .dashboard-cards {
             grid-template-columns: 1fr;
           }
           
-          .quick-actions {
-            display: none;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .dashboard-header h1 {
-            font-size: 1.25rem;
-          }
-          
-          .header-icon {
-            width: 2rem;
-            height: 2rem;
-          }
-          
-          .dashboard-content {
-            padding: 0 1rem;
-          }
-          
-          .content-header {
+          .dashboard-footer {
             padding: 1rem;
+            border-radius: 0;
           }
           
-          .page-title {
-            font-size: 1.125rem;
+          .footer-content {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
           }
           
-          .dashboard-card {
-            padding: 1rem;
-          }
-          
-          .card-value {
-            font-size: 1.25rem;
+          .footer-links {
+            justify-content: center;
           }
         }
       `}</style>
