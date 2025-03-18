@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import API_URL from "../config";
 
 const AddWickets = () => {
   const [formData, setFormData] = useState({
@@ -24,30 +25,35 @@ const AddWickets = () => {
     setLoading(true);
     setSuccess(false);
     setError(null);
-    
+
+    console.log("📌 Sending Wicket Data to Backend:", formData); // ✅ Debug Log
+
     try {
-      const response = await axios.post("http://localhost:5001/wickets", formData);
-      console.log("📌 Response:", response.data);
-      setSuccess(true);
-      
-      // Reset form after successful submission
-      setFormData({
-        bowler_name: "",
-        venue: "",
-        wickets: "",
-        innings: "",
-        date: "",
-      });
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(false), 3000);
+        
+        const response = await axios.post(`${API_URL}/wickets`, {
+            bowler_name: formData.bowler_name,
+            venue: formData.venue,
+            wickets: Number(formData.wickets), // ✅ Convert to number
+            innings: Number(formData.innings), // ✅ Convert to number
+            date: formData.date
+        });
+
+        console.log("✅ Wicket Added Successfully:", response.data); // ✅ Debug Log
+        setSuccess(true);
+
+        // Reset form after successful submission
+        setFormData({ bowler_name: "", venue: "", wickets: "", innings: "", date: "" });
+
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-      console.error("❌ Error adding wicket:", error);
-      setError("Failed to add wicket. Please try again.");
+        console.error("❌ Error adding wicket:", error.response ? error.response.data : error.message);
+        setError("Failed to add wicket. Please try again.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
 
   // Shared styles as objects
   const styles = {

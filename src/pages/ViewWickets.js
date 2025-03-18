@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API_URL from "../config";
 import { 
   Table, 
   TableHead, 
@@ -37,16 +38,17 @@ const ViewWickets = () => {
   const fetchWickets = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5001/wickets");
-      setWickets(response.data);
-      setError(null);
+        const response = await axios.get(`${API_URL}/wickets`);
+        console.log("📌 Fetched Wickets Data:", response.data);
+        setWickets(response.data);
+        setError(null);
     } catch (err) {
-      console.error("Error fetching wickets:", err);
-      setError("Failed to load wickets data. Please try again later.");
+        console.error("❌ Error fetching wickets:", err);
+        setError("Failed to load wickets data. Please try again later.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
