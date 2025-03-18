@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Import navigate
+import axios from "axios";
 import API_URL from "../config";
 
 import { 
@@ -11,8 +13,7 @@ import {
   Grid,
   Snackbar,
   Alert,
-  InputAdornment,
-  IconButton
+  InputAdornment
 } from "@mui/material";
 import { 
   SportsCricket as CricketIcon, 
@@ -22,9 +23,10 @@ import {
   Person as PersonIcon,
   Add as AddIcon
 } from "@mui/icons-material";
-import axios from "axios";
 
 const AddRuns = () => {
+  const navigate = useNavigate(); // ✅ Define navigate function
+
   const [formData, setFormData] = useState({
     name: "",
     venue: "",
@@ -33,7 +35,7 @@ const AddRuns = () => {
     outs: "",
     date: "",
   });
-  
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -51,15 +53,21 @@ const AddRuns = () => {
         const response = await axios.post(`${API_URL}/runs`, formData);
         console.log("✅ Run Added:", response.data);
 
-        // ✅ Only log and set success after a successful request
-        console.log("✅ Runs Added Successfully:", response.data); 
-        setSuccess(true);
+        setSnackbar({
+          open: true,
+          message: "✅ Run added successfully!",
+          severity: "success"
+        });
+
     } catch (error) {
         console.error("❌ Error adding run:", error.response?.data || error);
+        setSnackbar({
+          open: true,
+          message: "❌ Error adding run!",
+          severity: "error"
+        });
     }
-};
-
-
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -115,14 +123,6 @@ const AddRuns = () => {
                     </InputAdornment>
                   ),
                 }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    "&:hover fieldset": {
-                      borderColor: "#1976d2",
-                    },
-                  }
-                }}
               />
             </Grid>
             
@@ -141,14 +141,6 @@ const AddRuns = () => {
                       <LocationIcon sx={{ color: "#1976d2" }} />
                     </InputAdornment>
                   ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    "&:hover fieldset": {
-                      borderColor: "#1976d2",
-                    },
-                  }
                 }}
               />
             </Grid>
@@ -171,14 +163,6 @@ const AddRuns = () => {
                     </InputAdornment>
                   ),
                 }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    "&:hover fieldset": {
-                      borderColor: "#1976d2",
-                    },
-                  }
-                }}
               />
             </Grid>
             
@@ -198,14 +182,6 @@ const AddRuns = () => {
                       <ScoreIcon sx={{ color: "#1976d2" }} />
                     </InputAdornment>
                   ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    "&:hover fieldset": {
-                      borderColor: "#1976d2",
-                    },
-                  }
                 }}
               />
             </Grid>
@@ -227,14 +203,6 @@ const AddRuns = () => {
                     </InputAdornment>
                   ),
                 }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    "&:hover fieldset": {
-                      borderColor: "#1976d2",
-                    },
-                  }
-                }}
               />
             </Grid>
             
@@ -255,14 +223,6 @@ const AddRuns = () => {
                     </InputAdornment>
                   ),
                 }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    "&:hover fieldset": {
-                      borderColor: "#1976d2",
-                    },
-                  }
-                }}
               />
             </Grid>
             
@@ -281,11 +241,9 @@ const AddRuns = () => {
                     fontWeight: "bold",
                     textTransform: "none",
                     boxShadow: "0 4px 10px rgba(25, 118, 210, 0.3)",
-                    transition: "all 0.2s ease",
                     "&:hover": {
                       backgroundColor: "#0d47a1",
                       boxShadow: "0 6px 15px rgba(25, 118, 210, 0.4)",
-                      transform: "translateY(-2px)"
                     }
                   }}
                 >
@@ -295,28 +253,19 @@ const AddRuns = () => {
             </Grid>
           </Grid>
         </form>
-        <div className="flex space-x-4 mt-4">
-  
-        <button
-      type="button"
-      onClick={() => navigate("/admin-dashboard/manage-runs")} // ✅ Admin Dashboard Path
-      style={{
-        padding: "0.6rem 1rem",
-        backgroundColor: "#8B5CF6",
-        color: "white",
-        borderRadius: "0.375rem",
-        fontWeight: "500",
-        fontSize: "0.875rem",
-        border: "none",
-        cursor: "pointer",
-        transition: "all 0.2s",
-      }}
-      onMouseOver={(e) => (e.target.style.backgroundColor = "#7C3AED")}
-      onMouseOut={(e) => (e.target.style.backgroundColor = "#8B5CF6")}
-    >
-      Manage Runs
-    </button>
-</div>
+
+        {/* ✅ Fixed Navigate Button */}
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate("/admin-dashboard/manage-runs")} // ✅ Fixed Navigate
+            sx={{ borderRadius: 2, px: 3, py: 1.2, fontWeight: "bold" }}
+          >
+            Manage Runs
+          </Button>
+        </Box>
+
       </Paper>
       
       <Snackbar 
@@ -329,7 +278,6 @@ const AddRuns = () => {
           onClose={handleCloseSnackbar} 
           severity={snackbar.severity} 
           variant="filled"
-          sx={{ width: '100%', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
         >
           {snackbar.message}
         </Alert>

@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import API_URL from "../config";
+import { useNavigate } from "react-router-dom";
 
 const AddWickets = () => {
+  const navigate = useNavigate(); // ✅ Define navigate function
+
   const [formData, setFormData] = useState({
     bowler_name: "",
     venue: "",
@@ -10,49 +13,58 @@ const AddWickets = () => {
     innings: "",
     date: "",
   });
-  
+
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success"
+  });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess(false);
-    setError(null);
 
     console.log("📌 Sending Wicket Data to Backend:", formData); // ✅ Debug Log
 
     try {
-        
-        const response = await axios.post(`${API_URL}/wickets`, {
-            bowler_name: formData.bowler_name,
-            venue: formData.venue,
-            wickets: Number(formData.wickets), // ✅ Convert to number
-            innings: Number(formData.innings), // ✅ Convert to number
-            date: formData.date
-        });
+      const response = await axios.post(`${API_URL}/wickets`, {
+        bowler_name: formData.bowler_name,
+        venue: formData.venue,
+        wickets: Number(formData.wickets), // ✅ Convert to number
+        innings: Number(formData.innings), // ✅ Convert to number
+        date: formData.date
+      });
 
-        console.log("✅ Wicket Added Successfully:", response.data); // ✅ Debug Log
-        setSuccess(true);
+      console.log("✅ Wicket Added Successfully:", response.data);
+      setSnackbar({
+        open: true,
+        message: "✅ Wicket added successfully!",
+        severity: "success"
+      });
 
-        // Reset form after successful submission
-        setFormData({ bowler_name: "", venue: "", wickets: "", innings: "", date: "" });
+      // Reset form after successful submission
+      setFormData({ bowler_name: "", venue: "", wickets: "", innings: "", date: "" });
 
-        // Clear success message after 3 seconds
-        setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-        console.error("❌ Error adding wicket:", error.response ? error.response.data : error.message);
-        setError("Failed to add wicket. Please try again.");
+      console.error("❌ Error adding wicket:", error.response ? error.response.data : error.message);
+      setSnackbar({
+        open: true,
+        message: "❌ Failed to add wicket. Please try again.",
+        severity: "error"
+      });
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
 
   // Shared styles as objects
