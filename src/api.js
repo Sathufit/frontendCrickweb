@@ -31,7 +31,7 @@ export const fetchWickets = async () => {
 export const addRun = async (runData) => {
     try {
         const response = await axios.post(`${API_URL}/runs`, {
-            name: runData.batsman_name,  // ✅ FIXED (Send "name" instead of "batsman_name")
+            name: runData.name,  // ✅ FIXED (Ensure "name" field matches backend)
             venue: runData.venue,
             runs: runData.runs,
             innings: runData.innings,
