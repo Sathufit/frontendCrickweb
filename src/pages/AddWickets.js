@@ -4,7 +4,7 @@ import API_URL from "../config";
 import { useNavigate } from "react-router-dom";
 
 const AddWickets = () => {
-  const navigate = useNavigate(); // ✅ Define navigate function
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     bowler_name: "",
@@ -15,6 +15,8 @@ const AddWickets = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -28,19 +30,22 @@ const AddWickets = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setSuccess(false);
+    setError("");
 
-    console.log("📌 Sending Wicket Data to Backend:", formData); // ✅ Debug Log
+    console.log("📌 Sending Wicket Data to Backend:", formData);
 
     try {
       const response = await axios.post(`${API_URL}/wickets`, {
         bowler_name: formData.bowler_name,
         venue: formData.venue,
-        wickets: Number(formData.wickets), // ✅ Convert to number
-        innings: Number(formData.innings), // ✅ Convert to number
+        wickets: Number(formData.wickets),
+        innings: Number(formData.innings),
         date: formData.date
       });
 
       console.log("✅ Wicket Added Successfully:", response.data);
+      setSuccess(true);
       setSnackbar({
         open: true,
         message: "✅ Wicket added successfully!",
@@ -52,6 +57,7 @@ const AddWickets = () => {
 
     } catch (error) {
       console.error("❌ Error adding wicket:", error.response ? error.response.data : error.message);
+      setError(error.response ? error.response.data.message : "Failed to add wicket. Please try again.");
       setSnackbar({
         open: true,
         message: "❌ Failed to add wicket. Please try again.",
@@ -65,7 +71,6 @@ const AddWickets = () => {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
-
 
   // Shared styles as objects
   const styles = {
@@ -190,6 +195,23 @@ const AddWickets = () => {
       width: '1rem',
       height: '1rem',
       marginRight: '0.5rem',
+    },
+    buttonsContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '0 1.75rem 1.75rem',
+      gap: '1rem'
+    },
+    secondaryButton: {
+      padding: "0.6rem 1rem",
+      backgroundColor: "#8B5CF6",
+      color: "white",
+      borderRadius: "0.375rem",
+      fontWeight: "500",
+      fontSize: "0.875rem",
+      border: "none",
+      cursor: "pointer",
+      transition: "all 0.2s",
     }
   };
 
@@ -380,28 +402,19 @@ const AddWickets = () => {
             )}
           </button>
         </form>
-        <div className="flex space-x-4 mt-4">
-  
-        <button
-      type="button"
-      onClick={() => navigate("/admin-dashboard/manage-wickets")} // ✅ Admin Dashboard Path
-      style={{
-        padding: "0.6rem 1rem",
-        backgroundColor: "#8B5CF6",
-        color: "white",
-        borderRadius: "0.375rem",
-        fontWeight: "500",
-        fontSize: "0.875rem",
-        border: "none",
-        cursor: "pointer",
-        transition: "all 0.2s",
-      }}
-      onMouseOver={(e) => (e.target.style.backgroundColor = "#7C3AED")}
-      onMouseOut={(e) => (e.target.style.backgroundColor = "#8B5CF6")}
-    >
-      Manage Wickets
-    </button>
-</div>
+        
+        <div style={styles.buttonsContainer}>
+          <button
+            type="button"
+            onClick={() => navigate("/admin-dashboard/manage-wickets")}
+            style={styles.secondaryButton}
+            onMouseOver={(e) => (e.target.style.backgroundColor = "#7C3AED")}
+            onMouseOut={(e) => (e.target.style.backgroundColor = "#8B5CF6")}
+            className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 font-medium text-sm"
+          >
+            Manage Wickets
+          </button>
+        </div>
         
         <div style={styles.footer} className="bg-gray-50 py-3 px-6 border-t border-gray-200">
           <p style={styles.footerText} className="text-xs text-gray-500 text-center">
