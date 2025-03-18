@@ -26,7 +26,7 @@ const AddWickets = () => {
     setError(null);
     
     try {
-      const response = await axios.post("http://localhost:5001/wickets", formData);
+      const response = await axios.post("https://frontendcrickweb.onrender.com/add-wickets", formData);
       console.log("📌 Response:", response.data);
       setSuccess(true);
       

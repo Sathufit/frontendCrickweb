@@ -37,7 +37,7 @@ const ViewWickets = () => {
   const fetchWickets = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5001/wickets");
+      const response = await axios.get("https://frontendcrickweb.onrender.com/view-wickets");
       setWickets(response.data);
       setError(null);
     } catch (err) {

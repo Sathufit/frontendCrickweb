@@ -45,7 +45,7 @@ const AddRuns = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5001/runs", formData);
+      const response = await axios.post("https://frontendcrickweb.onrender.com/add-runs", formData);
       console.log("✅ Run Added:", response.data);
       setSnackbar({
         open: true,
