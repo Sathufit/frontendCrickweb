@@ -8,6 +8,8 @@ import ManageWickets from "./pages/ManageWickets";
 import ViewRuns from "./pages/ViewRuns";
 import ViewWickets from "./pages/ViewWickets";
 import PlayerStats from "./pages/PlayerStats";
+import Analyst from "./pages/Analyst"; // ✅ Corrected Import
+
 import "./styles.css";
 
 function App() {
@@ -22,6 +24,7 @@ function App() {
         <Route path="/view-runs" element={<ViewRuns />} />
         <Route path="/view-wickets" element={<ViewWickets />} />
         <Route path="/stats" element={<PlayerStats />} />
+        <Route path="/analyst" element={<Analyst />} /> {/* ✅ Corrected Route */}
       </Routes>
     </Router>
   );

@@ -49,7 +49,7 @@ const Home = () => {
               WebkitTextFillColor: "transparent",
               margin: 0,
             }}>
-              Cricket Info
+              FriendSphereCric
             </h1>
           </div>
 
@@ -64,7 +64,7 @@ const Home = () => {
             <NavLink to="/">Home</NavLink>
             <NavLink to="/view-runs">Runs</NavLink>
             <NavLink to="/view-wickets">Wickets</NavLink>
-            <NavLink to="/players">Players</NavLink>
+            <NavLink to="/analyst">Analysis</NavLink>
             <NavLink to="/stats">Stats</NavLink>
             <NavLink to="/add-runs">Add Runs</NavLink>
             <NavLink to="/add-wickets">Add Wickets</NavLink>
@@ -132,7 +132,7 @@ const Home = () => {
               <MobileNavLink to="/" onClick={toggleMenu}>Home</MobileNavLink>
               <MobileNavLink to="/view-runs" onClick={toggleMenu}>Runs</MobileNavLink>
               <MobileNavLink to="/view-wickets" onClick={toggleMenu}>Wickets</MobileNavLink>
-              <MobileNavLink to="/players" onClick={toggleMenu}>Players</MobileNavLink>
+              <MobileNavLink to="/analyst" onClick={toggleMenu}>Analysis</MobileNavLink>
               <MobileNavLink to="/stats" onClick={toggleMenu}>Stats</MobileNavLink>
               <MobileNavLink to="/add-runs" onClick={toggleMenu}>Add Runs</MobileNavLink>
               <MobileNavLink to="/add-wickets" onClick={toggleMenu}>Add Wickets</MobileNavLink>

@@ -9,13 +9,18 @@ import {
   Typography, 
   Paper, 
   CircularProgress,
-  Box
+  Box,
+  useMediaQuery,
+  useTheme,
+  Grid
 } from "@mui/material";
 import { fetchPlayerStats } from "../api";
 
 const PlayerStats = () => {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     loadPlayerStats();
@@ -32,6 +37,75 @@ const PlayerStats = () => {
     }
     setLoading(false);
   };
+
+  // Mobile view card component for each player
+  const MobilePlayerCard = ({ player }) => (
+    <Paper 
+      elevation={2} 
+      sx={{ 
+        mb: 2, 
+        p: 2,
+        borderRadius: 2,
+        borderLeft: "4px solid #4a90e2",
+        transition: "transform 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: "0 6px 12px rgba(0,0,0,0.1)"
+        }
+      }}
+    >
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: 600,
+          mb: 1.5,
+          color: "#0a2540"
+        }}
+      >
+        {player.name}
+      </Typography>
+      <Grid container spacing={1}>
+        <Grid item xs={6}>
+          <Typography variant="body2" color="textSecondary">Total Runs</Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontWeight: player.totalRuns > 1000 ? 700 : 500,
+              color: player.totalRuns > 1000 ? "#4a90e2" : "inherit"
+            }}
+          >
+            {player.totalRuns}
+          </Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="body2" color="textSecondary">Innings</Typography>
+          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            {player.totalInnings}
+          </Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="body2" color="textSecondary">Outs</Typography>
+          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            {player.totalOuts}
+          </Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="body2" color="textSecondary">Average</Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontWeight: 700,
+              color: player.average !== "N/A" && Number(player.average) > 50 ? "#4caf50" : 
+                     player.average !== "N/A" && Number(player.average) < 20 ? "#f44336" : 
+                     "inherit"
+            }}
+          >
+            {player.average !== "N/A" ? Number(player.average).toFixed(2) : "N/A"}
+          </Typography>
+        </Grid>
+      </Grid>
+    </Paper>
+  );
 
   return (
     <Container maxWidth="md" sx={{ 
@@ -60,6 +134,7 @@ const PlayerStats = () => {
           fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
           letterSpacing: "0.01em",
           position: "relative",
+          fontSize: { xs: '1.8rem', sm: '2.125rem' },
           "&::after": {
             content: '""',
             display: "block",
@@ -129,7 +204,15 @@ const PlayerStats = () => {
             </Typography>
           </Box>
         </Paper>
+      ) : isMobile ? (
+        // Mobile view - card layout
+        <Box sx={{ px: 1 }}>
+          {stats.map((player, index) => (
+            <MobilePlayerCard key={index} player={player} />
+          ))}
+        </Box>
       ) : (
+        // Desktop view - table layout
         <Paper 
           elevation={3} 
           sx={{ 
