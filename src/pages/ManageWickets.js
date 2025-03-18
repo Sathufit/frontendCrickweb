@@ -4,12 +4,16 @@ import {
   Table, TableHead, TableRow, TableCell, TableBody, 
   Button, Container, Typography, Dialog, DialogActions, 
   DialogContent, DialogTitle, TextField, Paper, Box,
-  IconButton, Tooltip, Snackbar, Alert, CircularProgress
+  IconButton, Tooltip, Snackbar, Alert, CircularProgress,
+  useMediaQuery, useTheme, Grid, Card, CardContent
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 import axios from "axios";
 
 const ManageWickets = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [wickets, setWickets] = useState([]);
   const [editData, setEditData] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -38,37 +42,34 @@ const ManageWickets = () => {
     } finally {
         setLoading(false);
     }
-};
+  };
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this wicket?")) {
+        try {
+            console.log(`📌 Deleting Wicket with ID: ${id}`);
+            const response = await axios.delete(`${API_URL}/wickets/${id}`);
+            console.log("✅ Wicket Deleted:", response.data);
 
-const handleDelete = async (id) => {
-  if (window.confirm("Are you sure you want to delete this wicket?")) {
-      try {
-          console.log(`📌 Deleting Wicket with ID: ${id}`);
-          const response = await axios.delete(`${API_URL}/wickets/${id}`);
-          console.log("✅ Wicket Deleted:", response.data);
+            fetchWickets(); // Refresh data
+            showSnackbar("Wicket deleted successfully", "success");
+        } catch (error) {
+            console.error("❌ Error deleting wicket:", error.response?.data || error);
+            showSnackbar("Failed to delete wicket", "error");
+        }
+    }
+  };
 
-          fetchWickets(); // Refresh data
-          showSnackbar("Wicket deleted successfully", "success");
-      } catch (error) {
-          console.error("❌ Error deleting wicket:", error.response?.data || error);
-          showSnackbar("Failed to delete wicket", "error");
-      }
-  }
-};
+  const handleEdit = (wicket) => {
+    console.log("📌 Editing Wicket Data:", wicket);
 
-
-const handleEdit = (wicket) => {
-  console.log("📌 Editing Wicket Data:", wicket);
-
-  // Ensure the date is formatted correctly
-  const formattedDate = wicket.date ? new Date(wicket.date).toISOString().split('T')[0] : '';
-  
-  setEditData({ ...wicket, date: formattedDate });
-  setOpenDialog(true);
-  setAddMode(false);
-};
-
+    // Ensure the date is formatted correctly
+    const formattedDate = wicket.date ? new Date(wicket.date).toISOString().split('T')[0] : '';
+    
+    setEditData({ ...wicket, date: formattedDate });
+    setOpenDialog(true);
+    setAddMode(false);
+  };
 
   const handleAdd = () => {
     setEditData({
@@ -106,7 +107,7 @@ const handleEdit = (wicket) => {
         console.error("❌ Error updating wicket:", error.response?.data || error);
         showSnackbar(addMode ? "Failed to add wicket" : "Failed to update wicket", "error");
     }
-};
+  };
 
   const showSnackbar = (message, severity) => {
     setSnackbar({ open: true, message, severity });
@@ -119,29 +120,120 @@ const handleEdit = (wicket) => {
   const tableHeaderStyle = {
     backgroundColor: "#1976d2",
     color: "white",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    padding: isMobile ? "8px 6px" : undefined
   };
 
   const buttonStyle = {
     textTransform: "none",
     borderRadius: "8px",
-    boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    whiteSpace: isMobile ? "nowrap" : undefined,
+    fontSize: isMobile ? "0.75rem" : undefined,
+    padding: isMobile ? "6px 10px" : undefined
   };
 
+  // Mobile card view for wickets
+  const renderMobileCard = (wicket) => (
+    <Card 
+      key={wicket._id}
+      sx={{ 
+        mb: 2, 
+        borderRadius: "10px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        border: "1px solid #e0e0e0"
+      }}
+    >
+      <CardContent sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1, color: "#1976d2" }}>
+          {wicket.bowler_name}
+        </Typography>
+        
+        <Grid container spacing={1} sx={{ mb: 1 }}>
+          <Grid item xs={6}>
+            <Typography variant="body2" color="textSecondary">Venue:</Typography>
+            <Typography variant="body1">{wicket.venue}</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography variant="body2" color="textSecondary">Date:</Typography>
+            <Typography variant="body1">
+              {new Date(wicket.date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              })}
+            </Typography>
+          </Grid>
+        </Grid>
+        
+        <Grid container spacing={1} sx={{ mb: 1 }}>
+          <Grid item xs={6}>
+            <Typography variant="body2" color="textSecondary">Wickets:</Typography>
+            <Box sx={{ 
+              display: "inline-flex", 
+              alignItems: "center", 
+              backgroundColor: "#e3f2fd", 
+              color: "#1976d2",
+              borderRadius: "16px",
+              px: 2,
+              py: 0.5,
+              mt: 0.5,
+              fontWeight: "bold"
+            }}>
+              {wicket.wickets}
+            </Box>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography variant="body2" color="textSecondary">Innings:</Typography>
+            <Typography variant="body1">{wicket.innings}</Typography>
+          </Grid>
+        </Grid>
+        
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
+          <Tooltip title="Edit">
+            <IconButton 
+              onClick={() => handleEdit(wicket)} 
+              size="small"
+              sx={{
+                color: "#1976d2",
+                mr: 1
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton 
+              onClick={() => handleDelete(wicket._id)} 
+              size="small"
+              sx={{
+                color: "#f44336"
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 4, px: isMobile ? 2 : 3 }}>
       <Box sx={{ 
         display: "flex", 
+        flexDirection: isMobile ? "column" : "row",
         justifyContent: "space-between", 
-        alignItems: "center", 
-        mb: 4 
+        alignItems: isMobile ? "flex-start" : "center", 
+        mb: isMobile ? 2 : 4 
       }}>
         <Typography 
-          variant="h4" 
+          variant={isMobile ? "h5" : "h4"} 
           sx={{ 
             fontWeight: "bold", 
             color: "#1976d2", 
             position: "relative",
+            mb: isMobile ? 2 : 0,
             "&::after": {
               content: '""',
               position: "absolute",
@@ -160,6 +252,7 @@ const handleEdit = (wicket) => {
           variant="contained" 
           startIcon={<AddIcon />} 
           onClick={handleAdd}
+          fullWidth={isMobile}
           sx={{
             ...buttonStyle,
             backgroundColor: "#4caf50",
@@ -185,6 +278,14 @@ const handleEdit = (wicket) => {
           <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
             <CircularProgress />
           </Box>
+        ) : wickets.length === 0 ? (
+          <Box sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="body1" color="textSecondary">No wickets available</Typography>
+          </Box>
+        ) : isMobile ? (
+          <Box sx={{ p: 2 }}>
+            {wickets.map(wicket => renderMobileCard(wicket))}
+          </Box>
         ) : (
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
@@ -198,67 +299,64 @@ const handleEdit = (wicket) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {wickets.length > 0 ? (
-                wickets.map((wicket) => (
-                  <TableRow 
-                    key={wicket._id}
-                    sx={{
-                      "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" },
-                      "&:hover": { backgroundColor: "#f1f8ff" },
-                      transition: "background-color 0.2s ease"
-                    }}
-                  >
-                    <TableCell sx={{ fontWeight: "500" }}>{wicket.bowler_name}</TableCell>
-                    <TableCell>{wicket.venue}</TableCell>
-                    <TableCell>
-                      <Box sx={{ 
-                        display: "inline-flex", 
-                        alignItems: "center", 
-                        justifyContent: "center",
-                        backgroundColor: "#e3f2fd", 
-                        color: "#1976d2",
-                        borderRadius: "16px",
-                        px: 2,
-                        py: 0.5,
-                        fontWeight: "bold"
-                      }}>
-                        {wicket.wickets}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{wicket.innings}</TableCell>
-                    <TableCell>{new Date(wicket.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric"
-                    })}</TableCell>
-                    <TableCell>
-                      <Tooltip title="Edit" arrow>
-                        <IconButton
-                          onClick={() => handleEdit(wicket)}
-                          sx={{
-                            color: "#1976d2",
-                            "&:hover": { backgroundColor: "#e3f2fd" }
-                          }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete" arrow>
-                      <IconButton onClick={() => handleDelete(wicket._id)}>
-    <DeleteIcon />
-</IconButton>
-
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                    <Typography variant="body1" color="textSecondary">No wickets available</Typography>
+              {wickets.map((wicket) => (
+                <TableRow 
+                  key={wicket._id}
+                  sx={{
+                    "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" },
+                    "&:hover": { backgroundColor: "#f1f8ff" },
+                    transition: "background-color 0.2s ease"
+                  }}
+                >
+                  <TableCell sx={{ fontWeight: "500" }}>{wicket.bowler_name}</TableCell>
+                  <TableCell>{wicket.venue}</TableCell>
+                  <TableCell>
+                    <Box sx={{ 
+                      display: "inline-flex", 
+                      alignItems: "center", 
+                      justifyContent: "center",
+                      backgroundColor: "#e3f2fd", 
+                      color: "#1976d2",
+                      borderRadius: "16px",
+                      px: 2,
+                      py: 0.5,
+                      fontWeight: "bold"
+                    }}>
+                      {wicket.wickets}
+                    </Box>
+                  </TableCell>
+                  <TableCell>{wicket.innings}</TableCell>
+                  <TableCell>{new Date(wicket.date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric"
+                  })}</TableCell>
+                  <TableCell>
+                    <Tooltip title="Edit" arrow>
+                      <IconButton
+                        onClick={() => handleEdit(wicket)}
+                        sx={{
+                          color: "#1976d2",
+                          "&:hover": { backgroundColor: "#e3f2fd" }
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete" arrow>
+                      <IconButton 
+                        onClick={() => handleDelete(wicket._id)}
+                        sx={{
+                          color: "#f44336",
+                          "&:hover": { backgroundColor: "#ffebee" }
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         )}
@@ -268,10 +366,11 @@ const handleEdit = (wicket) => {
       <Dialog 
         open={openDialog} 
         onClose={() => setOpenDialog(false)}
+        fullScreen={isMobile}
         PaperProps={{
           sx: {
-            borderRadius: "12px",
-            minWidth: "400px"
+            borderRadius: isMobile ? 0 : "12px",
+            minWidth: isMobile ? "100%" : "400px"
           }
         }}
       >
@@ -309,7 +408,11 @@ const handleEdit = (wicket) => {
               sx: { borderRadius: "8px" }
             }}
           />
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ 
+            display: "flex", 
+            flexDirection: isMobile ? "column" : "row", 
+            gap: isMobile ? 0 : 2 
+          }}>
             <TextField
               label="Wickets"
               type="number"
@@ -354,9 +457,15 @@ const handleEdit = (wicket) => {
             }}
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+        <DialogActions sx={{ 
+          px: isMobile ? 2 : 3, 
+          pb: isMobile ? 2 : 3,
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 1 : 0
+        }}>
           <Button 
             onClick={() => setOpenDialog(false)} 
+            fullWidth={isMobile}
             sx={{
               ...buttonStyle,
               color: "#616161",
@@ -371,6 +480,7 @@ const handleEdit = (wicket) => {
           <Button 
             onClick={handleUpdate} 
             variant="contained"
+            fullWidth={isMobile}
             sx={{
               ...buttonStyle,
               backgroundColor: addMode ? "#4caf50" : "#1976d2",
@@ -389,12 +499,19 @@ const handleEdit = (wicket) => {
         open={snackbar.open} 
         autoHideDuration={4000} 
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ 
+          vertical: isMobile ? "top" : "bottom", 
+          horizontal: "center" 
+        }}
       >
         <Alert 
           onClose={handleCloseSnackbar} 
           severity={snackbar.severity}
-          sx={{ width: "100%", borderRadius: "8px" }}
+          sx={{ 
+            width: "100%", 
+            borderRadius: "8px",
+            maxWidth: isMobile ? "90vw" : undefined
+          }}
         >
           {snackbar.message}
         </Alert>
