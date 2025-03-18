@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API_URL from "../config";
 import { 
   Table, TableHead, TableRow, TableCell, TableBody, 
   Button, Container, Typography, Dialog, DialogActions, 
@@ -7,8 +8,6 @@ import {
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 import axios from "axios";
-
-const API_URL = "http://localhost:5001";
 
 const ManageWickets = () => {
   const [wickets, setWickets] = useState([]);
@@ -29,36 +28,47 @@ const ManageWickets = () => {
   const fetchWickets = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/wickets`);
-      setWickets(response.data);
+        console.log("📌 Fetching Wickets...");
+        const response = await axios.get(`${API_URL}/wickets`);
+        console.log("✅ Wickets Data Fetched:", response.data);
+        setWickets(response.data);
     } catch (error) {
-      console.error("❌ Error fetching wickets:", error);
-      showSnackbar("Failed to load wickets", "error");
+        console.error("❌ Error fetching wickets:", error);
+        showSnackbar("Failed to load wickets", "error");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this wicket?")) {
+
+const handleDelete = async (id) => {
+  if (window.confirm("Are you sure you want to delete this wicket?")) {
       try {
-        await axios.delete(`${API_URL}/wickets/${id}`);
-        fetchWickets();
-        showSnackbar("Wicket deleted successfully", "success");
-      } catch (error) {
-        console.error("❌ Error deleting wicket:", error);
-        showSnackbar("Failed to delete wicket", "error");
-      }
-    }
-  };
+          console.log(`📌 Deleting Wicket with ID: ${id}`);
+          const response = await axios.delete(`${API_URL}/wickets/${id}`);
+          console.log("✅ Wicket Deleted:", response.data);
 
-  const handleEdit = (wicket) => {
-    // Format date for the date input
-    const formattedDate = wicket.date ? new Date(wicket.date).toISOString().split('T')[0] : '';
-    setEditData({ ...wicket, date: formattedDate });
-    setOpenDialog(true);
-    setAddMode(false);
-  };
+          fetchWickets(); // Refresh data
+          showSnackbar("Wicket deleted successfully", "success");
+      } catch (error) {
+          console.error("❌ Error deleting wicket:", error.response?.data || error);
+          showSnackbar("Failed to delete wicket", "error");
+      }
+  }
+};
+
+
+const handleEdit = (wicket) => {
+  console.log("📌 Editing Wicket Data:", wicket);
+
+  // Ensure the date is formatted correctly
+  const formattedDate = wicket.date ? new Date(wicket.date).toISOString().split('T')[0] : '';
+  
+  setEditData({ ...wicket, date: formattedDate });
+  setOpenDialog(true);
+  setAddMode(false);
+};
+
 
   const handleAdd = () => {
     setEditData({
@@ -74,20 +84,29 @@ const ManageWickets = () => {
 
   const handleUpdate = async () => {
     try {
-      if (addMode) {
-        await axios.post(`${API_URL}/wickets`, editData);
-        showSnackbar("New wicket added successfully", "success");
-      } else {
-        await axios.put(`${API_URL}/wickets/${editData._id}`, editData);
-        showSnackbar("Wicket updated successfully", "success");
-      }
-      setOpenDialog(false);
-      fetchWickets();
+        if (!editData.bowler_name || !editData.venue || !editData.wickets || !editData.innings || !editData.date) {
+            showSnackbar("❌ All fields are required!", "error");
+            return;
+        }
+
+        console.log("📌 Updating Wicket Data:", editData);
+
+        if (addMode) {
+            const response = await axios.post(`${API_URL}/wickets`, editData);
+            console.log("✅ Wicket Added:", response.data);
+        } else {
+            const response = await axios.put(`${API_URL}/wickets/${editData._id}`, editData);
+            console.log("✅ Wicket Updated:", response.data);
+        }
+
+        showSnackbar(addMode ? "New wicket added successfully" : "Wicket updated successfully", "success");
+        setOpenDialog(false);
+        fetchWickets(); // Refresh data
     } catch (error) {
-      console.error("❌ Error updating wicket:", error);
-      showSnackbar(addMode ? "Failed to add wicket" : "Failed to update wicket", "error");
+        console.error("❌ Error updating wicket:", error.response?.data || error);
+        showSnackbar(addMode ? "Failed to add wicket" : "Failed to update wicket", "error");
     }
-  };
+};
 
   const showSnackbar = (message, severity) => {
     setSnackbar({ open: true, message, severity });
@@ -225,15 +244,10 @@ const ManageWickets = () => {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete" arrow>
-                        <IconButton
-                          onClick={() => handleDelete(wicket._id)}
-                          sx={{
-                            color: "#f44336",
-                            "&:hover": { backgroundColor: "#ffebee" }
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                      <IconButton onClick={() => handleDelete(wicket._id)}>
+    <DeleteIcon />
+</IconButton>
+
                       </Tooltip>
                     </TableCell>
                   </TableRow>
