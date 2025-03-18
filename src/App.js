@@ -9,6 +9,7 @@ import ViewRuns from "./pages/ViewRuns";
 import ViewWickets from "./pages/ViewWickets";
 import PlayerStats from "./pages/PlayerStats";
 import Analyst from "./pages/Analyst"; // ✅ Corrected Import
+import AdminLogin from "./pages/AdminLogin";
 
 import "./styles.css";
 
@@ -25,6 +26,7 @@ function App() {
         <Route path="/view-wickets" element={<ViewWickets />} />
         <Route path="/stats" element={<PlayerStats />} />
         <Route path="/analyst" element={<Analyst />} /> {/* ✅ Corrected Route */}
+        <Route path="/admin-login" element={<AdminLogin />} />
       </Routes>
     </Router>
   );
