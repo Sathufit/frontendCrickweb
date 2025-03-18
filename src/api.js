@@ -1,8 +1,7 @@
 import axios from "axios";
 
-// ✅ **Set API Base URL (Ensure this is correct)**
-const API_URL = "https://friendspherecricweb.onrender.com"; // ✅ Update this with your deployed backend URL
-
+// ✅ **Set API Base URL**
+const API_URL = "https://friendspherecricweb.onrender.com"; // ✅ Update with deployed backend URL
 
 // ✅ **Fetch Runs**
 export const fetchRuns = async () => {
@@ -28,10 +27,10 @@ export const fetchWickets = async () => {
     }
 };
 
-// ✅ **Add a New Run (Fixed Field Names & Auth)**
+// ✅ **Add a New Run (No Auth Needed)**
 export const addRun = async (runData) => {
     try {
-        const response = await axios.post(`${API_URL}/runs`, runData, getAuthHeaders());
+        const response = await axios.post(`${API_URL}/runs`, runData);
         console.log("✅ Run Added:", response.data);
         return response.data;
     } catch (error) {
@@ -40,10 +39,10 @@ export const addRun = async (runData) => {
     }
 };
 
-// ✅ **Add a New Wicket (Fixed Fields & Auth)**
+// ✅ **Add a New Wicket (No Auth Needed)**
 export const addWicket = async (wicketData) => {
     try {
-        const response = await axios.post(`${API_URL}/wickets`, wicketData, getAuthHeaders());
+        const response = await axios.post(`${API_URL}/wickets`, wicketData);
         console.log("✅ Wicket Added:", response.data);
         return response.data;
     } catch (error) {
@@ -52,10 +51,10 @@ export const addWicket = async (wicketData) => {
     }
 };
 
-// ✅ **Delete a Run (Fixed Auth)**
+// ✅ **Delete a Run (No Auth Needed)**
 export const deleteRun = async (id) => {
     try {
-        await axios.delete(`${API_URL}/runs/${id}`, getAuthHeaders());
+        await axios.delete(`${API_URL}/runs/${id}`);
         console.log(`✅ Run with ID ${id} deleted.`);
     } catch (error) {
         console.error(`❌ Error deleting run with ID ${id}:`, error.response?.data || error);
@@ -63,10 +62,10 @@ export const deleteRun = async (id) => {
     }
 };
 
-// ✅ **Delete a Wicket (Fixed Auth)**
+// ✅ **Delete a Wicket (No Auth Needed)**
 export const deleteWicket = async (id) => {
     try {
-        await axios.delete(`${API_URL}/wickets/${id}`, getAuthHeaders());
+        await axios.delete(`${API_URL}/wickets/${id}`);
         console.log(`✅ Wicket with ID ${id} deleted.`);
     } catch (error) {
         console.error(`❌ Error deleting wicket with ID ${id}:`, error.response?.data || error);
@@ -74,10 +73,10 @@ export const deleteWicket = async (id) => {
     }
 };
 
-// ✅ **Update a Run (Fixed Auth)**
+// ✅ **Update a Run (No Auth Needed)**
 export const updateRun = async (id, updatedData) => {
     try {
-        const response = await axios.put(`${API_URL}/runs/${id}`, updatedData, getAuthHeaders());
+        const response = await axios.put(`${API_URL}/runs/${id}`, updatedData);
         console.log("✅ Run Updated:", response.data);
         return response.data;
     } catch (error) {
@@ -86,10 +85,10 @@ export const updateRun = async (id, updatedData) => {
     }
 };
 
-// ✅ **Update a Wicket (Fixed Auth)**
+// ✅ **Update a Wicket (No Auth Needed)**
 export const updateWicket = async (id, updatedData) => {
     try {
-        const response = await axios.put(`${API_URL}/wickets/${id}`, updatedData, getAuthHeaders());
+        const response = await axios.put(`${API_URL}/wickets/${id}`, updatedData);
         console.log("✅ Wicket Updated:", response.data);
         return response.data;
     } catch (error) {
