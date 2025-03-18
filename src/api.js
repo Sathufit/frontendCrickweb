@@ -3,20 +3,6 @@ import axios from "axios";
 // ✅ **Set API Base URL (Ensure this is correct)**
 const API_URL = "https://friendspherecricweb.onrender.com"; // ✅ Update this with your deployed backend URL
 
-// ✅ **Function to Get Auth Headers**
-const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-};
-export const loginAdmin = async (username, password) => {
-    try {
-        const response = await axios.post(`${API_URL}/admin/login`, { username, password });
-        return response.data;
-    } catch (error) {
-        console.error("❌ Error logging in:", error.response?.data || error);
-        throw error;
-    }
-};
 
 // ✅ **Fetch Runs**
 export const fetchRuns = async () => {
