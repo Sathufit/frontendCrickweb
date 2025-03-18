@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-const API_URL = "https://friendspherecricweb.onrender.com"; // ✅ Add your Render backend URL
+import API_URL from "../config";
 
 import { 
   TextField, 
@@ -47,8 +47,6 @@ const AddRuns = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    console.log("📌 Form Data Before Sending:", formData); // ✅ Debugging log
-
     try {
         const response = await axios.post(`${API_URL}/runs`, formData);
         console.log("✅ Run Added:", response.data);
