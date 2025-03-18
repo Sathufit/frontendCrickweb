@@ -1,19 +1,18 @@
 import axios from "axios";
 
-const API_URL = "https://friendspherecricweb.onrender.com"
+const API_URL = "https://friendspherecricweb.onrender.com";
 
 // ✅ Fetch Runs
 export const fetchRuns = async () => {
     try {
-        const response = await axios.get("http://localhost:5001/runs");
-        console.log("📌 Fetched Runs Data (Frontend):", response.data); // ✅ Debugging
+        const response = await axios.get(`${API_URL}/runs`); // ✅ Fixed
+        console.log("📌 Fetched Runs Data (Frontend):", response.data);
         return response.data;
     } catch (error) {
         console.error("❌ Error fetching runs:", error);
         return [];
     }
 };
-
 
 // ✅ Fetch Wickets
 export const fetchWickets = async () => {
@@ -39,7 +38,6 @@ export const addRun = async (runData) => {
     }
 };
 
-
 // ✅ Add New Wicket
 export const addWicket = async (wicketData) => {
     try {
@@ -55,7 +53,7 @@ export const addWicket = async (wicketData) => {
 // ✅ Delete Run
 export const deleteRun = async (id) => {
     try {
-        await axios.delete(`http://localhost:5001/runs/${id}`);
+        await axios.delete(`${API_URL}/runs/${id}`); // ✅ Fixed
         console.log(`✅ Run with ID ${id} deleted.`);
     } catch (error) {
         console.error(`❌ Error deleting run with ID ${id}:`, error);
@@ -63,11 +61,10 @@ export const deleteRun = async (id) => {
     }
 };
 
-
 // ✅ Delete Wicket
 export const deleteWicket = async (id) => {
     try {
-        await axios.delete(`${API_URL}/wickets/${id}`);  // ✅ Ensure correct endpoint
+        await axios.delete(`${API_URL}/wickets/${id}`); 
         console.log(`✅ Wicket with ID ${id} deleted.`);
     } catch (error) {
         console.error(`❌ Error deleting wicket with ID ${id}:`, error);
@@ -75,11 +72,10 @@ export const deleteWicket = async (id) => {
     }
 };
 
-
 // ✅ Update Run
 export const updateRun = async (id, updatedData) => {
     try {
-        const response = await axios.put(`http://localhost:5001/runs/${id}`, updatedData);
+        const response = await axios.put(`${API_URL}/runs/${id}`, updatedData); // ✅ Fixed
         console.log("✅ Run Updated:", response.data);
         return response.data;
     } catch (error) {
@@ -88,12 +84,10 @@ export const updateRun = async (id, updatedData) => {
     }
 };
 
-
-
 // ✅ Update Wicket
 export const updateWicket = async (id, updatedData) => {
     try {
-        const response = await axios.put(`${API_URL}/wickets/${id}`, updatedData);  // ✅ Ensure correct endpoint
+        const response = await axios.put(`${API_URL}/wickets/${id}`, updatedData);
         console.log("✅ Wicket Updated:", response.data);
         return response.data;
     } catch (error) {
@@ -101,9 +95,11 @@ export const updateWicket = async (id, updatedData) => {
         throw error;
     }
 };
+
+// ✅ Fetch Player Stats
 export const fetchPlayerStats = async () => {
     try {
-        const response = await axios.get(`${API_URL}/players/stats`); // ✅ Correct API endpoint
+        const response = await axios.get(`${API_URL}/players/stats`);
         console.log("📌 Player Stats Fetched:", response.data);
         return response.data;
     } catch (error) {
