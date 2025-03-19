@@ -139,11 +139,10 @@ const Home = () => {
 
       {/* Hero Section */}
       <div style={{
-        background: "linear-gradient(135deg, #red 0%, #maroon 100%)",
+        background: "linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%)",
         padding: "4rem 1.5rem",
         textAlign: "center",
         color: "#ffffff",
-        image: "/images/1.2.JPG",
       }}>
         <div style={{
           maxWidth: "1024px",
