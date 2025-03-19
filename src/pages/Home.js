@@ -49,7 +49,7 @@ const Home = () => {
               WebkitTextFillColor: "transparent",
               margin: 0,
             }}>
-              FriendSphereCric
+              FrontyardCricket
             </h1>
           </div>
 
@@ -139,10 +139,11 @@ const Home = () => {
 
       {/* Hero Section */}
       <div style={{
-        background: "linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%)",
+        background: "linear-gradient(135deg, #red 0%, #maroon 100%)",
         padding: "4rem 1.5rem",
         textAlign: "center",
         color: "#ffffff",
+        image: "/images/1.2.JPG",
       }}>
         <div style={{
           maxWidth: "1024px",
@@ -289,7 +290,7 @@ const Home = () => {
               WebkitTextFillColor: "transparent",
               margin: 0,
             }}>
-              Cricket Info
+              FriendSpehere Cricket
             </h3>
           </div>
           <p style={{
