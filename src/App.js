@@ -11,6 +11,7 @@ import AddRuns from "./pages/AddRuns";
 import AddWickets from "./pages/AddWickets";
 import ManageRuns from "./pages/ManageRuns";
 import ManageWickets from "./pages/ManageWickets";
+import WicketAnalysis from './pages/WicketAnalysis';
 
 import "./styles.css";
 
