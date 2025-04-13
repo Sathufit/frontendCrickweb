@@ -66,7 +66,7 @@ const Home = () => {
             <NavLink to="/view-wickets">Wickets</NavLink>
             <NavLink to="/analyst">Analysis</NavLink>
             <NavLink to="/wicket-analysis">Wicket Analysis</NavLink>
-            <NavLink to="/stats">Stats</NavLink>
+            <NavLink to="/stats">Batting Stats</NavLink>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -132,6 +132,7 @@ const Home = () => {
               <MobileNavLink to="/view-runs" onClick={toggleMenu}>Runs</MobileNavLink>
               <MobileNavLink to="/view-wickets" onClick={toggleMenu}>Wickets</MobileNavLink>
               <MobileNavLink to="/analyst" onClick={toggleMenu}>Analysis</MobileNavLink>
+              <MobileNavLink to="/wicket-analysis" onClick={toggleMenu}>Analysis</MobileNavLink>
               <MobileNavLink to="/stats" onClick={toggleMenu}>Stats</MobileNavLink>
             </nav>
           </div>
