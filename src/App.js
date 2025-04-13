@@ -24,6 +24,7 @@ function App() {
         <Route path="/view-wickets" element={<ViewWickets />} />
         <Route path="/stats" element={<PlayerStats />} />
         <Route path="/analyst" element={<Analyst />} />
+        <Route path="/wicket-analysis" element={<WicketAnalysis />} />
         <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* ✅ Admin Routes (Nested Inside Admin Dashboard) */}

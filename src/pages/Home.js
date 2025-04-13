@@ -65,6 +65,7 @@ const Home = () => {
             <NavLink to="/view-runs">Runs</NavLink>
             <NavLink to="/view-wickets">Wickets</NavLink>
             <NavLink to="/analyst">Analysis</NavLink>
+            <NavLink to="/wicket-analysis">Wicket Analysis</NavLink>
             <NavLink to="/stats">Stats</NavLink>
           </nav>
 

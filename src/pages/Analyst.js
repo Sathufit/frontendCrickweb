@@ -36,14 +36,14 @@ const Analyst = () => {
       color: "#1A936F" // Green shade
     },
     mostCenturies: [
-      { name: "Sathush Nanayakkara", centuries: "3", image: "/images/2.png", color: "#3A86FF" }, // Blue shade
+      { name: "Sathush Nanayakkara", centuries: "4", image: "/images/2.png", color: "#3A86FF" }, // Blue shade
       { name: "Chanuka de Silva", centuries: "2", image: "/images/1.2.JPG", color: "#FF006E" }, // Pink shade
       { name: "Yamila Dilhara", centuries: "2", image: "/images/5.JPG", color: "#8338EC" }, // Purple shade
       { name: "Achala Shashvika", centuries: "1", image: "/images/8.png", color: "#FB5607" } // Orange shade
     ],
     mostFifties: [
       { name: "Yamila Dilhara", fifties: "24", image: "/images/5.JPG", color: "#06D6A0" }, // Mint shade
-      { name: "Sathush Nanayakkara", fifties: "14", image: "/images/2.png", color: "#118AB2" }, // Blue shade
+      { name: "Sathush Nanayakkara", fifties: "15", image: "/images/2.png", color: "#118AB2" }, // Blue shade
       { name: "Chanuka de Silva", fifties: "5", image: "/images/1.2.JPG", color: "#EF476F" }, // Pink shade
       { name: "Savindu Weerarathna", fifties: "3", image: "/images/3.jpeg", color: "#FFD166" }, // Yellow shade
       { name: "Dulshan Thanoj", fifties: "4", image: "/images/1.4.JPG", color: "#073B4C" }, // Dark blue shade
