@@ -132,8 +132,8 @@ const Home = () => {
               <MobileNavLink to="/view-runs" onClick={toggleMenu}>Runs</MobileNavLink>
               <MobileNavLink to="/view-wickets" onClick={toggleMenu}>Wickets</MobileNavLink>
               <MobileNavLink to="/analyst" onClick={toggleMenu}>Analysis</MobileNavLink>
-              <MobileNavLink to="/wicket-analysis" onClick={toggleMenu}>Analysis</MobileNavLink>
-              <MobileNavLink to="/stats" onClick={toggleMenu}>Stats</MobileNavLink>
+              <MobileNavLink to="/wicket-analysis" onClick={toggleMenu}>Wicket Analysis</MobileNavLink>
+              <MobileNavLink to="/stats" onClick={toggleMenu}>Batting Analysis</MobileNavLink>
             </nav>
           </div>
         )}
