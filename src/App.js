@@ -28,7 +28,6 @@ function App() {
         <Route path="/analyst" element={<Analyst />} />
         <Route path="/wicket-analysis" element={<WicketAnalysis />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/daily-report" element={<DailyReport />} />
 
         {/* ✅ Admin Routes (Nested Inside Admin Dashboard) */}
         <Route path="/admin-dashboard" element={<AdminDashboard />}>
@@ -36,6 +35,7 @@ function App() {
           <Route path="add-wickets" element={<AddWickets />} />
           <Route path="manage-runs" element={<ManageRuns />} />
           <Route path="manage-wickets" element={<ManageWickets />} />
+          <Route path="daily-report" element={<DailyReport />} /> {/* ✅ Add this here */}
         </Route>
       </Routes>
     </Router>
