@@ -34,7 +34,7 @@ const AdminDashboard = () => {
     ]},
     { section: "Analytics", items: [
       { path: "performance", label: "Performance", icon: <path fill="currentColor" d="M9,17H7V10H9V17M13,17H11V7H13V17M17,17H15V13H17V17M19,19H5V5H19V19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3Z" /> },
-      { path: "reports", label: "Reports", icon: <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M9,13V19H7V13H9M15,15V19H17V15H15M11,13V19H13V13H11Z" /> }
+      { path: "daily-report", label: "Reports", icon: <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M9,13V19H7V13H9M15,15V19H17V15H15M11,13V19H13V13H11Z" /> }
     ]}
   ];
 

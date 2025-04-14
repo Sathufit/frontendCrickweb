@@ -12,6 +12,7 @@ import AddWickets from "./pages/AddWickets";
 import ManageRuns from "./pages/ManageRuns";
 import ManageWickets from "./pages/ManageWickets";
 import WicketAnalysis from './pages/WicketAnalysis';
+import DailyReport from './pages/DailyReport';
 
 import "./styles.css";
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/analyst" element={<Analyst />} />
         <Route path="/wicket-analysis" element={<WicketAnalysis />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/daily-report" element={<DailyReport />} />
 
         {/* ✅ Admin Routes (Nested Inside Admin Dashboard) */}
         <Route path="/admin-dashboard" element={<AdminDashboard />}>
