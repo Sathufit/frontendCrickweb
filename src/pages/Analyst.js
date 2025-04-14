@@ -47,7 +47,7 @@ const Analyst = () => {
       { name: "Chanuka de Silva", fifties: "6", image: "/images/1.2.JPG", color: "#EF476F" }, // Pink shade
       { name: "Savindu Weerarathna", fifties: "3", image: "/images/3.jpeg", color: "#FFD166" }, // Yellow shade
       { name: "Dulshan Thanoj", fifties: "4", image: "/images/1.4.JPG", color: "#073B4C" }, // Dark blue shade
-      { name: "Achala Shashvika", fifties: "6", image: "/images/8.png", color: "#06D6A0" }, // Mint shade
+      { name: "Achala Shashvika", fifties: "7", image: "/images/8.png", color: "#06D6A0" }, // Mint shade
       { name: "Shanaka", fifties: "3", image: "https://via.placeholder.com/150", color: "#FF6B6B" }, // Red shade
       { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg", color: "#9B5DE5" } // Purple shade
     ]
