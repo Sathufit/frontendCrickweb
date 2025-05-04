@@ -373,10 +373,11 @@ app.delete('/matches/:id', async (req, res) => {
   
   
 
-const frontendPath = path.join(__dirname, "../frontend/build");
+  const frontendPath = path.join(__dirname, "frontend/build");
 app.use(express.static(frontendPath));
+
 app.get("*", (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 5001;
