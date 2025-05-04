@@ -11,14 +11,16 @@ app.use(express.json());
 
 const corsOptions = {
     origin: [
-        "http://localhost:3000",
-        "https://frontendcrickweb.onrender.com",
-        "https://friendspherecricweb.onrender.com"
+      "http://localhost:3000",
+      "https://frontyardcricket.onrender.com"
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
-};
+  };
+  
+  app.use(cors(corsOptions));
+  
 
 app.use(cors(corsOptions));
 
