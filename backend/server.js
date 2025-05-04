@@ -375,7 +375,7 @@ app.delete('/matches/:id', async (req, res) => {
   
   
 
-  const frontendPath = path.join(__dirname, "frontend/build");
+const frontendPath = path.join(__dirname, "..", "frontend", "build");
 app.use(express.static(frontendPath));
 
 app.get("*", (req, res) => {
