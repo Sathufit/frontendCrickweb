@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "start": "node server.js"
-  },
+  "build": "cd frontend && npm install && npm run build",
+  "start": "node server.js"
+},
   "engines": {
     "node": "18.x"
   }
