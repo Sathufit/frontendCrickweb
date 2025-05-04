@@ -362,6 +362,15 @@ app.delete('/matches/:id', async (req, res) => {
       res.status(500).json({ error: "Failed to delete match" });
     }
   });
+  app.get("/finished-matches", async (req, res) => {
+    try {
+      const matches = await LiveMatch.find({ isFinished: true });
+      res.json(matches);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch finished matches", error: error.message });
+    }
+  });
+  
   
 
 const frontendPath = path.join(__dirname, "../frontend/build");
