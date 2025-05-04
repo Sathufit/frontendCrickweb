@@ -1,7 +1,11 @@
 // WicketAnalysis.js with inline styles
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import API_URL from "../config";
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001"
+    : "https://frontyardcricket.onrender.com";
+
 
 const WicketAnalysis = () => {
   const [wicketsData, setWicketsData] = useState([]);

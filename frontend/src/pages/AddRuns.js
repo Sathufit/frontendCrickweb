@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // ✅ Import navigate
 import axios from "axios";
-import API_URL from "../config";
 
 import { 
   TextField, 
@@ -23,6 +22,11 @@ import {
   Person as PersonIcon,
   Add as AddIcon
 } from "@mui/icons-material";
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001"
+    : "https://frontyardcricket.onrender.com";
+
 
 const AddRuns = () => {
   const navigate = useNavigate(); // ✅ Define navigate function

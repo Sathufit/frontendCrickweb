@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import API_URL from "../config";
+
 import { 
   Table, 
   TableHead, 
@@ -25,6 +25,12 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon, SportsCricket as CricketIcon } from '@mui/icons-material';
 import axios from "axios";
+
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001"
+    : "https://frontyardcricket.onrender.com";
+
 
 const ViewWickets = () => {
   const [wickets, setWickets] = useState([]);

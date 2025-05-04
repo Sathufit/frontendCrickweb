@@ -3,7 +3,11 @@ import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
 import jsPDF from 'jspdf';
 import 'chart.js/auto';
-import API_URL from "../config";
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001"
+    : "https://frontyardcricket.onrender.com";
+
 
 const DailyReport = () => {
   const [selectedDate, setSelectedDate] = useState('');

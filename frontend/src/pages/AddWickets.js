@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
-import API_URL from "../config";
+
 import { useNavigate } from "react-router-dom";
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001"
+    : "https://frontyardcricket.onrender.com";
+
 
 const AddWickets = () => {
   const navigate = useNavigate();

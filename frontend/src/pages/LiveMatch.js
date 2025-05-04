@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import API_URL from "../config";
 import {
   Container,
   TextField,
@@ -24,6 +23,12 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import PersonIcon from '@mui/icons-material/Person';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001"
+    : "https://frontyardcricket.onrender.com";
+
 
 const LiveMatch = () => {
   const theme = useTheme();

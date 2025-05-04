@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import API_URL from "../config";
+
+
 import { 
   Table, TableHead, TableRow, TableCell, TableBody, 
   Button, Container, Typography, Dialog, DialogActions, 
@@ -9,6 +10,12 @@ import {
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 import axios from "axios";
+
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001"
+    : "https://frontyardcricket.onrender.com";
+
 
 const ManageWickets = () => {
   const theme = useTheme();
