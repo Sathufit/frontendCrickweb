@@ -19,8 +19,6 @@ const LiveMatch = () => {
   const [pastMatches, setPastMatches] = useState([]);
   const [matchId, setMatchId] = useState(null); // Store the match ID from the backend
   const [lastBowlerIndex, setLastBowlerIndex] = useState(null);
-  
-
 
 
 
@@ -53,6 +51,7 @@ useEffect(() => {
   const [playersTeamB, setPlayersTeamB] = useState([]);
   const [currentBatters, setCurrentBatters] = useState([null, null]);
 
+
   // Match progress states
   const [matchStarted, setMatchStarted] = useState(false);
   const [innings, setInnings] = useState(1);
@@ -60,7 +59,7 @@ useEffect(() => {
   const [bowlingTeam, setBowlingTeam] = useState("");
   const [target, setTarget] = useState(null);
 
-  
+  // Current innings state
   const [onStrike, setOnStrike] = useState(0); // 0 or 1, index in currentBatters
   const [currentBowler, setCurrentBowler] = useState(null); // Player index
   const [batterStats, setBatterStats] = useState([]); // For current innings
@@ -307,8 +306,6 @@ useEffect(() => {
       }));
       setBowlerStats(initialBowlerStats);
 
-      // Set first two batters
-      setCurrentBatters([0, 1]);
       setOnStrike(0);
 
       // Reset score and ball tracking
@@ -377,12 +374,11 @@ useEffect(() => {
       const [oversPart, ballsPart] = oversStr.split(".");
       const totalBalls = parseInt(oversPart || "0") * 6 + parseInt(ballsPart || "0");
       setBalls(totalBalls);
-
-// ✅ Detect start of new over (e.g., 1.0, 2.0)
-if (oversStr.endsWith(".0")) {
-  setShowChangeBowler(true); // 👈 Show change bowler prompt
-}
-
+  
+      // ✅ Show change bowler at start of new over
+      if (oversStr.endsWith(".0")) {
+        setShowChangeBowler(true);
+      }
   
       setBallHistory(updatedMatch.score.balls);
       setBatterStats(updatedMatch.batterStats);
@@ -395,6 +391,7 @@ if (oversStr.endsWith(".0")) {
       const totalRunsForBall =
         ballRecord.runs + (ballRecord.isExtra ? ballRecord.extraRuns : 0);
   
+      // ✅ Swap strike on odd runs
       if (
         (isLegalDelivery && totalRunsForBall % 2 === 1) ||
         (ballRecord.isExtra &&
@@ -404,6 +401,7 @@ if (oversStr.endsWith(".0")) {
         setOnStrike((prev) => (prev === 0 ? 1 : 0));
       }
   
+      // ✅ Swap strike at end of over
       if (
         isLegalDelivery &&
         updatedMatch.currentBall === 0 &&
@@ -412,16 +410,16 @@ if (oversStr.endsWith(".0")) {
         setOnStrike((prev) => (prev === 0 ? 1 : 0));
       }
   
+      // ✅ Handle batter out
       if (ballRecord.isOut) {
-        const nextBatterIndex = Math.max(...currentBatters) + 1;
-        if (nextBatterIndex < currentPlayers.length) {
-          setCurrentBatters((prev) => [
-            ...prev.filter((b) => b !== currentBatters[onStrike]),
-            nextBatterIndex,
-          ]);
-        }
+        setCurrentBatters((prevBatters) => {
+          const updated = [...prevBatters];
+          updated[onStrike] = null; // mark as null to trigger selection in UI
+          return updated;
+        });
       }
   
+      // ✅ Match End
       if (updatedMatch.isFinished) {
         setMatchStarted(false);
         setMatchSummary({
@@ -437,8 +435,10 @@ if (oversStr.endsWith(".0")) {
         setBowlingTeam(
           innings === 1 ? matchDetails.teamA : matchDetails.teamB
         );
+        setCurrentBatters([null, null]); // Allow new batter selection
         resetInningsState();
       }
+      
     } catch (error) {
       console.error("❌ Error processing ball:", error);
       alert(
@@ -458,6 +458,7 @@ if (oversStr.endsWith(".0")) {
       });
     }
   };
+  
 
   // Helper function to handle new batsman (to be implemented elsewhere)
   const handleNewBatter = () => {
@@ -494,8 +495,8 @@ if (oversStr.endsWith(".0")) {
     }));
     setBowlerStats(initialBowlerStats);
   
-    setCurrentBatters([0, 1]);
     setOnStrike(0);
+    setCurrentBatters([null, null]); // Reset to allow selecting new batters
     setCurrentBowler(null);
   
     setScore({ runs: 0, wickets: 0, extras: 0 });
@@ -535,6 +536,7 @@ if (oversStr.endsWith(".0")) {
 
         // Swap teams
         setBattingTeam(bowlingTeam);
+        setCurrentBatters([null, null]); // 🔁 Reset batters for second innings
         setBowlingTeam(battingTeam);
 
         // Reset stats for second innings
@@ -563,7 +565,6 @@ if (oversStr.endsWith(".0")) {
         }));
         setBowlerStats(initialBowlerStats);
 
-        setCurrentBatters([0, 1]);
         setOnStrike(0);
         setCurrentBowler(null);
 
@@ -746,120 +747,64 @@ if (oversStr.endsWith(".0")) {
               </select>
             </div>
           </div>
-          {/* ✅ Opening Batsman Selection */}
-    {playersTeamA.length >= 2 && (
-      <div className="batter-selection">
-        <h2>Select Opening Batters (Team A)</h2>
-        <label>
-          Striker:
-          <select
-            value={currentBatters[0]}
-            onChange={(e) => {
-              const value = parseInt(e.target.value);
-              setCurrentBatters([value, currentBatters[1]]);
-            }}
-          >
-            <option value="" disabled>Select</option>
-            {playersTeamA.map((player, i) => (
-              <option
-                key={`striker-${i}`}
-                value={i}
-                disabled={currentBatters[1] === i}
-              >
-                {player}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Non-Striker:
-          <select
-            value={currentBatters[1]}
-            onChange={(e) => {
-              const value = parseInt(e.target.value);
-              setCurrentBatters([currentBatters[0], value]);
-            }}
-          >
-            <option value="" disabled>Select</option>
-            {playersTeamA.map((player, i) => (
-              <option
-                key={`nonstriker-${i}`}
-                value={i}
-                disabled={currentBatters[0] === i}
-              >
-                {player}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-    )}
 
-    <button
-      className="start-match-btn"
-      onClick={startMatch}
-      disabled={
-        currentBatters.length < 2 ||
-        currentBatters.includes(null) ||
-        currentBatters[0] === currentBatters[1]
-      }
-    >
-      Start Match
-    </button>
+          <button className="start-match-btn" onClick={startMatch}>
+            Start Match
+          </button>
 
           {/* Past Matches Section */}
           <div className="past-matches">
-            <h2>Past Matches</h2>
-            {pastMatches.length > 0 ? (
-              pastMatches.map((match) => {
-                const innings1 = match.innings1 || {
-                  battingTeam: "Team A",
-                  runs: 0,
-                  wickets: 0,
-                  overs: "0.0",
-                  batters: [],
-                  bowlers: [],
-                };
-                const innings2 = match.innings2 || {
-                  battingTeam: "Team B",
-                  runs: 0,
-                  wickets: 0,
-                  overs: "0.0",
-                  batters: [],
-                  bowlers: [],
-                };
+  <h2>Past Matches</h2>
+  {pastMatches.length > 0 ? (
+    pastMatches.map((match) => {
+      const innings1 = match.innings1 || {
+        battingTeam: "Team A",
+        runs: 0,
+        wickets: 0,
+        overs: "0.0",
+        batters: [],
+        bowlers: [],
+      };
+      const innings2 = match.innings2 || {
+        battingTeam: "Team B",
+        runs: 0,
+        wickets: 0,
+        overs: "0.0",
+        batters: [],
+        bowlers: [],
+      };
 
-                return (
-                  <div
-                    key={match._id}
-                    className="past-match-summary"
-                    onClick={() =>
-                      setMatchSummary({
-                        innings1,
-                        innings2,
-                        result: match.result || "No result available",
-                      })
-                    }
-                    style={{ cursor: "pointer", position: "relative" }}
-                  >
-                    <h3>{match.innings1?.battingTeam || "Team A"} vs {match.innings2?.battingTeam || "Team B"}</h3>
-                    <p>Result: {match.result || "No result"}</p>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deletePastMatch(match._id);
-                      }}
-                      className="delete-match-btn"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                );
-              })
-            ) : (
-              <p>No past matches available.</p>
-            )}
-          </div>
+      return (
+        <div
+          key={match._id}
+          className="past-match-summary"
+          onClick={() =>
+            setMatchSummary({
+              innings1,
+              innings2,
+              result: match.result || "No result available",
+            })
+          }
+          style={{ cursor: "pointer", position: "relative" }}
+        >
+          <h3>{match.innings1?.battingTeam || "Team A"} vs {match.innings2?.battingTeam || "Team B"}</h3>
+          <p>Result: {match.result || "No result"}</p>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              deletePastMatch(match._id);
+            }}
+            className="delete-match-btn"
+          >
+            Delete
+          </button>
+        </div>
+      );
+    })
+  ) : (
+    <p>No past matches available.</p>
+  )}
+</div>
         </div>
       ) : matchSummary.result ? (
         // Match Summary Display
@@ -1014,94 +959,108 @@ if (oversStr.endsWith(".0")) {
       ) : (
         // Live Match Display
         <div className="live-match">
-          <h1>{matchDetails.matchName}</h1>
-          
-          <div className="match-info">
-            <h2>Innings {innings} - {battingTeam} batting</h2>
-            <div className="score-display">
-              <span className="score">{score.runs}/{score.wickets}</span>
-              <span className="overs">({overs} overs)</span>
-              {innings === 2 && <span className="target">Target: {target}</span>}
-            </div>
-            
-            <div className="innings-info">
-              {innings === 2 ? (
-                <p>Need {target - score.runs} runs from {oversRemaining} overs</p>
-              ) : (
-                <p>{ballsRemaining / 6} overs remaining</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="batters-info">
-            <div className={`batter ${onStrike === 0 ? 'on-strike' : ''}`}>
-              <span>{getBatterName(0)} {getBatterStats(0)}</span>
-              {onStrike === 0 && <span>*</span>}
-            </div>
-            <div className={`batter ${onStrike === 1 ? 'on-strike' : ''}`}>
-              <span>{getBatterName(1)} {getBatterStats(1)}</span>
-              {onStrike === 1 && <span>*</span>}
-            </div>
-          </div>
-          
-          <div className="bowler-info">
-          <h3>
-            Bowler:&nbsp;
-            {currentBowler === null || showChangeBowler ? (
-              <select
-                value={currentBowler !== null ? currentBowler : ""}
-                onChange={(e) => {
-                  const selectedIndex = Number(e.target.value);
-                  setCurrentBowler(selectedIndex);
-                  setLastBowlerIndex(selectedIndex); // Prevent same bowler next over
-                  setShowChangeBowler(false); // Hide dropdown after selection
-                }}
-              >
-                <option value="" disabled>
-                  Select Bowler
-                </option>
-                {(innings === 1 ? playersTeamB : playersTeamA)
-                  .filter((_, i) => i !== lastBowlerIndex) // exclude last bowler
-                  .map((player, i) => (
-                    <option key={`bowler-${i}`} value={i}>
-                      {player}
-                    </option>
-                  ))}
-              </select>
-            ) : (
-              getBowlerName()
-            )}
-          </h3>
+  <h1>{matchDetails.matchName}</h1>
 
-          {showChangeBowler && (
-            <p style={{ color: "red", marginTop: "0.5rem" }}>
-              Over completed! Please select the next bowler.
-            </p>
+  <div className="match-info">
+    <h2>Innings {innings} - {battingTeam} batting</h2>
+    <div className="score-display">
+      <span className="score">{score.runs}/{score.wickets}</span>
+      <span className="overs">({overs} overs)</span>
+      {innings === 2 && <span className="target">Target: {target}</span>}
+    </div>
+    <div className="innings-info">
+      {innings === 2 ? (
+        <p>Need {target - score.runs} runs from {oversRemaining} overs</p>
+      ) : (
+        <p>{ballsRemaining / 6} overs remaining</p>
+      )}
+    </div>
+  </div>
+
+  <div className="batters-info">
+    <div className={`batter ${onStrike === 0 ? 'on-strike' : ''}`}>
+      <span>{getBatterName(0)} {getBatterStats(0)}</span>
+      {onStrike === 0 && <span>*</span>}
+    </div>
+    <div className={`batter ${onStrike === 1 ? 'on-strike' : ''}`}>
+      <span>{getBatterName(1)} {getBatterStats(1)}</span>
+      {onStrike === 1 && <span>*</span>}
+    </div>
+  </div>
+
+  {/* ✅ Dynamic Batter Selector if someone is out */}
+  {currentBatters.includes(null) && (
+    <div className="batter-selection-live">
+      <h3>Select Next Batter</h3>
+      <select
+        value=""
+        onChange={(e) => {
+          const selectedIndex = parseInt(e.target.value);
+          const updatedBatters = [...currentBatters];
+          const nullIndex = currentBatters.findIndex((b) => b === null);
+          updatedBatters[nullIndex] = selectedIndex;
+          setCurrentBatters(updatedBatters);
+        }}
+      >
+        <option value="" disabled>Select Batter</option>
+        {currentPlayers.map((player, i) => {
+          const isSelected = currentBatters.includes(i);
+          return (
+            <option key={i} value={i} disabled={isSelected}>
+              {player}
+            </option>
+          );
+        })}
+      </select>
+    </div>
+  )}
+
+  <div className="bowler-info">
+    <h3>
+      Bowler:&nbsp;
+      {currentBowler === null || showChangeBowler ? (
+        <select
+          value={currentBowler !== null ? currentBowler : ""}
+          onChange={(e) => {
+            const selectedIndex = Number(e.target.value);
+            setCurrentBowler(selectedIndex);
+            setLastBowlerIndex(selectedIndex);
+            setShowChangeBowler(false);
+          }}
+        >
+          <option value="" disabled>Select Bowler</option>
+          {(innings === 1 ? playersTeamB : playersTeamA)
+            .filter((_, i) => i !== lastBowlerIndex)
+            .map((player, i) => (
+              <option key={`bowler-${i}`} value={i}>
+                {player}
+              </option>
+            ))}
+        </select>
+      ) : (
+        getBowlerName()
+      )}
+    </h3>
+
+    {showChangeBowler && (
+      <p style={{ color: "red", marginTop: "0.5rem" }}>
+        Over completed! Please select the next bowler.
+      </p>
+    )}
+
+    {currentBowler !== null &&
+      bowlerStats.find((b) => b.playerIndex === currentBowler) && (
+        <p>
+          {Math.floor(
+            bowlerStats.find((b) => b.playerIndex === currentBowler).balls / 6
           )}
-
-          {currentBowler !== null &&
-            bowlerStats.find((b) => b.playerIndex === currentBowler) && (
-              <p>
-                {Math.floor(
-                  bowlerStats.find((b) => b.playerIndex === currentBowler).balls / 6
-                )}
-                .
-                {bowlerStats.find((b) => b.playerIndex === currentBowler).balls % 6} -{" "}
-                {bowlerStats.find((b) => b.playerIndex === currentBowler).runs} -{" "}
-                {bowlerStats.find((b) => b.playerIndex === currentBowler).wickets}
-              </p>
-            )}
-          {currentBowler !== null && bowlerStats.find(b => b.playerIndex === currentBowler) && (
-            <p>
-              {Math.floor(bowlerStats.find(b => b.playerIndex === currentBowler).balls / 6)}.
-              {bowlerStats.find(b => b.playerIndex === currentBowler).balls % 6} - 
-              {bowlerStats.find(b => b.playerIndex === currentBowler).runs} - 
-              {bowlerStats.find(b => b.playerIndex === currentBowler).wickets}
-            </p>
-          )}
-        </div>
-
-          
+          .
+          {bowlerStats.find((b) => b.playerIndex === currentBowler).balls % 6} -{" "}
+          {bowlerStats.find((b) => b.playerIndex === currentBowler).runs} -{" "}
+          {bowlerStats.find((b) => b.playerIndex === currentBowler).wickets}
+        </p>
+      )}
+  </div>
           <div className="ball-input">
             <h3>Ball Details</h3>
             
