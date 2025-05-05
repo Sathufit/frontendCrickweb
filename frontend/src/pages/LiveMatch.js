@@ -1,996 +1,1211 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  Container,
-  TextField,
-  Button,
-  Grid,
-  MenuItem,
-  Typography,
-  Box,
-  useTheme,
-  useMediaQuery,
-  Paper,
-  Chip,
-  Divider,
-  IconButton,
-  Card,
-  CardContent,
-} from "@mui/material";
-import SportsCricketIcon from '@mui/icons-material/SportsCricket';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
-import PersonIcon from '@mui/icons-material/Person';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
-const API_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:5001"
-    : "https://frontyardcricket.onrender.com";
+import "../styles/LiveMatch.css";
+const API_URL = process.env.NODE_ENV === "development"
+  ? "http://localhost:5001"
+  : "https://frontyardcricket.onrender.com";
 
 
 const LiveMatch = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  // Match setup states
+  const [matchDetails, setMatchDetails] = useState({
+    matchName: "",
+    oversLimit: 0,
+    teamA: "",
+    teamB: "",
+  });
 
-  const [players, setPlayers] = useState([
-    "Sathush", "Dulshan", "Yamila", "Madhawa", "Dihindu", "Savindu",
-    "Achala", "Shanaka", "Ravindu", "Chanuka", "Farhan", "Nidula",
-    "Player 1", "Player 2", "Player 3", "Player 4"
-  ]);
+  const [pastMatches, setPastMatches] = useState([]);
+  const [matchId, setMatchId] = useState(null); // Store the match ID from the backend
+
+  const fetchPastMatches = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/live-match-stats`);
+      if (Array.isArray(response.data)) {
+        setPastMatches(response.data);
+      } else {
+        console.error("⚠️ Invalid data format from server:", response.data);
+        setPastMatches([]);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching past matches:", error);
+      setPastMatches([]);
+    }
+  };
   
-  const [battingPair, setBattingPair] = useState(["", ""]);
-  const [onStrike, setOnStrike] = useState(0); // 0 for batter1, 1 for batter2
-  const [currentBowler, setCurrentBowler] = useState("");
-  const [matchId, setMatchId] = useState(null);
-  const [score, setScore] = useState(null);
+useEffect(() => {
+  fetchPastMatches();
+}, []);
+
+  const [allPlayers, setAllPlayers] = useState([
+    "Sathush", "Dulshan", "Savindu", "Yamila", "Madhawa", "Chanuka",
+    "Dihindu", "Farhan", "Shalom", "Achala", "Shanaka", "Ravindu",
+    "Nidula", "Player 14", "Player 15"
+  ]);
+
+  const [playersTeamA, setPlayersTeamA] = useState([]);
+  const [playersTeamB, setPlayersTeamB] = useState([]);
+
+  // Match progress states
+  const [matchStarted, setMatchStarted] = useState(false);
+  const [innings, setInnings] = useState(1);
+  const [battingTeam, setBattingTeam] = useState("");
+  const [bowlingTeam, setBowlingTeam] = useState("");
+  const [target, setTarget] = useState(null);
+
+  // Current innings state
+  const [currentBatters, setCurrentBatters] = useState([0, 1]); // Player indices
+  const [onStrike, setOnStrike] = useState(0); // 0 or 1, index in currentBatters
+  const [currentBowler, setCurrentBowler] = useState(null); // Player index
+  const [batterStats, setBatterStats] = useState([]); // For current innings
+  const [bowlerStats, setBowlerStats] = useState([]); // For current innings
+
+  // Score and ball tracking
+  const [score, setScore] = useState({ runs: 0, wickets: 0, extras: 0 });
+  const [overs, setOvers] = useState(0);
+  const [balls, setBalls] = useState(0);
+  const [ballHistory, setBallHistory] = useState([]);
+
+  // Ball input state
   const [ballDetails, setBallDetails] = useState({
     runs: 0,
     ballType: "normal",
     isOut: false,
-    outType: "",
+    outType: "bowled",
+    isExtra: false,
+    extraType: "wide",
+    extraRuns: 1
   });
-  const [toss, setToss] = useState({
-    winner: "",
-    decision: "", // "bat" or "bowl"
+  
+  // Match summary
+  const [matchSummary, setMatchSummary] = useState({
+    innings1: {
+      battingTeam: "",
+      runs: 0,
+      wickets: 0,
+      overs: "0.0",
+      batters: [],
+      bowlers: [],
+      ballByBall: []
+    },
+    innings2: {
+      battingTeam: "",
+      runs: 0,
+      wickets: 0,
+      overs: "0.0",
+      batters: [],
+      bowlers: [],
+      ballByBall: []
+    },
+    result: ""
   });
-  const [ballsRemaining, setBallsRemaining] = useState(null);
-  
-  const [matchDetails, setMatchDetails] = useState({
-    matchName: "",
-    oversLimit: "",
-    teamA: "",
-    teamB: "",
-  });
-  const [summary, setSummary] = useState({ batters: {}, bowlers: {} });
-  const [battingTeam, setBattingTeam] = useState("");
-  const [bowlingTeam, setBowlingTeam] = useState("");
-  const [currentInnings, setCurrentInnings] = useState(1);
-  const [target, setTarget] = useState(null);
-  const [finishedMatches, setFinishedMatches] = useState([]);
-
-  useEffect(() => {
-    fetchFinishedMatches();
-    resumeOngoingMatch();
-  }, []);
-
-  const resumeOngoingMatch = async () => {
+  const viewMatchSummary = async (matchId) => {
     try {
-      const res = await axios.get(`${API_URL}/current-match`);
-      const match = res.data.match;
+      const response = await axios.get(`${API_URL}/api/live-match-stats/${matchId}`);
+      const match = response.data;
   
-      if (match) {
-        setMatchId(match._id);
-        setScore(match.score);
-        setMatchDetails({
-          matchName: match.matchName,
-          oversLimit: match.oversLimit,
-          teamA: match.teamA,
-          teamB: match.teamB
-        });
-        setBattingTeam(match.teamA); // or however you're storing order
-        setBowlingTeam(match.teamB);
-        setCurrentInnings(match.currentInnings);
-      }
-    } catch (err) {
-      console.error("Failed to resume match:", err);
-    }
-  };
-
-  const fetchFinishedMatches = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/finished-matches`);
-      
-      if (Array.isArray(res.data)) {
-        setFinishedMatches(res.data);
-      } else {
-        console.warn("Expected array but got:", res.data);
-        setFinishedMatches([]);
-      }
-  
-    } catch (err) {
-      console.error("Error fetching finished matches:", err);
-      setFinishedMatches([]);
-    }
-  };
-  
-
-  const startMatch = async () => {
-    try {
-      const res = await axios.post(`${API_URL}/start-match`, {
-        ...matchDetails,
-        tossWinner: toss.winner,
-        tossDecision: toss.decision,
+      // Set the summary and result state
+      setMatchSummary({
+        innings1: {
+          battingTeam: match.teamA,
+          runs: match.batters.reduce((sum, b) => sum + b.runs, 0),
+          wickets: match.batters.filter(b => b.outs > 0).length,
+          overs: 'N/A', // You can calculate if stored
+          batters: match.batters.map(b => ({
+            name: b.name,
+            runs: b.runs,
+            ballsFaced: b.balls,
+            fours: 0,
+            sixes: 0,
+            isOut: b.outs > 0,
+            outType: b.outs > 0 ? "out" : "",
+            outBowler: ""
+          })),
+          bowlers: match.bowlers.map(b => ({
+            name: b.name,
+            balls: 0, // Optional
+            runs: b.runsGiven,
+            wickets: b.wickets
+          }))
+        },
+        innings2: {
+          battingTeam: match.teamB,
+          runs: 0,
+          wickets: 0,
+          overs: "0.0",
+          batters: [],
+          bowlers: []
+        },
+        result: match.result
       });
-      setMatchId(res.data.match._id);
-      setScore(res.data.match.score);
   
-      const batting = toss.decision === "bat"
-        ? toss.winner
-        : toss.winner === matchDetails.teamA ? matchDetails.teamB : matchDetails.teamA;
-  
-      const bowling = batting === matchDetails.teamA ? matchDetails.teamB : matchDetails.teamA;
-  
-      setBattingTeam(batting);
-      setBowlingTeam(bowling);
-    } catch (err) {
-      console.error("Error starting match:", err);
+      // Show the summary screen
+      setMatchStarted(false);
+    } catch (error) {
+      console.error("❌ Error fetching match summary:", error);
+      alert("Could not load match summary.");
     }
   };
   
 
-  const fetchSummary = async () => {
-    if (!matchId) return;
-    const res = await axios.get(`${API_URL}/match-summary/${matchId}`);
-    setSummary({
-      batters: res.data.battersStats,
-      bowlers: res.data.bowlersStats,
+  const deletePastMatch = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this match summary?");
+    if (!confirmDelete) return;
+  
+    try {
+      await axios.delete(`${API_URL}/api/live-match-stats/${id}`);
+      alert("✅ Match deleted successfully");
+      fetchPastMatches(); // Refresh list
+    } catch (error) {
+      console.error("❌ Error deleting past match:", error);
+      alert("❌ Failed to delete match. Please try again.");
+    }
+  };
+  
+  
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  
+  const saveMatchSummary = async () => {
+    try {
+      setSnackbar({
+        open: true,
+        message: "✅ Match summary auto-saved by backend!",
+        severity: "success",
+      });
+      fetchPastMatches(); // Refresh past matches after backend auto-save
+    } catch (error) {
+      console.error("❌ Error updating UI after match:", error);
+    }
+  
+    // Optional: reset local match summary state if needed
+    setMatchSummary({
+      innings1: {
+        battingTeam: "",
+        runs: 0,
+        wickets: 0,
+        overs: "0.0",
+        batters: [],
+        bowlers: [],
+        ballByBall: []
+      },
+      innings2: {
+        battingTeam: "",
+        runs: 0,
+        wickets: 0,
+        overs: "0.0",
+        batters: [],
+        bowlers: [],
+        ballByBall: []
+      },
+      result: ""
     });
   };
-
-  const updateScore = async () => {
-    try {
-      const batter = battingPair[onStrike];
   
-      const res = await axios.put(`${API_URL}/update-score/${matchId}`, {
-        ...ballDetails,
-        batter: ballDetails.ballType === "normal" ? batter : null,
-        bowler: currentBowler,
+  
+
+  // Match setup handlers
+  const handleMatchDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setMatchDetails((prev) => ({
+      ...prev,
+      [name]: name === "oversLimit" ? Number(value) : value,
+    }));
+  };
+
+  // Handle adding players to teams
+  const handleAddPlayerToTeam = (team, player) => {
+    if (team === "A") {
+      if (!playersTeamA.includes(player)) {
+        setPlayersTeamA([...playersTeamA, player]);
+        setAllPlayers(allPlayers.filter((p) => p !== player));
+      }
+    } else if (team === "B") {
+      if (!playersTeamB.includes(player)) {
+        setPlayersTeamB([...playersTeamB, player]);
+        setAllPlayers(allPlayers.filter((p) => p !== player));
+      }
+    }
+  };
+
+  // Handle removing players from teams
+  const handleRemovePlayerFromTeam = (team, player) => {
+    if (team === "A") {
+      setPlayersTeamA(playersTeamA.filter((p) => p !== player));
+      setAllPlayers([...allPlayers, player]);
+    } else if (team === "B") {
+      setPlayersTeamB(playersTeamB.filter((p) => p !== player));
+      setAllPlayers([...allPlayers, player]);
+    }
+  };
+
+  // Initialize match
+  const startMatch = async () => {
+    // Validate inputs
+    if (!matchDetails.matchName || matchDetails.oversLimit <= 0 || 
+        !matchDetails.teamA || !matchDetails.teamB) {
+      alert("Please fill all match details!");
+      return;
+    }
+
+    if (!playersTeamA.length || !playersTeamB.length) {
+      alert("Please add at least one player to each team!");
+      return;
+    }
+
+    try {
+      // Send match details to the backend
+      const response = await axios.post(`${API_URL}/api/live-match`, {
+        matchName: matchDetails.matchName,
+        oversLimit: matchDetails.oversLimit,
+        teamA: matchDetails.teamA,
+        teamB: matchDetails.teamB,
+        playersTeamA,
+        playersTeamB,
+      });
+
+      setMatchId(response.data.match._id); // Store the match ID
+      setMatchStarted(true);
+
+      // Initialize first innings
+      setBattingTeam(matchDetails.teamA);
+      setBowlingTeam(matchDetails.teamB);
+      setInnings(1);
+
+      // Initialize batter and bowler stats
+      const initialBatterStats = playersTeamA.map((player, index) => ({
+        playerIndex: index,
+        name: player,
+        runs: 0,
+        ballsFaced: 0,
+        fours: 0,
+        sixes: 0,
+        isOut: false,
+        outType: "",
+        outBowler: "",
+      }));
+      setBatterStats(initialBatterStats);
+
+      const initialBowlerStats = playersTeamB.map((player, index) => ({
+        playerIndex: index,
+        name: player,
+        overs: 0,
+        balls: 0,
+        runs: 0,
+        wickets: 0,
+        maidens: 0,
+        economy: 0,
+      }));
+      setBowlerStats(initialBowlerStats);
+
+      // Set first two batters
+      setCurrentBatters([0, 1]);
+      setOnStrike(0);
+
+      // Reset score and ball tracking
+      setScore({ runs: 0, wickets: 0, extras: 0 });
+      setOvers(0);
+      setBalls(0);
+      setBallHistory([]);
+    } catch (error) {
+      console.error("❌ Error starting match:", error);
+      alert("Failed to start match. Please try again.");
+    }
+  };
+
+  // Ball input handlers
+  const handleBallDetailsChange = (field, value) => {
+    setBallDetails(prev => ({
+      ...prev,
+      [field]: field === "runs" || field === "extraRuns" ? Number(value) : value,
+      // Reset out details if not out
+      ...(!field === "isOut" && !value ? { outType: "" } : {})
+    }));
+  };
+
+
+  // Get current teams based on innings
+  const currentPlayers = innings === 1 ? playersTeamA : playersTeamB;
+  const currentBowlingPlayers = innings === 1 ? playersTeamB : playersTeamA;
+  const striker = currentBatters[onStrike];
+
+  const processBall = async () => {
+    if (currentBowler === null) {
+      alert("Please select a bowler first!");
+      return;
+    }
+  
+    const currentPlayers = innings === 1 ? playersTeamA : playersTeamB;
+    const currentBowlingPlayers = innings === 1 ? playersTeamB : playersTeamA;
+    const striker = currentBatters[onStrike];
+  
+    const ballRecord = {
+      runs: parseInt(ballDetails.runs || 0),
+      ballType: ballDetails.ballType,
+      isOut: ballDetails.isOut,
+      outType: ballDetails.isOut ? ballDetails.outType : "",
+      isExtra: ballDetails.isExtra,
+      extraType: ballDetails.isExtra ? ballDetails.extraType : "",
+      extraRuns: ballDetails.isExtra ? parseInt(ballDetails.extraRuns || 0) : 0,
+      batter: currentPlayers[striker],
+      bowler: currentBowlingPlayers[currentBowler],
+    };
+  
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/live-match/${matchId}/ball`,
+        ballRecord
+      );
+      const updatedMatch = response.data.match;
+  
+      setScore({
+        runs: updatedMatch.score.runs,
+        wickets: updatedMatch.score.wickets,
+        extras: updatedMatch.score.extras || 0,
       });
   
-      const updatedMatch = res.data.match;
-      const [over, ball] = updatedMatch.score.overs.split(".").map(Number);
-      const totalBalls = matchDetails.oversLimit * 6;
-      const currentBallCount = over * 6 + ball;
+      setOvers(updatedMatch.score.overs);
+      const [oversPart, ballsPart] = updatedMatch.score.overs.split(".");
+      setBalls(parseInt(oversPart) * 6 + parseInt(ballsPart));
   
-      setScore(updatedMatch.score);
-      fetchSummary();
+      setBallHistory(updatedMatch.score.balls);
+      setBatterStats(updatedMatch.batterStats);
+      setBowlerStats(updatedMatch.bowlerStats);
   
-      if (ballDetails.ballType === "normal") {
-        if (ballDetails.isOut) {
-          setBattingPair((prev) => {
-            const newPair = [...prev];
-            newPair[onStrike] = ""; // empty spot for dropdown
-            return newPair;
-          });
-        } else {
-          if ([1, 3].includes(ballDetails.runs)) {
-            setOnStrike(1 - onStrike);
-          }
-          if (ball === 0) {
-            alert("Over completed. Choose a new bowler.");
-            setCurrentBowler("");
-            setOnStrike(1 - onStrike);
-          }
-        }
+      const isLegalDelivery = !(
+        ballRecord.isExtra &&
+        (ballRecord.extraType === "wide" || ballRecord.extraType === "noBall")
+      );
+      const totalRunsForBall =
+        ballRecord.runs + (ballRecord.isExtra ? ballRecord.extraRuns : 0);
   
-        if (currentInnings === 2) {
-          setBallsRemaining((prev) => prev - 1);
-        }
+      if (
+        (isLegalDelivery && totalRunsForBall % 2 === 1) ||
+        (ballRecord.isExtra &&
+          ballRecord.extraType === "noBall" &&
+          totalRunsForBall % 2 === 1)
+      ) {
+        setOnStrike((prev) => (prev === 0 ? 1 : 0));
+      }
   
-        if (currentBallCount + 1 >= totalBalls) {
-          if (currentInnings === 1) {
-            setCurrentInnings(2);
-            setTarget(updatedMatch.score.runs + 1);
-            setBattingTeam(bowlingTeam);
-            setBowlingTeam(battingTeam);
-            setBallsRemaining(totalBalls);
-            alert("Innings over. Start second innings.");
-          } else {
-            finishMatch();
-            alert("🎉 Match finished!");
-          }
+      if (
+        isLegalDelivery &&
+        updatedMatch.currentBall === 0 &&
+        updatedMatch.currentOver > 0
+      ) {
+        setOnStrike((prev) => (prev === 0 ? 1 : 0));
+      }
+  
+      if (ballRecord.isOut) {
+        const nextBatterIndex = Math.max(...currentBatters) + 1;
+        if (nextBatterIndex < currentPlayers.length) {
+          setCurrentBatters((prev) => [
+            ...prev.filter((b) => b !== currentBatters[onStrike]),
+            nextBatterIndex,
+          ]);
         }
       }
   
-      // reset for next ball
-      setBallDetails({ runs: 0, ballType: "normal", isOut: false, outType: "" });
-  
-    } catch (err) {
-      console.error("Error updating score:", err);
-      alert("Failed to update score.");
+      if (updatedMatch.isFinished) {
+        setMatchStarted(false);
+        setMatchSummary({
+          innings1: updatedMatch.innings1 || {},
+          innings2: updatedMatch.innings2 || {},
+          result: updatedMatch.result || "Match Finished",
+        });
+        fetchPastMatches();
+      } else if (updatedMatch.currentInnings !== innings) {
+        setInnings(updatedMatch.currentInnings);
+        setTarget(updatedMatch.target);
+        setBattingTeam(updatedMatch.score.team);
+        setBowlingTeam(
+          innings === 1 ? matchDetails.teamA : matchDetails.teamB
+        );
+        resetInningsState();
+      }
+    } catch (error) {
+      console.error("❌ Error processing ball:", error);
+      alert(
+        `Failed to process ball: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    } finally {
+      setBallDetails({
+        runs: 0,
+        ballType: "normal",
+        isOut: false,
+        outType: "bowled",
+        isExtra: false,
+        extraType: "wide",
+        extraRuns: 1,
+      });
     }
   };
-  
 
-  const finishMatch = async () => {
+  // Helper function to handle new batsman (to be implemented elsewhere)
+  const handleNewBatter = () => {
+    // Logic to add new batsman
+    // This function should be implemented elsewhere in your code
+  };
+  
+  const resetInningsState = () => {
+    const battingTeam = innings === 1 ? playersTeamB : playersTeamA;
+    const bowlingTeam = innings === 1 ? playersTeamA : playersTeamB;
+  
+    const initialBatterStats = battingTeam.map((player, index) => ({
+      playerIndex: index,
+      name: player,
+      runs: 0,
+      ballsFaced: 0,
+      fours: 0,
+      sixes: 0,
+      isOut: false,
+      outType: "",
+      outBowler: "",
+    }));
+    setBatterStats(initialBatterStats);
+  
+    const initialBowlerStats = bowlingTeam.map((player, index) => ({
+      playerIndex: index,
+      name: player,
+      overs: 0,
+      balls: 0,
+      runs: 0,
+      wickets: 0,
+      maidens: 0,
+      economy: 0,
+    }));
+    setBowlerStats(initialBowlerStats);
+  
+    setCurrentBatters([0, 1]);
+    setOnStrike(0);
+    setCurrentBowler(null);
+  
+    setScore({ runs: 0, wickets: 0, extras: 0 });
+    setOvers("0.0");
+    setBalls(0);
+    setBallHistory([]);
+  
+    setBattingTeam(battingTeam);
+    setBowlingTeam(bowlingTeam);
+  };
+  
+  // End current innings and setup next innings or end match
+  const endInnings = () => {
+    const currentPlayers = innings === 1 ? playersTeamA : playersTeamB;
+    const currentInningsKey = innings === 1 ? "innings1" : "innings2";
+    const currentOvers = `${Math.floor(balls / 6)}.${balls % 6}`;
+
+    // Save current innings to match summary
+    setMatchSummary((prev) => ({
+        ...prev,
+        [currentInningsKey]: {
+            battingTeam: battingTeam,
+            runs: score.runs,
+            wickets: score.wickets,
+            extras: score.extras,
+            overs: currentOvers,
+            batters: [...batterStats],
+            bowlers: [...bowlerStats],
+            ballByBall: [...ballHistory],
+        },
+    }));
+
+    if (innings === 1) {
+        // Setup second innings
+        setTarget(score.runs + 1);
+        setInnings(2);
+
+        // Swap teams
+        setBattingTeam(bowlingTeam);
+        setBowlingTeam(battingTeam);
+
+        // Reset stats for second innings
+        const initialBatterStats = playersTeamB.map((player, index) => ({
+            playerIndex: index,
+            name: player,
+            runs: 0,
+            ballsFaced: 0,
+            fours: 0,
+            sixes: 0,
+            isOut: false,
+            outType: "",
+            outBowler: "",
+        }));
+        setBatterStats(initialBatterStats);
+
+        const initialBowlerStats = playersTeamA.map((player, index) => ({
+            playerIndex: index,
+            name: player,
+            overs: 0,
+            balls: 0,
+            runs: 0,
+            wickets: 0,
+            maidens: 0,
+            economy: 0,
+        }));
+        setBowlerStats(initialBowlerStats);
+
+        setCurrentBatters([0, 1]);
+        setOnStrike(0);
+        setCurrentBowler(null);
+
+        setScore({ runs: 0, wickets: 0, extras: 0 });
+        setOvers(0);
+        setBalls(0);
+        setBallHistory([]);
+    } else {
+        // End match
+        const teamAWon = score.runs >= target;
+        const result = teamAWon
+            ? `${battingTeam} won by ${
+                  playersTeamB.length - score.wickets - 1
+              } wickets`
+            : `${bowlingTeam} won by ${target - score.runs - 1} runs`;
+
+        setMatchSummary((prev) => ({
+            ...prev,
+            result,
+        }));
+
+        setMatchStarted(false);
+
+        // Refresh past matches
+        fetchPastMatches();
+    }
+};
+
+  // Calculate balls remaining in current innings
+  const ballsRemaining = matchDetails.oversLimit * 6 - balls;
+  const oversRemaining = (ballsRemaining / 6).toFixed(1);
+  
+  // Get current batting pair names
+  const getBatterName = (index) => {
+    const players = innings === 1 ? playersTeamA : playersTeamB;
+    return currentBatters[index] !== undefined && players[currentBatters[index]] 
+      ? players[currentBatters[index]]
+      : "Unknown";
+  };
+  
+  // Get current bowler name
+  const getBowlerName = () => {
+    const players = innings === 1 ? playersTeamB : playersTeamA;
+    return currentBowler !== null && players[currentBowler]
+      ? players[currentBowler]
+      : "Select Bowler";
+  };
+  
+  // Get batter stats display
+  const getBatterStats = (batterIndex) => {
+    const playerName = getBatterName(batterIndex);
+    const batter = batterStats.find(b => b.name === playerName);
+    if (!batter) return "";
+    return `${batter.runs} (${batter.ballsFaced})`;
+  };
+  
+  const endMatchManually = async () => {
+    if (!matchId) return;
+  
+    const confirmEnd = window.confirm("Are you sure you want to end the match early?");
+    if (!confirmEnd) return;
+  
     try {
-      const res = await axios.post(`${API_URL}/finish-match/${matchId}`);
-      setFinishedMatches([...finishedMatches, res.data.match]);
-      setMatchId(null);
-      setScore(null);
-      setTarget(null);
-      setCurrentInnings(1);
-      setBattingTeam("");
-      setBowlingTeam("");
+      const response = await axios.put(`${API_URL}/api/live-match/${matchId}/end`);
+      const updatedMatch = response.data.match;
+  
+      setMatchStarted(false);
+      setMatchSummary((prev) => ({
+        ...prev,
+        innings1: updatedMatch.innings1 || {},
+        innings2: updatedMatch.innings2 || {},
+        result: updatedMatch.result || "Match ended manually",
+      }));
+      fetchPastMatches();
     } catch (err) {
-      console.error("Error finishing match:", err);
-    }
-  };
-  const deleteMatch = async (id) => {
-    try {
-      await axios.delete(`${API_URL}/matches/${id}`);
-      setFinishedMatches((prev) => prev.filter((m) => m._id !== id));
-      alert("Match deleted successfully.");
-    } catch (err) {
-      console.error("Error deleting match:", err);
-      alert("Failed to delete match.");
+      console.error("❌ Failed to end match manually:", err);
+      alert("Could not end match. Try again.");
     }
   };
   
-
-  const runsOptions = [0, 1, 2, 3, 4, 6];
-
-  // Custom styles
-  const styles = {
-    mainContainer: {
-      padding: isMobile ? '16px 8px' : '32px 24px',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      background: 'linear-gradient(to bottom, #f9f9f9, #f0f0f0)',
-      minHeight: '100vh',
-    },
-    pageTitle: {
-      textAlign: 'center',
-      fontWeight: 700,
-      color: '#1a237e',
-      margin: '0 0 24px 0',
-      fontSize: isMobile ? '24px' : '36px',
-      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-      textTransform: 'uppercase',
-      letterSpacing: '1px',
-      textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-    },
-    formContainer: {
-      background: '#ffffff',
-      borderRadius: '12px',
-      padding: isMobile ? '16px' : '32px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-    },
-    formField: {
-      marginBottom: '16px',
-    },
-    formTitle: {
-      fontSize: isMobile ? '20px' : '24px',
-      fontWeight: 600,
-      marginBottom: '24px',
-      color: '#1a237e',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-    },
-    startButton: {
-      background: 'linear-gradient(45deg, #1a237e 30%, #283593 90%)',
-      color: 'white', 
-      padding: '12px 24px',
-      fontSize: '16px',
-      fontWeight: 600,
-      borderRadius: '8px',
-      boxShadow: '0 4px 6px rgba(40, 53, 147, 0.3)',
-      margin: '16px 0',
-      transition: 'all 0.3s ease',
-      '&:hover': {
-        background: 'linear-gradient(45deg, #283593 30%, #1a237e 90%)',
-        boxShadow: '0 6px 10px rgba(40, 53, 147, 0.4)',
-      }
-    },
-    scoreCard: {
-      padding: '24px',
-      background: '#1a237e',
-      color: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 4px 12px rgba(26, 35, 126, 0.2)',
-      marginBottom: '24px',
-    },
-    scoreTeams: {
-      fontSize: isMobile ? '18px' : '22px',
-      fontWeight: 600,
-      marginBottom: '8px',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: '8px',
-    },
-    scoreValue: {
-      fontSize: isMobile ? '26px' : '36px',
-      fontWeight: 700,
-      textAlign: 'center',
-      marginBottom: '8px',
-    },
-    scoreOvers: {
-      fontSize: isMobile ? '14px' : '16px',
-      textAlign: 'center',
-      opacity: 0.9,
-    },
-    sectionTitle: {
-      fontSize: isMobile ? '16px' : '18px',
-      fontWeight: 600,
-      margin: '24px 0 16px 0',
-      color: '#1a237e',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-    },
-    playerField: {
-      margin: '8px 0',
-    },
-    playersContainer: {
-      marginBottom: '24px',
-    },
-    batterContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: '16px',
-    },
-    onStrikeIndicator: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '4px 12px',
-      borderRadius: '16px',
-      background: '#ffc107',
-      color: '#333',
-      fontSize: '14px',
-      fontWeight: 600,
-      marginLeft: '8px',
-    },
-    ballControlsCard: {
-      backgroundColor: '#ffffff',
-      border: '1px solid #e0e0e0',
-      borderRadius: '12px',
-      padding: '16px',
-      marginBottom: '24px',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.04)',
-    },
-    runsContainer: {
-      display: 'flex',
-      justifyContent: 'center',
-      flexWrap: 'wrap',
-      gap: '8px',
-      marginBottom: '16px',
-    },
-    runButton: {
-      width: '40px',
-      height: '40px',
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '16px',
-      fontWeight: 'bold',
-      cursor: 'pointer',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      border: 'none',
-      transition: 'all 0.2s ease',
-    },
-    runButton0: {
-      background: '#f5f5f5',
-      color: '#333',
-    },
-    runButton1: {
-      background: '#e3f2fd',
-      color: '#0d47a1',
-    },
-    runButton2: {
-      background: '#e8f5e9',
-      color: '#2e7d32',
-    },
-    runButton3: {
-      background: '#fff8e1',
-      color: '#ff6f00',
-    },
-    runButton4: {
-      background: '#e8eaf6',
-      color: '#3f51b5',
-    },
-    runButton6: {
-      background: '#fce4ec',
-      color: '#c2185b',
-    },
-    updateButton: {
-      background: 'linear-gradient(45deg, #2e7d32 30%, #388e3c 90%)',
-      color: 'white',
-      padding: '12px 24px',
-      fontSize: '16px',
-      fontWeight: 600,
-      borderRadius: '8px',
-      boxShadow: '0 4px 6px rgba(46, 125, 50, 0.3)',
-      width: '100%',
-      margin: '16px 0',
-      transition: 'all 0.3s ease',
-      '&:hover': {
-        background: 'linear-gradient(45deg, #388e3c 30%, #2e7d32 90%)',
-        boxShadow: '0 6px 10px rgba(46, 125, 50, 0.4)',
-      }
-    },
-    outButton: {
-      background: ballDetails.isOut 
-        ? 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)'
-        : 'linear-gradient(45deg, #bdbdbd 30%, #9e9e9e 90%)',
-      color: 'white',
-      padding: '10px 16px',
-      fontSize: '14px',
-      fontWeight: 600,
-      borderRadius: '8px',
-      boxShadow: ballDetails.isOut 
-        ? '0 4px 6px rgba(211, 47, 47, 0.3)'
-        : '0 2px 4px rgba(0,0,0,0.1)',
-      transition: 'all 0.3s ease',
-      width: '100%',
-    },
-    statsCard: {
-      background: '#fff',
-      borderRadius: '12px',
-      padding: '16px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-      marginBottom: '16px',
-    },
-    statHeader: {
-      fontSize: '16px',
-      fontWeight: 600,
-      marginBottom: '12px',
-      color: '#1a237e',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-    },
-    statLine: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '8px 0',
-      borderBottom: '1px solid #f0f0f0',
-      fontSize: '14px',
-    },
-    statName: {
-      fontWeight: 500,
-    },
-    statValue: {
-      fontWeight: 600,
-      color: '#1a237e',
-    },
-    strikeRotateButton: {
-      marginTop: '8px',
-      display: 'flex',
-      alignItems: 'center',
-      fontSize: '14px',
-      background: '#f5f5f5',
-      border: 'none',
-      borderRadius: '8px',
-      padding: '6px 12px',
-      cursor: 'pointer',
-      color: '#555',
-    },
-    ballTypeChip: {
-      margin: '0 4px 4px 0',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-    },
-    ballTypesContainer: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      marginBottom: '16px',
-    },
-    outTypeChip: {
-      margin: '0 4px 4px 0',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-    },
-    outTypesContainer: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      marginTop: '16px',
-    },
-    selectedChip: {
-      background: '#1a237e',
-      color: 'white',
-    },
-    teamVsContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '12px',
-      marginBottom: '24px',
-    },
-    teamName: {
-      fontWeight: 600,
-      fontSize: '18px',
-      color: '#1a237e',
-    },
-    vsText: {
-      fontSize: '14px',
-      color: '#757575',
-    },
-    infoIcon: {
-      fontSize: '20px',
-      marginRight: '8px',
-      color: '#1a237e',
-    },
-  };
 
   return (
-    <Container style={styles.mainContainer}>
-      <Typography variant="h4" style={styles.pageTitle}>
-        <SportsCricketIcon fontSize="large" style={{ marginRight: '8px' }} />
-        Cricket Scorecard
-      </Typography>
+    <div className="cricket-match-container">
+      {!matchStarted ? (
+        // Match Setup Form
+        <div className="match-setup">
+          <h1>Cricket Match Setup</h1>
 
-      {!matchId ? (
-        <>
-          <Paper style={styles.formContainer}>
-            <Typography style={styles.formTitle}>
-              <EmojiEventsIcon style={styles.infoIcon} />
-              Start New Match
-            </Typography>
-            <Grid container spacing={isMobile ? 2 : 3}>
-              <Grid item xs={12} sm={6} style={styles.formField}>
-                <TextField
-                  fullWidth
-                  label="Match Name"
-                  variant="outlined"
-                  value={matchDetails.matchName}
-                  onChange={(e) =>
-                    setMatchDetails({ ...matchDetails, matchName: e.target.value })
-                  }
-                  InputProps={{
-                    style: { borderRadius: '8px' }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} style={styles.formField}>
-                <TextField
-                  fullWidth
-                  label="Overs Limit"
-                  variant="outlined"
-                  value={matchDetails.oversLimit}
-                  onChange={(e) =>
-                    setMatchDetails({ ...matchDetails, oversLimit: e.target.value })
-                  }
-                  InputProps={{
-                    style: { borderRadius: '8px' }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} style={styles.formField}>
-                <TextField
-                  fullWidth
-                  label="Team A"
-                  variant="outlined"
-                  value={matchDetails.teamA}
-                  onChange={(e) =>
-                    setMatchDetails({ ...matchDetails, teamA: e.target.value })
-                  }
-                  InputProps={{
-                    style: { borderRadius: '8px' }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} style={styles.formField}>
-                <TextField
-                  fullWidth
-                  label="Team B"
-                  variant="outlined"
-                  value={matchDetails.teamB}
-                  onChange={(e) =>
-                    setMatchDetails({ ...matchDetails, teamB: e.target.value })
-                  }
-                  InputProps={{
-                    style: { borderRadius: '8px' }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                    select
-                    fullWidth
-                    label="Toss Winner"
-                    value={toss.winner}
-                    onChange={(e) => setToss({ ...toss, winner: e.target.value })}
-                >
-                    {[matchDetails.teamA, matchDetails.teamB].map((team) => (
-                    <MenuItem value={team} key={team}>{team}</MenuItem>
-                    ))}
-                </TextField>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                <TextField
-                    select
-                    fullWidth
-                    label="Decision"
-                    value={toss.decision}
-                    onChange={(e) => setToss({ ...toss, decision: e.target.value })}
-                >
-                    <MenuItem value="bat">Bat</MenuItem>
-                    <MenuItem value="bowl">Bowl</MenuItem>
-                </TextField>
-                </Grid>
+          <div className="match-details-form">
+            <h2>Match Details</h2>
+            <div>
+              <input
+                type="text"
+                placeholder="Match Name"
+                name="matchName"
+                value={matchDetails.matchName}
+                onChange={handleMatchDetailsChange}
+              />
+            </div>
+            <div>
+              <input
+                type="number"
+                placeholder="Overs Limit"
+                name="oversLimit"
+                value={matchDetails.oversLimit}
+                onChange={handleMatchDetailsChange}
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                placeholder="Team A Name"
+                name="teamA"
+                value={matchDetails.teamA}
+                onChange={handleMatchDetailsChange}
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                placeholder="Team B Name"
+                name="teamB"
+                value={matchDetails.teamB}
+                onChange={handleMatchDetailsChange}
+              />
+            </div>
+          </div>
 
-              <Grid item xs={12} style={{ textAlign: 'center' }}>
-                <Button 
-                  onClick={startMatch} 
-                  variant="contained" 
-                  style={styles.startButton}
-                  startIcon={<SportsCricketIcon />}
-                >
-                  Start Match
-                </Button>
-              </Grid>
-            </Grid>
-          </Paper>
+          <div className="teams-container">
+            <div className="team-players">
+              <h2>{matchDetails.teamA || "Team A"} Players</h2>
+              <ul>
+                {playersTeamA.map((player, index) => (
+                  <li key={index}>
+                    {player}{" "}
+                    <button onClick={() => handleRemovePlayerFromTeam("A", player)}>
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <select
+                onChange={(e) => handleAddPlayerToTeam("A", e.target.value)}
+                value=""
+              >
+                <option value="" disabled>
+                  Add Player
+                </option>
+                {allPlayers.map((player, index) => (
+                  <option key={index} value={player}>
+                    {player}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <Typography variant="h5" style={{ marginTop: "24px" }}>
-            Finished Matches
-          </Typography>
-          {finishedMatches.map((match, index) => (
-  <Card key={index} style={{ marginTop: '16px' }}>
-    <CardContent>
-      <Typography variant="h6">{match.matchName}</Typography>
-      <Typography>{match.teamA} vs {match.teamB}</Typography>
-      <Typography>Winner: {match.winner} | Target: {match.target}</Typography>
-      <Button
-        variant="outlined"
-        color="error"
-        style={{ marginTop: '8px' }}
-        onClick={() => deleteMatch(match._id)}
-      >
-        Delete Match
-      </Button>
-    </CardContent>
-  </Card>
-))}
+            <div className="team-players">
+              <h2>{matchDetails.teamB || "Team B"} Players</h2>
+              <ul>
+                {playersTeamB.map((player, index) => (
+                  <li key={index}>
+                    {player}{" "}
+                    <button onClick={() => handleRemovePlayerFromTeam("B", player)}>
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <select
+                onChange={(e) => handleAddPlayerToTeam("B", e.target.value)}
+                value=""
+              >
+                <option value="" disabled>
+                  Add Player
+                </option>
+                {allPlayers.map((player, index) => (
+                  <option key={index} value={player}>
+                    {player}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        </>
+          <button className="start-match-btn" onClick={startMatch}>
+            Start Match
+          </button>
+
+          {/* Past Matches Section */}
+          <div className="past-matches">
+  <h2>Past Matches</h2>
+  {pastMatches.length > 0 ? (
+    pastMatches.map((match) => {
+      const innings1 = match.innings1 || {
+        battingTeam: "Team A",
+        runs: 0,
+        wickets: 0,
+        overs: "0.0",
+        batters: [],
+        bowlers: [],
+      };
+      const innings2 = match.innings2 || {
+        battingTeam: "Team B",
+        runs: 0,
+        wickets: 0,
+        overs: "0.0",
+        batters: [],
+        bowlers: [],
+      };
+
+      return (
+        <div
+          key={match._id}
+          className="past-match-summary"
+          onClick={() =>
+            setMatchSummary({
+              innings1,
+              innings2,
+              result: match.result || "No result available",
+            })
+          }
+          style={{ cursor: "pointer", position: "relative" }}
+        >
+          <h3>{match.innings1?.battingTeam || "Team A"} vs {match.innings2?.battingTeam || "Team B"}</h3>
+          <p>Result: {match.result || "No result"}</p>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              deletePastMatch(match._id);
+            }}
+            className="delete-match-btn"
+          >
+            Delete
+          </button>
+        </div>
+      );
+    })
+  ) : (
+    <p>No past matches available.</p>
+  )}
+</div>
+        </div>
+      ) : matchSummary.result ? (
+        // Match Summary Display
+        <div className="match-summary">
+          <h1>{matchDetails.matchName} - Match Summary</h1>
+          
+          <div className="match-result">
+            <h2>Result: {matchSummary.result}</h2>
+          </div>
+          
+          <div className="innings-summary">
+            <h2>1st Innings: {matchSummary.innings1.battingTeam}</h2>
+            <h3>{matchSummary.innings1.runs}/{matchSummary.innings1.wickets} ({matchSummary.innings1.overs} overs)</h3>
+            
+            <h4>Batting</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Batter</th>
+                  <th>Runs</th>
+                  <th>Balls</th>
+                  <th>4s</th>
+                  <th>6s</th>
+                  <th>SR</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matchSummary.innings1.batters.map((batter, i) => (
+                  <tr key={`i1-batter-${i}`}>
+                    <td>{batter.name}</td>
+                    <td>{batter.runs}</td>
+                    <td>{batter.ballsFaced}</td>
+                    <td>{batter.fours}</td>
+                    <td>{batter.sixes}</td>
+                    <td>{batter.ballsFaced > 0 ? ((batter.runs / batter.ballsFaced) * 100).toFixed(2) : 0}</td>
+                    <td>{batter.isOut ? `${batter.outType} ${batter.outBowler ? `b ${batter.outBowler}` : ''}` : 'not out'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            <h4>Bowling</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Bowler</th>
+                  <th>O</th>
+                  <th>R</th>
+                  <th>W</th>
+                  <th>Econ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matchSummary.innings1.bowlers.map((bowler, i) => (
+                  <tr key={`i1-bowler-${i}`}>
+                    <td>{bowler.name}</td>
+                    <td>{Math.floor(bowler.balls / 6)}.{bowler.balls % 6}</td>
+                    <td>{bowler.runs}</td>
+                    <td>{bowler.wickets}</td>
+                    <td>{bowler.balls > 0 ? (bowler.runs / (bowler.balls / 6)).toFixed(2) : 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="innings-summary">
+            <h2>2nd Innings: {matchSummary.innings2.battingTeam}</h2>
+            <h3>{matchSummary.innings2.runs}/{matchSummary.innings2.wickets} ({matchSummary.innings2.overs} overs)</h3>
+            <p>Target: {target}</p>
+            
+            <h4>Batting</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Batter</th>
+                  <th>Runs</th>
+                  <th>Balls</th>
+                  <th>4s</th>
+                  <th>6s</th>
+                  <th>SR</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matchSummary.innings2.batters.map((batter, i) => (
+                  <tr key={`i2-batter-${i}`}>
+                    <td>{batter.name}</td>
+                    <td>{batter.runs}</td>
+                    <td>{batter.ballsFaced}</td>
+                    <td>{batter.fours}</td>
+                    <td>{batter.sixes}</td>
+                    <td>{batter.ballsFaced > 0 ? ((batter.runs / batter.ballsFaced) * 100).toFixed(2) : 0}</td>
+                    <td>{batter.isOut ? `${batter.outType} ${batter.outBowler ? `b ${batter.outBowler}` : ''}` : 'not out'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            <h4>Bowling</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Bowler</th>
+                  <th>O</th>
+                  <th>R</th>
+                  <th>W</th>
+                  <th>Econ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matchSummary.innings2.bowlers.map((bowler, i) => (
+                  <tr key={`i2-bowler-${i}`}>
+                    <td>{bowler.name}</td>
+                    <td>{Math.floor(bowler.balls / 6)}.{bowler.balls % 6}</td>
+                    <td>{bowler.runs}</td>
+                    <td>{bowler.wickets}</td>
+                    <td>{bowler.balls > 0 ? (bowler.runs / (bowler.balls / 6)).toFixed(2) : 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <button onClick={saveMatchSummary}>Save Match</button>
+          <button onClick={() => {
+            setMatchStarted(false);
+            setMatchSummary({
+              innings1: {
+                battingTeam: "",
+                runs: 0,
+                wickets: 0,
+                overs: "0.0",
+                batters: [],
+                bowlers: [],
+                ballByBall: []
+              },
+              innings2: {
+                battingTeam: "",
+                runs: 0,
+                wickets: 0,
+                overs: "0.0",
+                batters: [],
+                bowlers: [],
+                ballByBall: []
+              },
+              result: ""
+            });
+          }}>New Match</button>
+        </div>
       ) : (
-        <div>
-          <Paper style={styles.scoreCard}>
-  <div style={styles.teamVsContainer}>
-    <span style={styles.teamName}>{battingTeam}</span>
-    <span style={styles.vsText}>vs</span>
-    <span style={styles.teamName}>{bowlingTeam}</span>
+        // Live Match Display
+        <div className="live-match">
+          <h1>{matchDetails.matchName}</h1>
+          
+          <div className="match-info">
+            <h2>Innings {innings} - {battingTeam} batting</h2>
+            <div className="score-display">
+              <span className="score">{score.runs}/{score.wickets}</span>
+              <span className="overs">({overs} overs)</span>
+              {innings === 2 && <span className="target">Target: {target}</span>}
+            </div>
+            
+            <div className="innings-info">
+              {innings === 2 ? (
+                <p>Need {target - score.runs} runs from {oversRemaining} overs</p>
+              ) : (
+                <p>{ballsRemaining / 6} overs remaining</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="batters-info">
+            <div className={`batter ${onStrike === 0 ? 'on-strike' : ''}`}>
+              <span>{getBatterName(0)} {getBatterStats(0)}</span>
+              {onStrike === 0 && <span>*</span>}
+            </div>
+            <div className={`batter ${onStrike === 1 ? 'on-strike' : ''}`}>
+              <span>{getBatterName(1)} {getBatterStats(1)}</span>
+              {onStrike === 1 && <span>*</span>}
+            </div>
+          </div>
+          
+          <div className="bowler-info">
+            <h3>Bowler: 
+              {currentBowler === null ? (
+                <select 
+                  value="" 
+                  onChange={(e) => setCurrentBowler(Number(e.target.value))}
+                >
+                  <option value="" disabled>Select Bowler</option>
+                  {(innings === 1 ? playersTeamB : playersTeamA)
+                    .filter((p, i) => p.trim() !== "")
+                    .map((player, i) => (
+                      <option key={`bowler-${i}`} value={i}>
+                        {player}
+                      </option>
+                    ))
+                  }
+                </select>
+              ) : (
+                getBowlerName()
+              )}
+            </h3>
+            {currentBowler !== null && bowlerStats.find(b => b.playerIndex === currentBowler) && (
+              <p>
+                {Math.floor(bowlerStats.find(b => b.playerIndex === currentBowler).balls / 6)}.
+                {bowlerStats.find(b => b.playerIndex === currentBowler).balls % 6} - 
+                {bowlerStats.find(b => b.playerIndex === currentBowler).runs} - 
+                {bowlerStats.find(b => b.playerIndex === currentBowler).wickets}
+              </p>
+            )}
+          </div>
+          
+          <div className="ball-input">
+            <h3>Ball Details</h3>
+            
+            <div className="input-section">
+              <label>
+                Runs:
+                <select
+                  value={ballDetails.runs}
+                  onChange={(e) => handleBallDetailsChange('runs', Number(e.target.value))}
+                >
+                  <option value={0}>0</option>
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
+                  <option value={4}>4</option>
+                  <option value={5}>5</option>
+                  <option value={6}>6</option>
+                </select>
+              </label>
+              
+              <label>
+                Ball Type:
+                <select
+                  value={ballDetails.ballType}
+                  onChange={(e) => handleBallDetailsChange('ballType', e.target.value)}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="dot">Dot Ball</option>
+                  <option value="yorker">Yorker</option>
+                  <option value="bouncer">Bouncer</option>
+                </select>
+              </label>
+            </div>
+            
+            <div className="input-section">
+              <label>
+                <input 
+                  type="checkbox" 
+                  checked={ballDetails.isOut}
+                  onChange={(e) => handleBallDetailsChange('isOut', e.target.checked)}
+                />
+                Wicket
+              </label>
+              
+              {ballDetails.isOut && (
+                <select
+                  value={ballDetails.outType}
+                  onChange={(e) => handleBallDetailsChange('outType', e.target.value)}
+                >
+                  <option value="bowled">Bowled</option>
+                  <option value="caught">Caught</option>
+                  <option value="lbw">LBW</option>
+                  <option value="run out">Run Out</option>
+                  <option value="stumped">Stumped</option>
+                </select>
+              )}
+            </div>
+            
+            <div className="input-section">
+              <label>
+                <input 
+                  type="checkbox"
+                  checked={ballDetails.isExtra}
+                  onChange={(e) => handleBallDetailsChange('isExtra', e.target.checked)}
+                />
+                Extra
+              </label>
+              
+              {ballDetails.isExtra && (
+                <>
+                  <select
+                    value={ballDetails.extraType}
+                    onChange={(e) => handleBallDetailsChange('extraType', e.target.value)}
+                  >
+                    <option value="wide">Wide</option>
+                    <option value="noBall">No Ball</option>
+                    <option value="bye">Bye</option>
+                    <option value="legBye">Leg Bye</option>
+                  </select>
+                  
+                  <select
+                    value={ballDetails.extraRuns}
+                    onChange={(e) => handleBallDetailsChange('extraRuns', Number(e.target.value))}
+                  >
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                    <option value={5}>5</option>
+                  </select>
+                </>
+              )}
+            </div>
+            
+            <button onClick={processBall}>Record Ball</button>
+            <button className="end-match-btn" onClick={endMatchManually}>
+              End Match Now
+            </button>
+            <button onClick={endInnings}>End Innings</button> {/* New button */}
+          </div>
+          
+          <div className="ball-history">
+            <h3>Recent Balls</h3>
+            <div className="history-display">
+              {ballHistory.slice(-12).map((ball, i) => (
+                <div key={`ball-${i}`} className="ball-record">
+                  <span className={`
+                    ${ball.isOut ? 'wicket' : ''} 
+                    ${ball.runs === 4 ? 'four' : ''} 
+                    ${ball.runs === 6 ? 'six' : ''} 
+                    ${ball.isExtra ? 'extra' : ''}
+                  `}>
+                    {ball.isOut ? 'W' : ball.isExtra ? `${ball.extraType.charAt(0)}` : ball.runs}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="stats-display">
+  <div className="batting-stats">
+    <h3>Batting Stats</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Batter</th>
+          <th>R</th>
+          <th>B</th>
+          <th>4s</th>
+          <th>6s</th>
+          <th>SR</th>
+        </tr>
+      </thead>
+      <tbody>
+        {batterStats?.map((batter, i) => {
+          const isOnField = currentBatters.includes(batter.playerIndex);
+          const isOnStrike = onStrike === currentBatters.indexOf(batter.playerIndex);
+          return (
+            <tr key={`batter-${i}`} className={batter.isOut ? 'out' : ''}>
+              <td>
+                {batter.name}
+                {isOnField ? (isOnStrike ? ' *' : '') : ''}
+              </td>
+              <td>{batter.runs}</td>
+              <td>{batter.ballsFaced}</td>
+              <td>{batter.fours}</td>
+              <td>{batter.sixes}</td>
+              <td>
+                {batter.ballsFaced > 0
+                  ? ((batter.runs / batter.ballsFaced) * 100).toFixed(2)
+                  : '0.00'}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   </div>
 
-  <Typography style={styles.scoreValue}>
-    {score?.runs}/{score?.wickets}
-  </Typography>
+  <div className="bowling-stats">
+    <h3>Bowling Stats</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Bowler</th>
+          <th>O</th>
+          <th>R</th>
+          <th>W</th>
+          <th>Econ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {bowlerStats?.map((bowler, i) => (
+          <tr
+            key={`bowler-${i}`}
+            className={bowler.playerIndex === currentBowler ? 'current' : ''}
+          >
+            <td>{bowler.name}</td>
+            <td>
+              {Math.floor(bowler.balls / 6)}.{bowler.balls % 6}
+            </td>
+            <td>{bowler.runs}</td>
+            <td>{bowler.wickets}</td>
+            <td>
+              {bowler.balls > 0
+                ? (bowler.runs / (bowler.balls / 6)).toFixed(2)
+                : '0.00'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
 
-  <Typography style={styles.scoreOvers}>
-    Overs: {score?.overs}
-  </Typography>
-
-  {currentInnings === 2 && target && (
-    <>
-      <Divider style={{ margin: '12px 0', backgroundColor: 'white' }} />
-      <Typography variant="subtitle1" align="center" style={{ fontWeight: 600 }}>
-        🎯 Target: {target} runs
-      </Typography>
-      <Typography variant="subtitle2" align="center">
-        🏏 Runs Required: {Math.max(target - score?.runs, 0)}
-      </Typography>
-      <Typography variant="subtitle2" align="center">
-        ⏱ Balls Remaining: {ballsRemaining}
-      </Typography>
-    </>
-  )}
-</Paper>
-
-
-          {/* Players Selection */}
-          <Paper style={styles.formContainer}>
-            <Typography style={styles.sectionTitle}>
-              <PersonIcon style={styles.infoIcon} />
-              Players
-            </Typography>
-            <Grid container spacing={2} style={styles.playersContainer}>
-              <Grid item xs={12} sm={6} style={styles.playerField}>
-                <div style={styles.batterContainer}>
-                  <TextField
-                    select
-                    label="Batter 1"
-                    fullWidth
-                    variant="outlined"
-                    value={battingPair[0]}
-                    onChange={(e) =>
-                      setBattingPair([e.target.value, battingPair[1]])
-                    }
-                    InputProps={{
-                      style: { borderRadius: '8px' }
-                    }}
-                  >
-                    {players.map((p) => (
-                      <MenuItem value={p} key={p}>
-                        {p}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  {onStrike === 0 && (
-                    <div style={styles.onStrikeIndicator}>
-                      <SportsCricketIcon fontSize="small" style={{ marginRight: '4px' }} />
-                      On Strike
-                    </div>
-                  )}
-                </div>
-              </Grid>
-              <Grid item xs={12} sm={6} style={styles.playerField}>
-                <div style={styles.batterContainer}>
-                  <TextField
-                    select
-                    label="Batter 2"
-                    fullWidth
-                    variant="outlined"
-                    value={battingPair[1]}
-                    onChange={(e) =>
-                      setBattingPair([battingPair[0], e.target.value])
-                    }
-                    InputProps={{
-                      style: { borderRadius: '8px' }
-                    }}
-                  >
-                    {players.map((p) => (
-                      <MenuItem value={p} key={p}>
-                        {p}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  {onStrike === 1 && (
-                    <div style={styles.onStrikeIndicator}>
-                      <SportsCricketIcon fontSize="small" style={{ marginRight: '4px' }} />
-                      On Strike
-                    </div>
-                  )}
-                </div>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  label="Bowler"
-                  fullWidth
-                  variant="outlined"
-                  value={currentBowler}
-                  onChange={(e) => setCurrentBowler(e.target.value)}
-                  InputProps={{
-                    style: { borderRadius: '8px' }
-                  }}
-                >
-                  {players.map((p) => (
-                    <MenuItem value={p} key={p}>
-                      {p}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12}>
-                <Button 
-                  style={styles.strikeRotateButton}
-                  onClick={() => setOnStrike(1 - onStrike)}
-                  startIcon={<SwapHorizIcon />}
-                >
-                  Rotate Strike
-                </Button>
-              </Grid>
-            </Grid>
-
-            {/* Ball Details */}
-            <Divider style={{ margin: '16px 0' }} />
-            <Typography style={styles.sectionTitle}>
-              <SportsSoccerIcon style={styles.infoIcon} />
-              Ball Details
-            </Typography>
-            
-            <Card style={styles.ballControlsCard}>
-              <CardContent>
-                <Typography variant="subtitle2" style={{ marginBottom: '8px', color: '#555' }}>
-                  Runs
-                </Typography>
-                <div style={styles.runsContainer}>
-                  {runsOptions.map((r) => (
-                    <button
-                      key={r}
-                      style={{
-                        ...styles.runButton,
-                        ...(r === 0 ? styles.runButton0 : {}),
-                        ...(r === 1 ? styles.runButton1 : {}),
-                        ...(r === 2 ? styles.runButton2 : {}),
-                        ...(r === 3 ? styles.runButton3 : {}),
-                        ...(r === 4 ? styles.runButton4 : {}),
-                        ...(r === 6 ? styles.runButton6 : {}),
-                        ...(ballDetails.runs === r ? { transform: 'scale(1.1)', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' } : {})
-                      }}
-                      onClick={() => setBallDetails({ ...ballDetails, runs: r })}
-                    >
-                      {r}
-                    </button>
-                  ))}
-                </div>
-                
-                <Typography variant="subtitle2" style={{ marginBottom: '8px', color: '#555', marginTop: '16px' }}>
-                  Ball Type
-                </Typography>
-                <div style={styles.ballTypesContainer}>
-                  <Chip 
-                    label="Normal" 
-                    style={{
-                      ...styles.ballTypeChip,
-                      ...(ballDetails.ballType === 'normal' ? styles.selectedChip : {})
-                    }}
-                    onClick={() => setBallDetails({ ...ballDetails, ballType: 'normal' })}
-                  />
-                  <Chip 
-                    label="Wide" 
-                    style={{
-                      ...styles.ballTypeChip,
-                      ...(ballDetails.ballType === 'wide' ? styles.selectedChip : {})
-                    }}
-                    onClick={() => setBallDetails({ ...ballDetails, ballType: 'wide' })}
-                  />
-                  <Chip 
-                    label="No Ball" 
-                    style={{
-                      ...styles.ballTypeChip,
-                      ...(ballDetails.ballType === 'no-ball' ? styles.selectedChip : {})
-                    }}
-                    onClick={() => setBallDetails({ ...ballDetails, ballType: 'no-ball' })}
-                  />
-                </div>
-                
-                <Button
-                  variant="contained"
-                  style={styles.outButton}
-                  onClick={() =>
-                    setBallDetails({
-                      ...ballDetails,
-                      isOut: !ballDetails.isOut,
-                    })
-                  }
-                >
-                  {ballDetails.isOut ? "Cancel Out" : "Mark as Out"}
-                </Button>
-
-                {ballDetails.isOut && (
-                  <div>
-                    <Typography variant="subtitle2" style={{ marginBottom: '8px', color: '#555', marginTop: '16px' }}>
-                      Out Type
-                    </Typography>
-                    <div style={styles.outTypesContainer}>
-                      <Chip 
-                        label="Bowled" 
-                        style={{
-                          ...styles.outTypeChip,
-                          ...(ballDetails.outType === 'bowled' ? styles.selectedChip : {})
-                        }}
-                        onClick={() => setBallDetails({ ...ballDetails, outType: 'bowled' })}
-                      />
-                      <Chip 
-                        label="Caught" 
-                        style={{
-                          ...styles.outTypeChip,
-                          ...(ballDetails.outType === 'caught' ? styles.selectedChip : {})
-                        }}
-                        onClick={() => setBallDetails({ ...ballDetails, outType: 'caught' })}
-                      />
-                      <Chip 
-                        label="Run Out" 
-                        style={{
-                          ...styles.outTypeChip,
-                          ...(ballDetails.outType === 'run-out' ? styles.selectedChip : {})
-                        }}
-                        onClick={() => setBallDetails({ ...ballDetails, outType: 'run-out' })}
-                      />
-                      <Chip 
-                        label="Stumped" 
-                        style={{
-                          ...styles.outTypeChip,
-                          ...(ballDetails.outType === 'stumped' ? styles.selectedChip : {})
-                        }}
-                        onClick={() => setBallDetails({ ...ballDetails, outType: 'stumped' })}
-                      />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Button 
-              variant="contained" 
-              onClick={updateScore} 
-              style={styles.updateButton}
-              startIcon={<AddCircleIcon />}
-            >
-              Update Score
-            </Button>
-            {ballDetails.isOut && battingPair[onStrike] === "" && (
-  <TextField
-    select
-    fullWidth
-    label="Select New Batter"
-    value=""
-    onChange={(e) => {
-      const newPlayer = e.target.value;
-      const updatedPair = [...battingPair];
-      updatedPair[onStrike] = newPlayer;
-      setBattingPair(updatedPair);
-    }}
-    InputProps={{ style: { borderRadius: '8px', marginTop: '16px' } }}
-  >
-    {players
-      .filter((p) => !battingPair.includes(p))
-      .map((p) => (
-        <MenuItem key={p} value={p}>
-          {p}
-        </MenuItem>
-      ))}
-  </TextField>
-)}
-
-
-            {/* Stats */}
-            <Grid container spacing={2} style={{ marginTop: '16px' }}>
-              <Grid item xs={12} md={6}>
-                <Card style={styles.statsCard}>
-                  <Typography style={styles.statHeader}>
-                    <PersonIcon style={{ color: '#1a237e' }} />
-                    Batters Stats
-                  </Typography>
-                  {Object.entries(summary.batters).map(([name, stats]) => (
-                    <div key={name} style={styles.statLine}>
-                      <span style={styles.statName}>{name}</span>
-                      <span style={styles.statValue}>
-                        {stats.runs} runs ({stats.balls} balls)
-                      </span>
-                    </div>
-                  ))}
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Card style={styles.statsCard}>
-                  <Typography style={styles.statHeader}>
-                    <SportsSoccerIcon style={{ color: '#1a237e' }} />
-                    Bowlers Stats
-                  </Typography>
-                  {Object.entries(summary.bowlers).map(([name, stats]) => (
-                    <div key={name} style={styles.statLine}>
-                      <span style={styles.statName}>{name}</span>
-                      <span style={styles.statValue}>
-                        {stats.wickets} wickets, {stats.runsGiven} runs
-                      </span>
-                    </div>
-                  ))}
-                </Card>
-                <Button 
-  variant="contained" 
-  color="error" 
-  onClick={finishMatch}
-  style={{ marginTop: '16px', fontWeight: 'bold' }}
->
-  End Match Now
-</Button>
-
-              </Grid>
-            </Grid>
-          </Paper>
         </div>
       )}
-    </Container>
+    </div>
   );
 };
 

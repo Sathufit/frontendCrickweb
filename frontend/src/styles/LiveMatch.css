@@ -1,0 +1,401 @@
+/* Cricket Tracker CSS */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  body {
+    background-color: #f8f9fa;
+    color: #333;
+  }
+  
+  .cricket-match-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h1 {
+    text-align: center;
+    color: #1e3a8a;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    color: #1e3a8a;
+    margin-bottom: 15px;
+  }
+  
+  h3 {
+    color: #2563eb;
+    margin-bottom: 10px;
+  }
+  
+  h4 {
+    color: #3b82f6;
+    margin: 15px 0 10px;
+  }
+  
+  /* Match Setup Form */
+  .match-setup {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .match-details-form {
+    margin-bottom: 20px;
+  }
+  
+  .match-details-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .teams-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .team-players {
+    flex: 1;
+    min-width: 300px;
+    background-color: #f0f7ff;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .player-input {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+  }
+  
+  .player-input input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .player-input label {
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .player-input input[type="checkbox"] {
+    margin-right: 5px;
+  }
+  
+  .start-match-btn {
+    display: block;
+    width: 200px;
+    margin: 20px auto;
+    padding: 12px;
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .start-match-btn:hover {
+    background-color: #1e40af;
+  }
+  
+  /* Live Match Display */
+  .live-match {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .match-info {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .score-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+  }
+  
+  .score {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .target {
+    font-weight: bold;
+    color: #e53e3e;
+  }
+  
+  .batters-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f0f9ff;
+    border-radius: 6px;
+  }
+  
+  .batter {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .on-strike {
+    background-color: #dbeafe;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+  
+  .bowler-info {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f3f4f6;
+    border-radius: 6px;
+  }
+  
+  .bowler-info select {
+    padding: 5px;
+    margin-left: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+  
+  .ball-input {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .input-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 10px 0;
+    align-items: center;
+  }
+  
+  .input-section label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .input-section select {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+  
+  button {
+    padding: 10px 15px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .ball-history {
+    margin: 20px 0;
+  }
+  
+  .history-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .ball-record {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    font-weight: bold;
+  }
+  
+  .wicket {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+  
+  .four {
+    background-color: #dcfce7;
+    color: #15803d;
+  }
+  
+  .six {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .extra {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .stats-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .batting-stats, .bowling-stats {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  table th, table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  table th {
+    background-color: #f1f5f9;
+    font-weight: bold;
+  }
+  
+  tr.out {
+    color: #6b7280;
+  }
+  
+  tr.current {
+    background-color: #f0f9ff;
+  }
+  
+  /* Match Summary Display */
+  .match-summary {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .match-result {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f0f7ff;
+    border-radius: 8px;
+  }
+  
+  .innings-summary {
+    margin: 30px 0;
+    padding: 20px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .past-matches-section {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  .past-match-item {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .past-match-item h3 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+  
+  .past-match-item p {
+    margin: 0.5rem 0;
+    color: #555;
+  }
+  .end-match-btn {
+    margin-top: 1rem;
+    background-color: crimson;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  
+  .past-match-item button {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .past-match-item button:hover {
+    background-color: #3b3bb3;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .teams-container, .stats-display {
+      flex-direction: column;
+    }
+    
+    .team-players, .batting-stats, .bowling-stats {
+      min-width: 100%;
+    }
+    
+    .batters-info {
+      flex-direction: column;
+    }
+    
+    .batter {
+      margin: 5px 0;
+    }
+    
+    .input-section {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .score-display {
+      flex-direction: column;
+    }
+  }

@@ -1,5 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import styled from "styled-components";
+
+const Navbar = styled.nav`
+  display: none;
+
+  @media (min-width: 768px) {
+    display: flex;
+    gap: 1.5rem;
+  }
+`;
 
 const Home = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,13 +64,7 @@ const Home = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav style={{
-            display: "none",
-            gap: "1.5rem",
-            '@media (min-width: 768px)': {
-              display: "flex",
-            },
-          }}>
+          <Navbar>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/view-runs">Runs</NavLink>
             <NavLink to="/view-wickets">Wickets</NavLink>
@@ -68,7 +72,7 @@ const Home = () => {
             <NavLink to="/wicket-analysis">Wicket Analysis</NavLink>
             <NavLink to="/stats">Batting Stats</NavLink>
             <NavLink to="/live-match">Live Match</NavLink> {/* Added Live Match link */}
-          </nav>
+          </Navbar>
 
           {/* Mobile Menu Button */}
           <button
