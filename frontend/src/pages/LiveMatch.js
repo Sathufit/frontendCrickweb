@@ -27,6 +27,16 @@ const LiveMatch = () => {
   const [selectedMatchName, setSelectedMatchName] = useState("");
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [openersSelected, setOpenersSelected] = useState(false);
+  const [showBoundaryAnimation, setShowBoundaryAnimation] = useState(false);
+  const [boundaryType, setBoundaryType] = useState(null);
+  const [showWicketAnimation, setShowWicketAnimation] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
+
+  useEffect(() => {
+    // Disable animations on mobile devices for better performance
+    const isMobile = window.innerWidth <= 768;
+    setShouldAnimate(!isMobile);
+  }, []);
 
   useEffect(() => {
   const fetchOngoingMatch = async () => {
@@ -508,6 +518,17 @@ const LiveMatch = () => {
   const currentBowlingPlayers = innings === 1 ? playersTeamB : playersTeamA;
   const striker = currentBatters[onStrike];
 
+  const triggerAnimation = (type, runs) => {
+    if (type === 'boundary') {
+      setBoundaryType(runs);
+      setShowBoundaryAnimation(true);
+      setTimeout(() => setShowBoundaryAnimation(false), 1500);
+    } else if (type === 'wicket') {
+      setShowWicketAnimation(true);
+      setTimeout(() => setShowWicketAnimation(false), 2000);
+    }
+  };
+
   const processBall = async () => {
     if (currentBowler === null) {
       toast.error("Please select a bowler first!", { position: "top-center" });
@@ -554,6 +575,14 @@ const LiveMatch = () => {
     console.log("📦 Sending ball record to backend:", ballRecord);
   
     try {
+      // Add animations based on the ball outcome
+      if (ballDetails.runs === 4 || ballDetails.runs === 6) {
+        triggerAnimation('boundary', ballDetails.runs);
+      }
+      if (ballDetails.isOut) {
+        triggerAnimation('wicket');
+      }
+
       // ✅ Save state before processing the ball
       saveMatchStateToLocalStorage();
   
@@ -1586,6 +1615,21 @@ const getBowlerName = () => {
               </div>
             </div>
           </div>
+          {showBoundaryAnimation && (
+            <div className="boundary-animation">
+              {boundaryType === 4 ? (
+                <div className="boundary-four">FOUR!</div>
+              ) : (
+                <div className="boundary-six">SIX!</div>
+              )}
+            </div>
+          )}
+
+          {showWicketAnimation && (
+            <div className="wicket-animation wicket-fall">
+              WICKET!
+            </div>
+          )}
         </div>
       )}
     </div>

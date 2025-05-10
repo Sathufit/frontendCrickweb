@@ -30,6 +30,15 @@
   --transition-normal: 250ms ease-in-out;
   --transition-slow: 350ms ease-in-out;
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --primary: #2c3e50;
+  --secondary: #34495e;
+  --accent: #3498db;
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --warning: #f1c40f;
+  --light: #ecf0f1;
+  --dark: #2c3e50;
+  --gradient-bg: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
 }
 
 /* CSS RESET & BASE STYLES */
@@ -356,6 +365,12 @@ label {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--gradient-bg);
+  min-height: 100vh;
+  color: var(--light);
 }
 
 .match-header {
@@ -417,6 +432,13 @@ label {
   flex-direction: column;
   align-items: center;
   margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
 .main-score {
@@ -424,12 +446,29 @@ label {
   align-items: baseline;
   margin-bottom: 0.5rem;
   position: relative;
+  font-size: 4rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .runs {
   font-size: 3.5rem;
   font-weight: 800;
   line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.runs.animate {
+  animation: scoreUpdate 0.5s ease-out;
+}
+
+@keyframes scoreUpdate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .wickets {
@@ -707,6 +746,14 @@ label {
   color: var(--text-secondary);
   transition: var(--transition-fast);
   text-align: center;
+  transition: all 0.3s ease;
+  transform: scale(1);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
 }
 
 .player-btn:hover:not(.disabled) {
@@ -714,6 +761,8 @@ label {
   border-color: var(--primary-color);
   color: white;
   transform: translateY(-2px);
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .player-btn.disabled {
@@ -722,9 +771,21 @@ label {
   background-color: #f1f5f9;
 }
 
+.player-btn.selected {
+  background: var(--accent);
+  animation: selectedPlayer 0.3s ease-out;
+}
+
+@keyframes selectedPlayer {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 /* === BALL HISTORY === */
 .ball-history {
   margin-bottom: 1.5rem;
+  margin: 20px 0;
 }
 
 .ball-history h3 {
@@ -753,6 +814,28 @@ label {
   border: 1px solid #e2e8f0;
   color: var(--text-secondary);
   font-size: 0.875rem;
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  border-radius: 50%;
+  line-height: 40px;
+  text-align: center;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  animation: ballAppear 0.3s ease-out;
+}
+
+@keyframes ballAppear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .ball-item.boundary-four {
@@ -760,6 +843,8 @@ label {
   border-color: #3b82f6;
   color: #1e40af;
   animation: boundaryFour 0.8s ease-out;
+  background: #3498db;
+  animation: ballBoundary 0.5s ease-out;
 }
 
 .ball-item.boundary-six {
@@ -767,6 +852,8 @@ label {
   border-color: #f59e0b;
   color: #92400e;
   animation: boundarySix 1s ease-out;
+  background: #e74c3c;
+  animation: ballBoundary 0.5s ease-out;
 }
 
 .ball-item.wicket {
@@ -774,6 +861,8 @@ label {
   border-color: #ef4444;
   color: #b91c1c;
   animation: wicket 1.2s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  background: #c0392b;
+  animation: ballWicket 0.5s ease-out;
 }
 
 .ball-item.extra {
@@ -857,6 +946,19 @@ label {
   100% {
     transform: translateX(0) rotate(0deg);
   }
+}
+
+@keyframes ballBoundary {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ballWicket {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.2) rotate(-15deg); }
+  75% { transform: scale(1.2) rotate(15deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
 
 /* === ACTION BUTTONS === */
@@ -1390,4 +1492,106 @@ label {
 
 .ball-item:first-child {
   animation: highlightBall 0.5s ease-in-out;
+}
+
+/* 🏏 Boundary Animations */
+.boundary-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8rem;
+  font-weight: bold;
+  color: var(--success);
+  opacity: 0;
+  z-index: 1000;
+}
+
+.boundary-four {
+  animation: boundaryFour 1.5s ease-out;
+}
+
+.boundary-six {
+  animation: boundarySix 1.5s ease-out;
+}
+
+@keyframes boundaryFour {
+  0% { 
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  10% { 
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+    color: #3498db;
+  }
+  90% { 
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes boundarySix {
+  0% { 
+    transform: translate(-50%, -50%) scale(0.5) rotate(-10deg);
+    opacity: 0;
+  }
+  10% { 
+    transform: translate(-50%, -50%) scale(1.5) rotate(10deg);
+    opacity: 1;
+    color: #e74c3c;
+  }
+  90% { 
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* 🎯 Wicket Animation */
+.wicket-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 6rem;
+  color: var(--danger);
+  opacity: 0;
+  z-index: 1000;
+}
+
+.wicket-fall {
+  animation: wicketFall 2s ease-out;
+}
+
+@keyframes wicketFall {
+  0% { 
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  10% { 
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 1;
+  }
+  20% { 
+    transform: translate(-50%, -50%) scale(1.2) rotate(-5deg);
+  }
+  30% { 
+    transform: translate(-50%, -50%) scale(1.2) rotate(5deg);
+  }
+  90% { 
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
 }
