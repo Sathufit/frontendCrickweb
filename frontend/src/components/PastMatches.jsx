@@ -1,4 +1,5 @@
 import React from "react";
+import "../styles/PastMatches.css";
 
 const PastMatches = ({ pastMatches, viewMatchSummary, deletePastMatch }) => {
   // ✅ Log the matches for debugging
@@ -33,7 +34,7 @@ const PastMatches = ({ pastMatches, viewMatchSummary, deletePastMatch }) => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("🗑️ Deleting Match ID:", match._id);
+                console.log("Deleting Match ID:", match._id);
                 deletePastMatch(match._id);
               }}
               className="delete-btn"
