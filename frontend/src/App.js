@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
-import LiveMatch from "./pages/LiveMatch"; // Import LiveMatch component
+import LiveMatch from "./pages/LiveMatch";
 import ViewRuns from "./pages/ViewRuns";
 import ViewWickets from "./pages/ViewWickets";
 import PlayerStats from "./pages/PlayerStats";
@@ -12,9 +12,11 @@ import AddRuns from "./pages/AddRuns";
 import AddWickets from "./pages/AddWickets";
 import ManageRuns from "./pages/ManageRuns";
 import ManageWickets from "./pages/ManageWickets";
-import WicketAnalysis from './pages/WicketAnalysis';
-import DailyReport from './pages/DailyReport';
+import WicketAnalysis from "./pages/WicketAnalysis";
+import DailyReport from "./pages/DailyReport";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./styles.css";
 
 function App() {
@@ -23,7 +25,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/live-match" element={<LiveMatch />} /> {/* Add LiveMatch route */}
+        <Route path="/live-match" element={<LiveMatch />} />
         <Route path="/view-runs" element={<ViewRuns />} />
         <Route path="/view-wickets" element={<ViewWickets />} />
         <Route path="/stats" element={<PlayerStats />} />
@@ -40,6 +42,8 @@ function App() {
           <Route path="daily-report" element={<DailyReport />} />
         </Route>
       </Routes>
+
+      <ToastContainer position="top-center" autoClose={3000} />
     </Router>
   );
 }

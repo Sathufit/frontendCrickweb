@@ -1,0 +1,110 @@
+/* Modal.css */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #ffffff;
+    border-radius: 8px;
+    width: 70%;
+    max-width: 800px;
+    overflow-y: auto;
+    max-height: 90vh;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+  }
+  
+  .modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+  
+  .close-btn {
+    background-color: #ff4d4d;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .close-btn:hover {
+    background-color: #ff1a1a;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .summary-section {
+    margin-bottom: 20px;
+  }
+  
+  .summary-section h4 {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: #333333;
+  }
+  
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .summary-table .table-header {
+    background-color: #f5f5f5;
+    text-align: left;
+    font-weight: bold;
+  }
+  
+  .summary-table .table-row {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .summary-table .table-row:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .summary-table span {
+    display: inline-block;
+    padding: 8px 12px;
+  }
+  
+  .table-header span {
+    font-size: 0.95rem;
+  }
+  
+  .table-row span {
+    font-size: 0.9rem;
+  }
+  
+  .match-result {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+  }
+  

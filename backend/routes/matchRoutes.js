@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
 // Add new match stats
 router.post('/', async (req, res) => {
     const newMatch = new Match(req.body);
-    await newMatch.save();
+    await match.save({ validateBeforeSave: true, optimisticConcurrency: false });
     res.json(newMatch);
 });
 

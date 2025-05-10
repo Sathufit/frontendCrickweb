@@ -1,32 +1,205 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/LiveMatch.css";
+import { toast } from "react-toastify";
+import MatchSummary from "../components/MatchSummary";
+import PastMatches from "../components/PastMatches";
+import SummaryModal from "../components/SummaryModal";
+
+
 
 const API_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:5001"
   : "https://frontyardcricket.onrender.com";
 
 const LiveMatch = () => {
-  // Match setup states
   const [matchDetails, setMatchDetails] = useState({
     matchName: "",
     oversLimit: 0,
     teamA: "",
     teamB: "",
+    tossWinner: "",
+    tossDecision: "",
   });
-
   const [pastMatches, setPastMatches] = useState([]);
   const [matchId, setMatchId] = useState(null);
   const [lastBowlerIndex, setLastBowlerIndex] = useState(null);
   const [selectedMatchName, setSelectedMatchName] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState(null);
-  const [showSummary, setShowSummary] = useState(false);
-  const [summaryData, setSummaryData] = useState(null);
+  const [openersSelected, setOpenersSelected] = useState(false);
 
   useEffect(() => {
-    fetchPastMatches();
-  }, []);
+  const fetchOngoingMatch = async () => {
+    const savedMatchId = localStorage.getItem("liveMatchId");
+
+    if (!savedMatchId || savedMatchId === "null") {
+      console.warn("❌ No valid match ID found.");
+      toast.error("No ongoing match found. Please start a new match.", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    try {
+      // ✅ Fetch match data from backend
+      const res = await axios.get(`${API_URL}/api/live-match/${savedMatchId}`);
+      const match = res.data;
+
+      if (!match) {
+        console.warn("❌ Match data not found.");
+        return;
+      }
+
+      console.log("✅ Match data fetched successfully", match);
+
+      // ✅ Set basic match details
+      setMatchId(match.matchId);
+      localStorage.setItem("liveMatchId", match.matchId);
+      setMatchDetails({
+        matchName: match.matchName ?? "",
+        oversLimit: match.oversLimit ?? 0,
+        teamA: match.teamA ?? "",
+        teamB: match.teamB ?? "",
+        tossWinner: match.tossWinner ?? "",
+        tossDecision: match.tossDecision ?? "",
+      });
+
+      // ✅ Determine Batting and Bowling teams
+      const battingTeam =
+        match.tossWinner === match.teamA && match.tossDecision === "bat"
+          ? match.teamA
+          : match.tossWinner === match.teamB && match.tossDecision === "bat"
+          ? match.teamB
+          : match.tossWinner === match.teamA
+          ? match.teamB
+          : match.teamA;
+
+      const bowlingTeam = battingTeam === match.teamA ? match.teamB : match.teamA;
+
+      setBattingTeam(battingTeam);
+      setBowlingTeam(bowlingTeam);
+
+      // ✅ Set player lists
+      setPlayersTeamA(match.teamAPlayers ?? []);
+      setPlayersTeamB(match.teamBPlayers ?? []);
+
+      // ✅ Restore Batters and Bowlers
+      setBatterStats(match.batterStats ?? []);
+      setBowlerStats(match.bowlerStats ?? []);
+
+      if (Array.isArray(match.currentBatters) && match.currentBatters.length > 0) {
+        console.log("✅ Restoring current batters from backend state", match.currentBatters);
+      
+        const teamList = battingTeam === match.teamA ? match.teamAPlayers : match.teamBPlayers;
+        const validBatters = match.currentBatters.map((batter) =>
+          teamList.findIndex((player) => player === batter.name)
+        );
+      
+        setCurrentBatters(validBatters);
+        setOpenersSelected(true);
+      } else {
+        console.warn("❌ Current Batters not found, setting to manual selection.");
+        setCurrentBatters([null, null]);
+        setOpenersSelected(false);
+      }
+      
+
+      // ✅ Restore current bowler
+      if (match.currentBowler) {
+        setCurrentBowler(match.currentBowler.index ?? null);
+      } else {
+        setCurrentBowler(null);
+      }
+
+      // ✅ Restore other state
+      setOnStrike(match.onStrike ?? 0);
+
+      // ✅ Restore Ball History
+      setBallHistory(Array.isArray(match.score?.balls) ? match.score.balls : []);
+
+      // ✅ Restore Score, Overs, and Balls
+      const oversStr = match.score?.overs ?? "0.0";
+      setOvers(oversStr);
+      const [oversPart, ballsPart] = oversStr.split(".");
+      const totalBalls = parseInt(oversPart || "0") * 6 + parseInt(ballsPart || "0");
+      setBalls(totalBalls);
+      setScore(match.score ?? { runs: 0, wickets: 0, extras: 0 });
+
+      // ✅ Set match started state
+      setMatchStarted(!match.isFinished);
+
+      // ✅ Restore local state if present
+      restoreMatchStateFromLocalStorage();
+
+      // ✅ Success notification
+      toast.success("Match data restored successfully!", { position: "top-center" });
+    } catch (error) {
+      console.error("❌ Failed to fetch ongoing match details", error.message);
+      toast.error("Error restoring match. Please try again.", {
+        position: "top-center",
+      });
+      localStorage.removeItem("liveMatchId");
+    }
+  };
+
+  /**
+   * ✅ Restore State from LocalStorage
+   */
+  const restoreMatchStateFromLocalStorage = () => {
+    try {
+      const savedState = JSON.parse(localStorage.getItem("liveMatchState"));
+      if (savedState) {
+        setCurrentBatters(savedState.currentBatters ?? [null, null]);
+        setCurrentBowler(savedState.currentBowler ?? null);
+        setBatterStats(savedState.batterStats ?? []);
+        setBowlerStats(savedState.bowlerStats ?? []);
+        setBallHistory(savedState.ballHistory ?? []);
+        setOnStrike(savedState.onStrike ?? 0);
+        setBalls(savedState.balls ?? 0);
+        setOvers(savedState.overs ?? "0.0");
+        setInnings(savedState.innings ?? 1);
+        setBattingTeam(savedState.battingTeam ?? "");
+        setBowlingTeam(savedState.bowlingTeam ?? "");
+        setPlayersTeamA(savedState.playersTeamA ?? []);
+        setPlayersTeamB(savedState.playersTeamB ?? []);
+        setMatchDetails(savedState.matchDetails ?? {});
+        setMatchId(savedState.matchId ?? null);
+        setScore(savedState.score ?? { runs: 0, wickets: 0, extras: 0 });
+        setTarget(savedState.target ?? null);
+        setShowChangeBowler(savedState.showChangeBowler ?? false);
+
+        console.log("✅ Match state restored successfully from localStorage");
+      }
+    } catch (error) {
+      console.error("❌ Error restoring match state from localStorage:", error.message);
+    }
+  };
+
+  // ✅ Execute fetch
+  fetchOngoingMatch();
+  fetchPastMatches();
+}, []);
+
+
+  const handleSelectOpener = (playerName) => {
+    setCurrentBatters((prev) => {
+      const [first, second] = prev;
+      if (first === null) {
+        return [playerName, second];
+      } else if (second === null) {
+        return [first, playerName];
+      }
+      return prev;
+    });
+  
+    // Check if both batters are selected
+    const updatedBatters = currentBatters.filter((b) => b !== null);
+    if (updatedBatters.length === 2) {
+      setOpenersSelected(true);
+      saveMatchStateToLocalStorage();
+    }
+  };
+  
   
   const fetchPastMatches = async () => {
     try {
@@ -109,15 +282,47 @@ const LiveMatch = () => {
 
   const viewMatchSummary = async (matchId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/live-match-stats/${matchId}`);
-      setMatchSummary(response.data);
-      setSelectedMatchId(matchId);
-      setSelectedMatchName(`${response.data.innings1?.battingTeam || "Team A"} vs ${response.data.innings2?.battingTeam || "Team B"}`);
-      setTimeout(() => setShowSummaryModal(true), 50);
+      if (!matchId || matchId === "undefined" || matchId === null) {
+        console.error("❌ Invalid Match ID received:", matchId);
+        toast.error("Invalid match ID. Please try again.", {
+          position: "top-center",
+        });
+        return;
+      }
+  
+      console.log("🚀 Fetching match summary for ID:", matchId);
+  
+      // ✅ Check the URL structure
+      const requestUrl = `${API_URL}/api/live-match/${matchId}`;
+      console.log("🌐 API Call to:", requestUrl);
+  
+      // ✅ Make the API call
+      const response = await axios.get(requestUrl);
+  
+      if (response.status === 200 && response.data) {
+        // ✅ Update the state with the response data
+        setMatchSummary(response.data);
+        setSelectedMatchId(matchId);  
+        setSelectedMatchName(`${response.data.teamA} vs ${response.data.teamB}`);
+  
+        // ✅ Display the modal after a small delay
+        setTimeout(() => setShowSummaryModal(true), 50);
+        console.log("✅ Match summary loaded successfully");
+      } else {
+        console.warn("⚠️ Match summary not found");
+        toast.error("Match summary not found. Please try again.", {
+          position: "top-center",
+        });
+      }
     } catch (error) {
-      console.error("Failed to fetch match summary:", error);
+      console.error("❌ Failed to fetch match summary:", error.message);
+      toast.error("Failed to fetch match summary. Please try again.", {
+        position: "top-center",
+      });
     }
   };
+  
+  
   
   const deletePastMatch = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this match summary?");
@@ -133,47 +338,6 @@ const LiveMatch = () => {
     }
   };
   
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
-  
-  const saveMatchSummary = async () => {
-    try {
-      setSnackbar({
-        open: true,
-        message: "✅ Match summary auto-saved by backend!",
-        severity: "success",
-      });
-      fetchPastMatches();
-    } catch (error) {
-      console.error("❌ Error updating UI after match:", error);
-    }
-  
-    setMatchSummary({
-      innings1: {
-        battingTeam: "",
-        runs: 0,
-        wickets: 0,
-        overs: "0.0",
-        batters: [],
-        bowlers: [],
-        ballByBall: []
-      },
-      innings2: {
-        battingTeam: "",
-        runs: 0,
-        wickets: 0,
-        overs: "0.0",
-        batters: [],
-        bowlers: [],
-        ballByBall: []
-      },
-      result: ""
-    });
-  };
-
   // Match setup handlers
   const handleMatchDetailsChange = (e) => {
     const { name, value } = e.target;
@@ -208,23 +372,40 @@ const LiveMatch = () => {
       setAllPlayers([...allPlayers, player]);
     }
   };
-
-  // Initialize match
+  const determineTeamsAfterToss = (tossWinner, tossDecision, teamA, teamB, playersA, playersB) => {
+    // 🚀 Set Batting and Bowling Teams based on the decision
+    const battingTeam = tossDecision === "bat" ? tossWinner : (tossWinner === teamA ? teamB : teamA);
+    const bowlingTeam = battingTeam === teamA ? teamB : teamA;
+  
+    // ✅ Set the Player Lists Correctly
+    const battingPlayers = battingTeam === teamA ? playersA : playersB;
+    const bowlingPlayers = bowlingTeam === teamA ? playersA : playersB;
+  
+    // ✅ Update State Correctly
+    setBattingTeam(battingTeam);
+    setBowlingTeam(bowlingTeam);
+  
+    console.log(`🏏 Batting Team: ${battingTeam} | Bowling Team: ${bowlingTeam}`);
+    
+    // Return the data for further use
+    return { battingTeam, bowlingTeam, battingPlayers, bowlingPlayers };
+  };  
+  
   const startMatch = async () => {
-    // Validate inputs
-    if (!matchDetails.matchName || matchDetails.oversLimit <= 0 || 
-        !matchDetails.teamA || !matchDetails.teamB) {
-      alert("Please fill all match details!");
+    if (
+      !matchDetails.matchName ||
+      matchDetails.oversLimit <= 0 ||
+      !matchDetails.teamA ||
+      !matchDetails.teamB ||
+      !matchDetails.tossWinner ||
+      !matchDetails.tossDecision
+    ) {
+      alert("❌ Please fill all match details including toss info!");
       return;
     }
-
-    if (!playersTeamA.length || !playersTeamB.length) {
-      alert("Please add at least one player to each team!");
-      return;
-    }
-
+  
     try {
-      // Send match details to the backend
+      // ✅ Send match setup to backend
       const response = await axios.post(`${API_URL}/api/live-match`, {
         matchName: matchDetails.matchName,
         oversLimit: matchDetails.oversLimit,
@@ -232,18 +413,39 @@ const LiveMatch = () => {
         teamB: matchDetails.teamB,
         playersTeamA,
         playersTeamB,
+        tossWinner: matchDetails.tossWinner,
+        tossDecision: matchDetails.tossDecision,
       });
-
-      setMatchId(response.data.match._id);
+  
+      const createdMatch = response.data.match;
+  
+      // ✅ Set match details in the state and localStorage
+      setMatchId(createdMatch._id);
+      localStorage.setItem("liveMatchId", createdMatch._id);
       setMatchStarted(true);
-
-      // Initialize first innings
-      setBattingTeam(matchDetails.teamA);
-      setBowlingTeam(matchDetails.teamB);
       setInnings(1);
-
-      // Initialize batter and bowler stats
-      const initialBatterStats = playersTeamA.map((player, index) => ({
+  
+      // ✅ Determine batting and bowling teams using the function
+      const {
+        battingTeam,
+        bowlingTeam,
+        battingPlayers,
+        bowlingPlayers
+      } = determineTeamsAfterToss(
+        matchDetails.tossWinner,
+        matchDetails.tossDecision,
+        matchDetails.teamA,
+        matchDetails.teamB,
+        playersTeamA,
+        playersTeamB
+      );
+  
+      // ✅ Set the player lists correctly
+      setPlayersTeamA(battingTeam === matchDetails.teamA ? battingPlayers : bowlingPlayers);
+      setPlayersTeamB(bowlingTeam === matchDetails.teamA ? battingPlayers : bowlingPlayers);
+  
+      // ✅ Initialize Batter and Bowler Stats
+      const initialBatterStats = battingPlayers.map((player, index) => ({
         playerIndex: index,
         name: player,
         runs: 0,
@@ -254,9 +456,8 @@ const LiveMatch = () => {
         outType: "",
         outBowler: "",
       }));
-      setBatterStats(initialBatterStats);
-
-      const initialBowlerStats = playersTeamB.map((player, index) => ({
+  
+      const initialBowlerStats = bowlingPlayers.map((player, index) => ({
         playerIndex: index,
         name: player,
         overs: 0,
@@ -266,21 +467,32 @@ const LiveMatch = () => {
         maidens: 0,
         economy: 0,
       }));
+  
+      setBatterStats(initialBatterStats);
       setBowlerStats(initialBowlerStats);
-
+  
+      // ✅ Wait for manual selection of openers
+      setCurrentBatters([null, null]);
+      setOpenersSelected(false);
+  
+      // ✅ Initialize Match State
       setOnStrike(0);
-
-      // Reset score and ball tracking
       setScore({ runs: 0, wickets: 0, extras: 0 });
-      setOvers(0);
+      setOvers("0.0");
       setBalls(0);
       setBallHistory([]);
+  
+      // ✅ Save the initial state to LocalStorage
+      saveMatchStateToLocalStorage();
+  
+      toast.success("✅ Match Started Successfully!", { position: "top-center" });
+  
     } catch (error) {
       console.error("❌ Error starting match:", error);
       alert("Failed to start match. Please try again.");
     }
   };
-
+  
   // Ball input handlers
   const handleBallDetailsChange = (field, value) => {
     setBallDetails(prev => ({
@@ -298,14 +510,35 @@ const LiveMatch = () => {
 
   const processBall = async () => {
     if (currentBowler === null) {
-      alert("Please select a bowler first!");
+      toast.error("Please select a bowler first!", { position: "top-center" });
       return;
     }
   
+    if (!matchId) {
+      console.error("❌ Error: Match ID is not defined");
+      toast.error("Match ID is not available. Please refresh and try again.", { position: "top-center" });
+      return;
+    }
+  
+    // 🚀 Determine the current teams
     const currentPlayers = innings === 1 ? playersTeamA : playersTeamB;
     const currentBowlingPlayers = innings === 1 ? playersTeamB : playersTeamA;
     const striker = currentBatters[onStrike];
   
+    // 🚀 Ensure valid batter and bowler selections
+    if (striker === null || !currentPlayers[striker]) {
+      toast.error("Please select a valid batter before proceeding.", { position: "top-center" });
+      console.error("❌ No batter found for the current striker index.");
+      return;
+    }
+  
+    if (!currentBowlingPlayers[currentBowler]) {
+      toast.error("Invalid bowler selected. Please choose a valid bowler.", { position: "top-center" });
+      console.error("❌ No bowler found for the current bowler index.");
+      return;
+    }
+  
+    // ✅ Build the ball record for backend submission
     const ballRecord = {
       runs: parseInt(ballDetails.runs || 0),
       ballType: ballDetails.ballType,
@@ -318,65 +551,129 @@ const LiveMatch = () => {
       bowler: currentBowlingPlayers[currentBowler],
     };
   
+    console.log("📦 Sending ball record to backend:", ballRecord);
+  
     try {
+      // ✅ Save state before processing the ball
+      saveMatchStateToLocalStorage();
+  
+      // ✅ Send the ball data to the backend
       const response = await axios.post(
         `${API_URL}/api/live-match/${matchId}/ball`,
         ballRecord
       );
+  
+      if (response.status !== 200) {
+        console.error("❌ Backend Error: ", response.data);
+        toast.error("Failed to process ball. Backend error occurred.");
+        return;
+      }
+  
       const updatedMatch = response.data.match;
   
+      // ✅ Update score and overs
       setScore({
         runs: updatedMatch.score.runs,
         wickets: updatedMatch.score.wickets,
         extras: updatedMatch.score.extras || 0,
       });
   
+      // ✅ Restore Ball History
+      setBallHistory(updatedMatch.score.balls);
+  
       const oversStr = updatedMatch.score.overs || "0.0";
       setOvers(oversStr);
+  
       const [oversPart, ballsPart] = oversStr.split(".");
       const totalBalls = parseInt(oversPart || "0") * 6 + parseInt(ballsPart || "0");
       setBalls(totalBalls);
   
+      // ✅ Show change bowler option if over is complete
       if (oversStr.endsWith(".0")) {
+        toast.info("📝 Over complete! Please select a new bowler.");
         setShowChangeBowler(true);
       }
   
-      setBallHistory(updatedMatch.score.balls);
+      // ✅ Update batter and bowler stats
       setBatterStats(updatedMatch.batterStats);
       setBowlerStats(updatedMatch.bowlerStats);
   
+      // ✅ Check if it's a legal delivery
       const isLegalDelivery = !(
         ballRecord.isExtra &&
         (ballRecord.extraType === "wide" || ballRecord.extraType === "noBall")
       );
+  
       const totalRunsForBall =
         ballRecord.runs + (ballRecord.isExtra ? ballRecord.extraRuns : 0);
   
-      if (
-        (isLegalDelivery && totalRunsForBall % 2 === 1) ||
-        (ballRecord.isExtra &&
-          ballRecord.extraType === "noBall" &&
-          totalRunsForBall % 2 === 1)
-      ) {
-        setOnStrike((prev) => (prev === 0 ? 1 : 0));
+      // 🏏 **Last Man Stands Logic**
+      const teamSize = innings === 1 ? playersTeamA.length : playersTeamB.length;
+      const lastManStands = updatedMatch.score.wickets === teamSize - 1;
+  
+      if (lastManStands) {
+        toast.warning("⚠️ Last batter remains. No more wickets left!", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+  
+        if (isLegalDelivery && totalRunsForBall % 2 === 1) {
+          toast.info("🔄 Last batter switches ends!");
+        }
+      } else {
+        // ✅ Normal switching logic
+        if (
+          (isLegalDelivery && totalRunsForBall % 2 === 1) ||
+          (ballRecord.isExtra &&
+            ballRecord.extraType === "noBall" &&
+            totalRunsForBall % 2 === 1)
+        ) {
+          setOnStrike((prev) => (prev === 0 ? 1 : 0));
+        }
+  
+        if (
+          isLegalDelivery &&
+          updatedMatch.currentBall === 0 &&
+          updatedMatch.currentOver > 0
+        ) {
+          setOnStrike((prev) => (prev === 0 ? 1 : 0));
+        }
       }
   
-      if (
-        isLegalDelivery &&
-        updatedMatch.currentBall === 0 &&
-        updatedMatch.currentOver > 0
-      ) {
-        setOnStrike((prev) => (prev === 0 ? 1 : 0));
-      }
-  
+      // ✅ Handle the out scenario
       if (ballRecord.isOut) {
         setCurrentBatters((prevBatters) => {
           const updated = [...prevBatters];
           updated[onStrike] = null;
           return updated;
         });
+  
+        if (lastManStands) {
+          toast.error("💀 Last man is out! Innings ends.");
+          endInnings();
+        }
       }
   
+     // ✅ Update Backend with Current Players
+      const updatedBatters = currentBatters.map((index) => ({
+        name: innings === 1 ? playersTeamA[index] : playersTeamB[index],
+        index,
+      }));
+
+      const updatedBowler = {
+        name: innings === 1 ? playersTeamB[currentBowler] : playersTeamA[currentBowler],
+        index: currentBowler,
+      };
+
+      await axios.put(`${API_URL}/api/live-match/${matchId}/update-current-players`, {
+        currentBatters: updatedBatters,
+        currentBowler: updatedBowler,
+      });
+
+      // ✅ Save State to Local Storage
+      saveMatchStateToLocalStorage();
+  
+      // ✅ Match finishes
       if (updatedMatch.isFinished) {
         setMatchStarted(false);
         setMatchSummary({
@@ -385,6 +682,8 @@ const LiveMatch = () => {
           result: updatedMatch.result || "Match Finished",
         });
         fetchPastMatches();
+        localStorage.removeItem("liveMatchId");
+        setMatchId(null);
       } else if (updatedMatch.currentInnings !== innings) {
         setInnings(updatedMatch.currentInnings);
         setTarget(updatedMatch.target);
@@ -395,15 +694,11 @@ const LiveMatch = () => {
         setCurrentBatters([null, null]);
         resetInningsState();
       }
-      
     } catch (error) {
-      console.error("❌ Error processing ball:", error);
-      alert(
-        `Failed to process ball: ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      console.error("❌ Error processing ball:", error.response?.data || error.message);
+      toast.error(`Failed to process ball: ${error.response?.data?.message || error.message}`);
     } finally {
+      // ✅ Reset the ball details after each delivery
       setBallDetails({
         runs: 0,
         ballType: "normal",
@@ -415,6 +710,37 @@ const LiveMatch = () => {
       });
     }
   };
+  
+  const saveMatchStateToLocalStorage = () => {
+    try {
+      const state = {
+        currentBatters,
+        currentBowler,
+        batterStats,
+        bowlerStats,
+        ballHistory,
+        onStrike,
+        balls,
+        overs,
+        innings,
+        battingTeam,
+        bowlingTeam,
+        playersTeamA,
+        playersTeamB,
+        matchDetails,
+        matchId,
+        score,
+        target,
+        showChangeBowler,
+      };
+      
+      localStorage.setItem("liveMatchState", JSON.stringify(state));
+      console.log("✅ Match state saved successfully to localStorage");
+    } catch (error) {
+      console.error("❌ Error saving match state to localStorage:", error.message);
+    }
+  };
+  
   
   const resetInningsState = () => {
     const battingTeam = innings === 1 ? playersTeamB : playersTeamA;
@@ -458,112 +784,172 @@ const LiveMatch = () => {
     setBowlingTeam(bowlingTeam);
   };
   
-  // End current innings and setup next innings or end match
-  const endInnings = () => {
+  const endInnings = async () => {
+    // Get the current players and the innings key
     const currentPlayers = innings === 1 ? playersTeamA : playersTeamB;
     const currentInningsKey = innings === 1 ? "innings1" : "innings2";
     const currentOvers = `${Math.floor(balls / 6)}.${balls % 6}`;
-
+  
+    // 📝 Update the match summary state
     setMatchSummary((prev) => ({
-        ...prev,
-        [currentInningsKey]: {
-            battingTeam: battingTeam,
-            runs: score.runs,
-            wickets: score.wickets,
-            extras: score.extras,
-            overs: currentOvers,
-            batters: [...batterStats],
-            bowlers: [...bowlerStats],
-            ballByBall: [...ballHistory],
-        },
+      ...prev,
+      [currentInningsKey]: {
+        battingTeam: battingTeam,
+        runs: score.runs,
+        wickets: score.wickets,
+        extras: score.extras,
+        overs: currentOvers,
+        batters: [...batterStats],
+        bowlers: [...bowlerStats],
+        ballByBall: [...ballHistory],
+      },
     }));
-
+  
+    // ✅ Save the current innings to the backend
+    try {
+      await axios.put(`${API_URL}/api/live-match/${matchId}/update-innings`, {
+        innings: currentInningsKey,
+        battingTeam,
+        runs: score.runs,
+        wickets: score.wickets,
+        extras: score.extras,
+        overs: currentOvers,
+        batters: batterStats,
+        bowlers: bowlerStats,
+        ballByBall: ballHistory,
+      });
+      console.log("Innings data successfully saved to the database.");
+    } catch (error) {
+      console.error("Failed to save innings data to the backend", error);
+    }
+  
+    // 🌟 If it's the first innings
     if (innings === 1) {
-        setTarget(score.runs + 1);
-        setInnings(2);
-
-        setBattingTeam(bowlingTeam);
-        setCurrentBatters([null, null]);
-        setBowlingTeam(battingTeam);
-
-        const initialBatterStats = playersTeamB.map((player, index) => ({
-            playerIndex: index,
-            name: player,
-            runs: 0,
-            ballsFaced: 0,
-            fours: 0,
-            sixes: 0,
-            isOut: false,
-            outType: "",
-            outBowler: "",
-        }));
-        setBatterStats(initialBatterStats);
-
-        const initialBowlerStats = playersTeamA.map((player, index) => ({
-            playerIndex: index,
-            name: player,
-            overs: 0,
-            balls: 0,
-            runs: 0,
-            wickets: 0,
-            maidens: 0,
-            economy: 0,
-        }));
-        setBowlerStats(initialBowlerStats);
-
-        setOnStrike(0);
-        setCurrentBowler(null);
-
-        setScore({ runs: 0, wickets: 0, extras: 0 });
-        setOvers("0.0");
-        setBalls(0);
-        setBallHistory([]);
+      toast.info(`End of Innings 1. Target set to ${score.runs + 1}`, {
+        position: "top-center",
+      });
+  
+      // 🎯 Set the target for the second innings
+      setTarget(score.runs + 1);
+      setInnings(2);
+  
+      // 🏏 Switch the teams for the second innings
+      setBattingTeam(bowlingTeam);
+      setCurrentBatters([null, null]);
+      setBowlingTeam(battingTeam);
+  
+      // 📝 Initialize the new batter and bowler stats
+      const initialBatterStats = playersTeamB.map((player, index) => ({
+        playerIndex: index,
+        name: player,
+        runs: 0,
+        ballsFaced: 0,
+        fours: 0,
+        sixes: 0,
+        isOut: false,
+        outType: "",
+        outBowler: "",
+      }));
+      setBatterStats(initialBatterStats);
+  
+      const initialBowlerStats = playersTeamA.map((player, index) => ({
+        playerIndex: index,
+        name: player,
+        overs: 0,
+        balls: 0,
+        runs: 0,
+        wickets: 0,
+        maidens: 0,
+        economy: 0,
+      }));
+      setBowlerStats(initialBowlerStats);
+  
+      // 🔄 Reset the state for the new innings
+      setOnStrike(0);
+      setCurrentBowler(null);
+  
+      setScore({ runs: 0, wickets: 0, extras: 0 });
+      setOvers("0.0");
+      setBalls(0);
+      setBallHistory([]);
+  
+      toast.success("Second Innings Started!", { position: "top-center" });
+      
+      // ✅ Save the new state to local storage
+      saveMatchStateToLocalStorage();
+  
     } else {
-        const teamAWon = score.runs >= target;
-        const result = teamAWon
-            ? `${battingTeam} won by ${
-                  playersTeamB.length - score.wickets - 1
-              } wickets`
-            : `${bowlingTeam} won by ${target - score.runs - 1} runs`;
-
-        setMatchSummary((prev) => ({
-            ...prev,
-            result,
-        }));
-
-        setMatchStarted(false);
-        fetchPastMatches();
+      // 🔚 If it's the end of the second innings
+      const teamAWon = score.runs >= target;
+      const runsDifference = Math.abs(target - score.runs);
+  
+      let result = "";
+      if (score.runs === target) {
+        result = "Match Tied!";
+        toast.info("🏏 Match Tied!", { position: "top-center" });
+      } else if (teamAWon) {
+        result = `${battingTeam} won by ${
+          playersTeamB.length - score.wickets - 1
+        } wickets`;
+        toast.success(`${battingTeam} Wins!`, { position: "top-center" });
+      } else {
+        result = `${bowlingTeam} won by ${runsDifference} runs`;
+        toast.error(`${bowlingTeam} Wins!`, { position: "top-center" });
+      }
+  
+      // 📝 Update the match summary with the result
+      setMatchSummary((prev) => ({
+        ...prev,
+        result,
+      }));
+  
+      // ✅ Save the full match result to the backend
+      try {
+        await axios.put(`${API_URL}/api/live-match/${matchId}/update-result`, {
+          result: result,
+          innings1: matchSummary.innings1,
+          innings2: matchSummary.innings2,
+        });
+        console.log("Match result successfully saved to the database.");
+      } catch (error) {
+        console.error("Failed to save match result to the backend", error);
+      }
+  
+      // 🔄 Match is finished
+      setMatchStarted(false);
+      fetchPastMatches();
+      localStorage.removeItem("liveMatchId");
+      setMatchId(null);
     }
   };
+  
+  const ballsRemaining = (Number(matchDetails?.oversLimit || 0) * 6) - (balls || 0);
+  const oversRemaining = ballsRemaining > 0 ? (ballsRemaining / 6).toFixed(1) : "0.0";  
 
-  // Calculate balls remaining in current innings
-  const ballsRemaining = matchDetails.oversLimit * 6 - balls;
-  const oversRemaining = (ballsRemaining / 6).toFixed(1);
-  
-  // Get current batting pair names
   const getBatterName = (index) => {
-    const players = innings === 1 ? playersTeamA : playersTeamB;
-    return currentBatters[index] !== undefined && players[currentBatters[index]] 
-      ? players[currentBatters[index]]
-      : "Unknown";
+    const teamList = battingTeam === matchDetails.teamA ? playersTeamA : playersTeamB;
+    const batterIndex = currentBatters[index];
+    return batterIndex !== null ? teamList[batterIndex] : "Select Batsman";
   };
   
-  // Get current bowler name
-  const getBowlerName = () => {
-    const players = innings === 1 ? playersTeamB : playersTeamA;
-    return currentBowler !== null && players[currentBowler]
-      ? players[currentBowler]
-      : "Select Bowler";
-  };
+const getBowlerName = () => {
+  const players = innings === 1 ? playersTeamB : playersTeamA;
+  return currentBowler !== null && players[currentBowler]
+    ? players[currentBowler]
+    : "Select Bowler";
+};
   
   // Get batter stats display
-  const getBatterStats = (batterIndex) => {
-    const playerName = getBatterName(batterIndex);
-    const batter = batterStats.find(b => b.name === playerName);
-    if (!batter) return "";
-    return `${batter.runs} (${batter.ballsFaced})`;
+  const getBatterStats = (index) => {
+    const playerName = getBatterName(index);
+    const batter = batterStats.find((b) => b.name === playerName);
+    
+    if (batter) {
+      return `${batter.runs} (${batter.ballsFaced})`;
+    }
+    return "";
   };
-  
+
   const endMatchManually = async () => {
     if (!matchId) return;
   
@@ -582,9 +968,80 @@ const LiveMatch = () => {
         result: updatedMatch.result || "Match ended manually",
       }));
       fetchPastMatches();
+      localStorage.removeItem("liveMatchId");
+      setMatchId(null);
     } catch (err) {
       console.error("❌ Failed to end match manually:", err);
       alert("Could not end match. Try again.");
+    }
+  };
+  const resumeMatch = async () => {
+    const savedMatchId = localStorage.getItem("liveMatchId");
+    if (!savedMatchId) return;
+  
+    try {
+      const res = await axios.get(`${API_URL}/api/live-match/${savedMatchId}`);
+      const match = res.data;
+  
+      setMatchId(match.matchId);
+      setMatchDetails({
+        matchName: match.matchName,
+        oversLimit: match.oversLimit,
+        teamA: match.teamA,
+        teamB: match.teamB,
+        tossWinner: match.tossWinner,
+        tossDecision: match.tossDecision,
+      });
+  
+      setPlayersTeamA(match.playersTeamA || []);
+      setPlayersTeamB(match.playersTeamB || []);
+      setBattingTeam(match.battingTeam);
+      setBowlingTeam(match.bowlingTeam);
+      setInnings(match.innings);
+      setScore(match.score);
+      setOvers(match.score?.overs || 0);
+      setBalls(match.score?.balls || 0);
+      setBatterStats(match.batterStats || []);
+      setBowlerStats(match.bowlerStats || []);
+      setCurrentBatters(match.currentBatters || [null, null]);
+      setOnStrike(match.onStrike ?? 0);
+      setBallHistory(match.ballHistory || []);
+      setMatchStarted(true);
+    } catch (err) {
+      console.error("❌ Failed to resume match:", err);
+      alert("Could not resume match. Try again.");
+      localStorage.removeItem("liveMatchId");
+    }
+  };
+  const handleSelectBatter = async (playerName) => {
+    const teamList = battingTeam === matchDetails.teamA ? playersTeamA : playersTeamB;
+    const playerIndex = teamList.indexOf(playerName);
+  
+    if (playerIndex !== -1) {
+      setCurrentBatters((prev) => {
+        if (prev[0] === null) {
+          return [playerIndex, prev[1]];
+        } else if (prev[1] === null) {
+          return [prev[0], playerIndex];
+        }
+        return prev;
+      });
+  
+      const updatedBatters = currentBatters.filter((b) => b !== null);
+      if (updatedBatters.length === 2) {
+        setOpenersSelected(true);
+  
+        // 🔄 Update backend
+        await axios.put(`${API_URL}/api/live-match/${matchId}/update-current-players`, {
+          currentBatters: [
+            { name: teamList[updatedBatters[0]], index: updatedBatters[0] },
+            { name: teamList[updatedBatters[1]], index: updatedBatters[1] }
+          ],
+          currentBowler,
+        });
+  
+        saveMatchStateToLocalStorage();
+      }
     }
   };
   
@@ -704,99 +1161,58 @@ const LiveMatch = () => {
                 </div>
               </div>
             </div>
+            <div className="form-group">
+              <label htmlFor="tossWinner">Toss Winner</label>
+              <select
+                name="tossWinner"
+                value={matchDetails.tossWinner}
+                onChange={handleMatchDetailsChange}
+                className="form-input"
+              >
+                <option value="">Select Toss Winner</option>
+                <option value={matchDetails.teamA}>{matchDetails.teamA || "Team A"}</option>
+                <option value={matchDetails.teamB}>{matchDetails.teamB || "Team B"}</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="tossDecision">Toss Decision</label>
+              <select
+                name="tossDecision"
+                value={matchDetails.tossDecision}
+                onChange={handleMatchDetailsChange}
+                className="form-input"
+              >
+                <option value="">Select Decision</option>
+                <option value="bat">Bat</option>
+                <option value="bowl">Bowl</option>
+              </select>
+            </div>
+            {!matchId && localStorage.getItem("liveMatchId") && (
+            <button className="secondary-btn" onClick={resumeMatch}>
+              Resume Live Match
+            </button>
+          )}
 
             <button className="primary-btn" onClick={startMatch}>
               Start Match
             </button>
           </div>
+          
+          <PastMatches 
+            pastMatches={pastMatches} 
+            viewMatchSummary={(match) => viewMatchSummary(match.matchId)}
+            deletePastMatch={deletePastMatch}
+          />
 
-          <div className="past-matches-section">
-            <h2>Past Matches</h2>
-            <div className="past-matches-grid">
-              {pastMatches.length > 0 ? (
-                pastMatches.map((match) => (
-                  <div
-                    key={match._id}
-                    className="match-card"
-                    onClick={() => viewMatchSummary(match._id)}
-                  >
-                    <h3>{match.teamA} vs {match.teamB}</h3>
-                    <p className="match-result">{match.result || "No result"}</p>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deletePastMatch(match._id);
-                      }}
-                      className="delete-btn"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <p className="no-matches">No past matches available.</p>
-              )}
-            </div>
-          </div>
 
-          {showSummaryModal && matchSummary && (
-            <div className="modal-overlay" onClick={() => setShowSummaryModal(false)}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{selectedMatchName}</h2>
-                  <button className="close-btn" onClick={() => setShowSummaryModal(false)}>×</button>
-                </div>
-                
-                <div className="modal-body">
-                  <div className="result-banner">
-                    <h3>{matchSummary.result || "No result"}</h3>
-                  </div>
-                  
-                  <div className="summary-section">
-                    <h4>Batting</h4>
-                    <div className="summary-table">
-                      <div className="table-header">
-                        <span>Batter</span>
-                        <span>Runs</span>
-                        <span>Balls</span>
-                        <span>SR</span>
-                      </div>
-                      {matchSummary.innings1?.batters?.map((b, i) => (
-                        <div key={i} className="table-row">
-                          <span>{b.name}</span>
-                          <span>{b.runs}</span>
-                          <span>{b.ballsFaced}</span>
-                          <span>{b.ballsFaced > 0 ? ((b.runs / b.ballsFaced) * 100).toFixed(1) : '-'}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="summary-section">
-                    <h4>Bowling</h4>
-                    <div className="summary-table">
-                      <div className="table-header">
-                        <span>Bowler</span>
-                        <span>O</span>
-                        <span>R</span>
-                        <span>W</span>
-                        <span>Econ</span>
-                      </div>
-                      {matchSummary.innings1?.bowlers?.map((b, i) => (
-                        <div key={i} className="table-row">
-                          <span>{b.name}</span>
-                          <span>{Math.floor(b.balls / 6)}.{b.balls % 6}</span>
-                          <span>{b.runs}</span>
-                          <span>{b.wickets}</span>
-                          <span>{b.balls > 0 ? (b.runs / (b.balls / 6)).toFixed(1) : '-'}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <SummaryModal
+            isVisible={showSummaryModal}
+            setIsVisible={setShowSummaryModal}
+            matchSummary={matchSummary}
+            selectedMatchName={selectedMatchName}
+          />
+
         </div>
       ) : (
         <div className="live-match-container">
@@ -805,14 +1221,30 @@ const LiveMatch = () => {
             <div className="match-info-pills">
               <span className="pill">{innings === 1 ? "1st" : "2nd"} Innings</span>
               <span className="pill">{battingTeam} batting</span>
+              {matchDetails.tossWinner && matchDetails.tossDecision && (
+                  <p>
+                    🏏 {matchDetails.tossWinner} won the toss and chose to{" "}
+                    {matchDetails.tossDecision === "bat" ? "bat first" : "bowl first"}.
+                  </p>
+                )}
             </div>
           </div>
 
           <div className="scoreboard">
             <div className="score-display">
+            {matchDetails.score?.wickets === (innings === 1 ? playersTeamA.length : playersTeamB.length) - 1 && (
+                <div className="last-man-warning">
+                  🏏 Last Man Standing!
+                </div>
+              )}
               <div className="main-score">
                 <span className="runs">{score.runs}</span>
                 <span className="wickets">/{score.wickets}</span>
+                {showChangeBowler && (
+                  <div className="select-new-bowler">
+                    <h3>Please Select a New Bowler for the Next Over</h3>
+                  </div>
+                )}
               </div>
               <div className="score-details">
                 <span className="overs">{overs} overs</span>
@@ -834,28 +1266,16 @@ const LiveMatch = () => {
 
           <div className="batsmen-area">
             <div className={`batter-card ${onStrike === 0 ? 'on-strike' : ''}`}>
-            <div className="batter-name">
-                {currentBatters[0] !== null
-                  ? getBatterName(0)
-                  : "Select Batsman"}
-              </div>
-              <div className="batter-stats">
-                {currentBatters[0] !== null ? getBatterStats(0) : ""}
+              <div className="batter-name">
+                {getBatterName(0)}
               </div>
             </div>
-
             <div className={`batter-card ${onStrike === 1 ? 'on-strike' : ''}`}>
               <div className="batter-name">
-                {currentBatters[1] !== null
-                  ? getBatterName(1)
-                  : "Select Batsman"}
-              </div>
-              <div className="batter-stats">
-                {currentBatters[1] !== null ? getBatterStats(1) : ""}
+                {getBatterName(1)}
               </div>
             </div>
           </div>
-
           <div className="bowler-area">
             <div className="bowler-card">
               <div className="bowler-name">{getBowlerName()}</div>
@@ -869,7 +1289,9 @@ const LiveMatch = () => {
               </div>
             </div>
           </div>
-
+          {!matchStarted && (
+            <MatchSummary matchSummary={matchSummary} />
+          )}
           <div className="ball-input-area">
             <div className="ball-input-card">
               <h3>Record Ball</h3>
@@ -960,76 +1382,94 @@ const LiveMatch = () => {
                   </div>
                 )}
               </div>
-              
-              <button className="primary-btn" onClick={processBall}>
+              <button 
+                className="primary-btn" 
+                onClick={processBall}
+                disabled={showChangeBowler}
+              >
                 Record Ball
               </button>
             </div>
           </div>
+            <div className="player-selection-area">
+              {/* 🏏 Select Openers */}
+              {!openersSelected && (
+                <div className="selection-card">
+                  <h3>Select Openers</h3>
+                  <div className="player-grid">
+                  {
+                    (battingTeam === matchDetails.teamA ? playersTeamA : playersTeamB).map((player) => {
+                      const teamList = battingTeam === matchDetails.teamA ? playersTeamA : playersTeamB;
+                      const playerIndex = teamList.indexOf(player);
+                      const isBatting = currentBatters.includes(playerIndex);
+                      const playerStats = batterStats.find((b) => b.name === player) || {};
+                      const isOut = playerStats?.isOut;
+                      const isDisabled = isBatting || isOut;
 
-          <div className="player-selection-area">
-            {(currentBatters[0] === null || currentBatters[1] === null) && (
-              <div className="selection-card">
-                <h3>Select Batsman</h3>
-                <div className="player-grid">
-                  {(innings === 1 ? playersTeamA : playersTeamB).map((player, index) => {
-                    const isBatting = currentBatters.includes(index);
-                    const playerStats = batterStats.find(b => b.name === player);
-                    const isOut = playerStats?.isOut;
-                    
-                    if (!isBatting && !isOut) {
                       return (
                         <button
-                          key={index}
-                          className="player-btn"
+                          key={player}
+                          className={`player-btn ${isDisabled ? 'disabled' : ''}`}
                           onClick={() => {
-                            if (currentBatters[0] === null) {
-                              setCurrentBatters([index, currentBatters[1]]);
-                            } else {
-                              setCurrentBatters([currentBatters[0], index]);
+                            if (!isDisabled) {
+                              handleSelectBatter(player);
                             }
                           }}
+                          disabled={isDisabled}
                         >
                           {player}
                         </button>
                       );
-                    }
-                    return null;
-                  })}
+                    })
+                  }
+                  </div>
                 </div>
-              </div>
-            )}
-            
-            {(currentBowler === null || showChangeBowler) && (
-              <div className="selection-card">
-                <h3>Select Bowler</h3>
-                <div className="player-grid">
-                  {(innings === 1 ? playersTeamB : playersTeamA).map((player, index) => {
-                    // Prevent selecting the same bowler for consecutive overs
-                    const isSameBowlerAsPrevious = index === lastBowlerIndex;
-                    
-                    if (!isSameBowlerAsPrevious || currentBowler === null) {
-                      return (
-                        <button
-                          key={index}
-                          className="player-btn"
-                          onClick={() => {
-                            setCurrentBowler(index);
-                            setLastBowlerIndex(index);
-                            setShowChangeBowler(false);
-                          }}
-                        >
-                          {player}
-                        </button>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            {/* 🏏 Select Bowler */}
+              {(currentBowler === null || showChangeBowler) && (
+                <div className="selection-card">
+                  <h3>Select Bowler</h3>
+                  <div className="player-grid">
+                    {
+                      // ✅ Corrected Logic: Use the correct team for the second innings
+                      (innings === 1
+                        ? (battingTeam === matchDetails.teamA ? playersTeamB : playersTeamA)
+                        : (battingTeam === matchDetails.teamA ? playersTeamB : playersTeamA)
+                      ).map((player, index) => {
+                        // ✅ Prevent selecting the same bowler for consecutive overs
+                        const isSameBowlerAsPrevious = index === lastBowlerIndex;
+                        const playerStats = bowlerStats.find((b) => b.name === player) || {};
+                        const isBowling = currentBowler === index;
 
+                        // ✅ Disable if it's the same as the last one or if it's already the current bowler
+                        const isDisabled = isSameBowlerAsPrevious || isBowling;
+
+                        return (
+                          <button
+                            key={player}
+                            className={`player-btn ${isDisabled ? 'disabled' : ''}`}
+                            onClick={() => {
+                              if (!isDisabled) {
+                                // ✅ Select the bowler and update state
+                                setCurrentBowler(index);
+                                setLastBowlerIndex(index);
+                                setShowChangeBowler(false); // <-- Reset flag after choosing
+
+                                // ✅ Save to localStorage
+                                saveMatchStateToLocalStorage();
+                              }
+                            }}
+                            disabled={isDisabled}
+                          >
+                            {player}
+                          </button>
+                        );
+                      })
+                    }
+                  </div>
+                </div>
+              )}
+          </div>
           <div className="ball-history">
             <h3>Ball History</h3>
             <div className="history-list">
@@ -1146,13 +1586,6 @@ const LiveMatch = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
-      
-      {/* Snackbar for notifications */}
-      {snackbar.open && (
-        <div className={`snackbar ${snackbar.severity}`}>
-          {snackbar.message}
         </div>
       )}
     </div>
