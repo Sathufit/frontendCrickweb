@@ -1288,7 +1288,9 @@ const getBowlerName = () => {
                   <span className="balls-left">from {ballsRemaining} balls</span>
                 </div>
               ) : (
-                <span className="overs-left">{oversRemaining} overs remaining</span>
+                <span className="run-rate">
+                  RR: {balls === 0 ? "0.00" : (score.runs / (balls / 6)).toFixed(2)}
+                </span>
               )}
             </div>
           </div>
@@ -1298,10 +1300,16 @@ const getBowlerName = () => {
               <div className="batter-name">
                 {getBatterName(0)}
               </div>
+              <div className="batter-stats">
+                {getBatterStats(0)}
+              </div>
             </div>
             <div className={`batter-card ${onStrike === 1 ? 'on-strike' : ''}`}>
               <div className="batter-name">
                 {getBatterName(1)}
+              </div>
+              <div className="batter-stats">
+                {getBatterStats(1)}
               </div>
             </div>
           </div>

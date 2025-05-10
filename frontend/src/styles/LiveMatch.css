@@ -548,6 +548,10 @@ label {
   font-size: 1.125rem;
   color: var(--text-primary);
 }
+.batter-stats {
+  font-size: 0.9em;
+  color: #666;
+}
 
 /* === BOWLER AREA === */
 .bowler-area {
