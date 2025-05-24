@@ -1422,12 +1422,7 @@ const getBowlerName = () => {
               <button 
                 className="primary-btn" 
                 onClick={processBall}
-                disabled={
-                  showChangeBowler ||
-                  currentBatters.includes(null) ||
-                  currentBowler === null ||
-                  !openersSelected
-                }
+                disabled={showChangeBowler}
               >
                 Record Ball
               </button>
