@@ -43,14 +43,15 @@ const Analyst = () => {
     ],
     mostFifties: [
       { name: "Yamila Dilhara", fifties: "24", image: "/images/5.JPG", color: "#06D6A0" }, // Mint shade
-      { name: "Sathush Nanayakkara", fifties: "15", image: "/images/2.png", color: "#118AB2" }, // Blue shade
+      { name: "Sathush Nanayakkara", fifties: "16", image: "/images/2.png", color: "#118AB2" }, // Blue shade
       { name: "Chanuka de Silva", fifties: "6", image: "/images/1.2.JPG", color: "#EF476F" }, // Pink shade
       { name: "Savindu Weerarathna", fifties: "3", image: "/images/3.jpeg", color: "#FFD166" }, // Yellow shade
       { name: "Dulshan Thanoj", fifties: "4", image: "/images/1.4.JPG", color: "#073B4C" }, // Dark blue shade
       { name: "Achala Shashvika", fifties: "7", image: "/images/8.png", color: "#06D6A0" }, // Mint shade
       { name: "Shanaka", fifties: "3", image: "https://via.placeholder.com/150", color: "#FF6B6B" }, // Red shade
-      { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg", color: "#9B5DE5" } // Purple shade
-    ]
+      { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg", color: "#9B5DE5" },
+      { name: "Dihindu Nimsath", fifties: "1", image: "/images/.jpg", color: "#9B5DE5" }
+    ] 
   };
 
   // Player card component with colorful styling
