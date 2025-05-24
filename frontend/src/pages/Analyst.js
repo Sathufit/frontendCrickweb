@@ -17,12 +17,6 @@ const Analyst = () => {
       image: "/images/1.2.JPG",
       color: "#4ECDC4" // Teal shade
     },
-    highestWickets: {
-      name: "Dihindu Nimsath",
-      wickets: "30",
-      image: "/images/1.3.jpg",
-      color: "#FFD166" // Yellow shade
-    },
     awayPerformance: {
       name: "Yamila Dilhara",
       fifties: "2",
@@ -32,7 +26,7 @@ const Analyst = () => {
     highestPartnership: {
       players: "Yamila Dilhara and Dulshan Thanoj",
       runs: "147",
-      image: "https://via.placeholder.com/150",
+      image: "/images/5.JPG",
       color: "#1A936F" // Green shade
     },
     mostCenturies: [
@@ -50,7 +44,7 @@ const Analyst = () => {
       { name: "Savindu Weerarathna", fifties: "3", image: "/images/3.jpeg", color: "#FFD166" }, // Yellow shade
       { name: "Shanaka", fifties: "3", image: "https://via.placeholder.com/150", color: "#FF6B6B" }, // Red shade
       { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg", color: "#9B5DE5" },
-      { name: "Dihindu Nimsath", fifties: "1", image: "/images/.jpg", color: "#9B5DE5" }
+      { name: "Dihindu Nimsath", fifties: "1", image: "/images/1.3.jpg", color: "#9B5DE5" }
     ] 
   };
 
