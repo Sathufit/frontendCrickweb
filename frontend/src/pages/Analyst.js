@@ -36,13 +36,13 @@ const Analyst = () => {
       { name: "Achala Shashvika", centuries: "1", image: "/images/8.png", color: "#FB5607" } // Orange shade
     ],
     mostFifties: [
-      { name: "Yamila Dilhara", fifties: "24", image: "/images/5.JPG", color: "#06D6A0" }, // Mint shade
+      { name: "Yamila Dilhara", fifties: "25", image: "/images/5.JPG", color: "#06D6A0" }, // Mint shade
       { name: "Sathush Nanayakkara", fifties: "16", image: "/images/2.png", color: "#118AB2" }, // Blue shade
       { name: "Achala Shashvika", fifties: "8", image: "/images/8.png", color: "#06D6A0" }, // Mint shade
-      { name: "Chanuka de Silva", fifties: "7", image: "/images/1.2.JPG", color: "#EF476F" }, // Pink shade
+      { name: "Chanuka de Silva", fifties: "8", image: "/images/1.2.JPG", color: "#EF476F" }, // Pink shade
+      { name: "Shanaka", fifties: "4", image: "https://via.placeholder.com/150", color: "#FF6B6B" }, // Red shade
       { name: "Dulshan Thanoj", fifties: "4", image: "/images/1.4.JPG", color: "#073B4C" }, // Dark blue shade
       { name: "Savindu Weerarathna", fifties: "3", image: "/images/3.jpeg", color: "#FFD166" }, // Yellow shade
-      { name: "Shanaka", fifties: "3", image: "https://via.placeholder.com/150", color: "#FF6B6B" }, // Red shade
       { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg", color: "#9B5DE5" },
       { name: "Dihindu Nimsath", fifties: "1", image: "/images/1.3.jpg", color: "#9B5DE5" }
     ] 

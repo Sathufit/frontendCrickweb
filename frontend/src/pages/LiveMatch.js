@@ -1653,4 +1653,4 @@ const getBallClass = (ball) => {
   return "";
 };
 
-export default LiveMatch;
+export default LiveMatch; 
