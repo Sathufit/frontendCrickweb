@@ -219,16 +219,6 @@ const Analyst = () => {
           />
         </StatsSection>
 
-        <StatsSection title="Highest Wickets" color={playerStats.highestWickets.color}>
-          <PlayerCard 
-            image={playerStats.highestWickets.image}
-            name={playerStats.highestWickets.name}
-            statTitle="Wickets"
-            statValue={playerStats.highestWickets.wickets}
-            color={playerStats.highestWickets.color}
-          />
-        </StatsSection>
-
         <StatsSection title="Away Performance" color={playerStats.awayPerformance.color}>
           <PlayerCard 
             image={playerStats.awayPerformance.image}
