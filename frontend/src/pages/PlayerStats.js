@@ -1,25 +1,79 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+// This uses your actual API function.
 import { fetchPlayerStats } from "../api";
 
 const PlayerStats = () => {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // --- Data Fetching and State Management ---
 
   useEffect(() => {
+    const loadPlayerStats = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchPlayerStats();
+        console.log("📌 Fetched Player Stats (Frontend):", data);
+        // Ensure stats is an array to prevent errors if API returns nothing
+        setStats(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("❌ Error fetching player stats:", error);
+        setStats([]); // Set to empty array on error
+      }
+      setLoading(false);
+    };
     loadPlayerStats();
   }, []);
 
-  const loadPlayerStats = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchPlayerStats();
-      console.log("📌 Fetched Player Stats (Frontend):", data);
-      setStats(data);
-    } catch (error) {
-      console.error("❌ Error fetching player stats:", error);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // --- Navigation Logic ---
+
+  const changePlayer = useCallback((newIndex) => {
+    if (isTransitioning || stats.length <= 1) return;
+    setIsTransitioning(true);
+    setCurrentPlayerIndex(newIndex);
+    setTimeout(() => setIsTransitioning(false), 500); // Duration matches CSS transition
+  }, [isTransitioning, stats.length]);
+
+  const nextPlayer = useCallback(() => {
+    changePlayer((currentPlayerIndex + 1) % stats.length);
+  }, [currentPlayerIndex, stats.length, changePlayer]);
+
+  const prevPlayer = useCallback(() => {
+    changePlayer((currentPlayerIndex - 1 + stats.length) % stats.length);
+  }, [currentPlayerIndex, stats.length, changePlayer]);
+
+  // --- Swipe/Touch Handling for Mobile ---
+
+  const [touchStart, setTouchStart] = useState(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => setTouchStart(e.targetTouches[0].clientX);
+  const onTouchMove = (e) => {
+    if (touchStart === null) return;
+    const distance = touchStart - e.targetTouches[0].clientX;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextPlayer();
+      setTouchStart(null); // Prevent multiple swipes
+    } else if (isRightSwipe) {
+      prevPlayer();
+      setTouchStart(null); // Prevent multiple swipes
     }
-    setLoading(false);
   };
+
+
+  // --- Helper Functions and Components ---
 
   const getPerformanceColor = (average) => {
     if (average >= 50) return '#dc2626';
@@ -35,891 +89,195 @@ const PlayerStats = () => {
   };
 
   const calculateStrikeRate = (runs, innings) => {
-    return innings > 0 ? ((runs / innings) * 1.2).toFixed(1) : 0;
+    return innings > 0 ? ((runs / innings) * 1.2).toFixed(1) : "0.0";
   };
 
   const CircularProgress = ({ percentage, color, size = 120 }) => {
     const radius = (size - 8) / 2;
     const circumference = radius * 2 * Math.PI;
-    const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+    const offset = circumference - (percentage / 100) * circumference;
 
     return (
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg
-          className="transform -rotate-90"
-          width={size}
-          height={size}
-          viewBox={`0 0 ${size} ${size}`}
-        >
+      <div style={{ position: 'relative', width: size, height: size }}>
+        <svg style={{ transform: 'rotate(-90deg)' }} width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={size / 2} cy={size / 2} r={radius} stroke="rgba(255,255,255,0.15)" strokeWidth="8" fill="transparent" />
           <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="rgba(220,38,38,0.2)"
-            strokeWidth="8"
-            fill="transparent"
-          />
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke={color}
-            strokeWidth="8"
-            fill="transparent"
-            strokeDasharray={strokeDasharray}
-            strokeLinecap="round"
-            className="transition-all duration-1000 ease-out"
+            cx={size / 2} cy={size / 2} r={radius}
+            stroke={color} strokeWidth="8" fill="transparent"
+            strokeDasharray={circumference} strokeDashoffset={offset}
+            strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease-out' }}
           />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center flex-col">
-          <span className="text-2xl font-bold text-red-600">
-            {percentage}
-          </span>
-          <span className="text-xs text-red-500 opacity-70">
-            %
-          </span>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+          <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: color }}>{Math.round(percentage)}</span>
+          <span style={{ fontSize: '0.75rem', opacity: 0.8, color: color }}>%</span>
         </div>
       </div>
     );
   };
 
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  const nextPlayer = () => {
-    if (isTransitioning || stats.length <= 1) return;
-    setIsTransitioning(true);
-    setCurrentPlayerIndex((prev) => {
-      const nextIndex = (prev + 1) % stats.length;
-      console.log('Next player:', nextIndex, 'Total players:', stats.length);
-      return nextIndex;
-    });
-    setTimeout(() => setIsTransitioning(false), 500); 
-  };
-
-  const prevPlayer = () => {
-    if (isTransitioning || stats.length <= 1) return;
-    setIsTransitioning(true);
-    setCurrentPlayerIndex((prev) => {
-      const prevIndex = (prev - 1 + stats.length) % stats.length;
-      console.log('Previous player:', prevIndex, 'Total players:', stats.length);
-      return prevIndex;
-    });
-    setTimeout(() => setIsTransitioning(false), 500);
-  };
-
-  // Touch/Swipe handling for mobile
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      nextPlayer();
-    } else if (isRightSwipe) {
-      prevPlayer();
-    }
-  };
-
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const PlayerProfileCard = ({ player, index, isActive }) => {
+  // This is now a "dumb" component just for displaying data.
+  // All event handling and layout control is managed by the parent.
+  const PlayerProfileCard = ({ player }) => {
     const average = player.average !== "N/A" ? Number(player.average) : 0;
     const strikeRate = calculateStrikeRate(player.totalRuns, player.totalInnings);
-    const performancePercentage = Math.min((average / 100) * 100, 100);
-    const consistencyPercentage = Math.min(((player.totalInnings - player.totalOuts) / player.totalInnings) * 100, 100);
+    const performancePercentage = Math.min((average / 60) * 100, 100);
+    const consistencyPercentage = player.totalInnings > 0 ? Math.round(((player.totalInnings - player.totalOuts) / player.totalInnings) * 100) : 0;
 
     return (
-      <div 
-        className="full-page-card"
+      <div
+        className="player-card-content"
         style={{
           background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%)',
-          minHeight: '100vh',
-          display: 'flex',
-          position: 'relative',
-          overflow: 'hidden',
-          transform: isActive ? 'scale(1)' : 'scale(0.95)',
-          opacity: isActive ? 1 : 0,
-          transition: 'all 0.5s ease',
-          flexDirection: 'column'
-        }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        {/* Background Pattern */}
-        <div 
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle at 70% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-            pointerEvents: 'none'
-          }}
-        />
-        
-        {/* Grid Pattern */}
-        <div 
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '100%',
-            height: '100%',
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px',
-            pointerEvents: 'none'
-          }}
-        />
-
-        {/* Mobile Header Bar */}
-        <div style={{
-          position: 'relative',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: isMobile ? '80px' : '60px',
-          background: 'rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 20px',
-          zIndex: 10,
-          borderBottom: '1px solid rgba(255,255,255,0.2)'
-        }}>
-          <div style={{
-            color: 'white',
-            fontSize: isMobile ? '18px' : '20px',
-            fontWeight: '700',
-            letterSpacing: '1px'
-          }}>
-            PLAYER STATS
-          </div>
-          
-          {/* Mobile Navigation Buttons */}
-          {isMobile && stats.length > 1 && (
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'center'
-            }}>
-              <button
-                onClick={prevPlayer}
-                disabled={isTransitioning}
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  color: 'white',
-                  fontSize: '18px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: isTransitioning ? 0.5 : 1,
-                  backdropFilter: 'blur(10px)'
-                }}
-              >
-                ←
-              </button>
-              
-              <div style={{
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: '600',
-                padding: '0 8px'
-              }}>
-                {currentPlayerIndex + 1} / {stats.length}
-              </div>
-              
-              <button
-                onClick={nextPlayer}
-                disabled={isTransitioning}
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  color: 'white',
-                  fontSize: '18px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: isTransitioning ? 0.5 : 1,
-                  backdropFilter: 'blur(10px)'
-                }}
-              >
-                →
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Main Content Container */}
-        <div style={{
-          flex: 1,
+          minHeight: '100%', // Fills the scrollable container
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
-          overflow: 'hidden'
-        }}>
-          {/* Left Side - Player Image & Basic Info */}
-          <div className="player-info-section" style={{ 
-            flex: isMobile ? '0 0 auto' : '0 0 45%', 
-            padding: isMobile ? '32px 24px' : '60px 40px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: 'relative',
-            zIndex: 2,
-            textAlign: 'center',
-            minHeight: isMobile ? 'auto' : '100%'
-          }}>
-            {/* Player Avatar */}
-            <div 
-              style={{
-                width: isMobile ? '120px' : '280px',
-                height: isMobile ? '120px' : '280px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 50%, #e5e5e5 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: isMobile ? '20px' : '40px',
-                fontSize: isMobile ? '32px' : '80px',
-                fontWeight: 'bold',
-                color: '#dc2626',
-                border: isMobile ? '4px solid rgba(255,255,255,0.3)' : '8px solid rgba(255,255,255,0.3)',
-                boxShadow: isMobile 
-                  ? '0 15px 35px rgba(0,0,0,0.3)' 
-                  : '0 30px 60px rgba(0,0,0,0.3)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-            >
-              {/* Inner glow effect */}
-              <div style={{
-                position: 'absolute',
-                inset: isMobile ? '15px' : '20px',
-                borderRadius: '50%',
-                background: 'rgba(220,38,38,0.1)',
-                backdropFilter: 'blur(10px)'
-              }} />
-              <span style={{ position: 'relative', zIndex: 1 }}>
-                {player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-              </span>
-            </div>
+          position: 'relative',
+          paddingBottom: '50px' // Space for content at the very bottom
+        }}
+      >
+        {/* Decorative Backgrounds */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 70% 20%, rgba(255,255,255,0.05) 0%, transparent 50%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`, backgroundSize: '40px 40px', pointerEvents: 'none' }} />
 
-            {/* Player Name */}
-            <h1 style={{ 
-              color: 'white', 
-              fontSize: isMobile ? '24px' : '48px', 
-              fontWeight: '800', 
-              margin: '0 0 16px 0',
-              textShadow: '0 4px 8px rgba(0,0,0,0.5)',
-              lineHeight: '1.1'
-            }}>
-              {player.name}
-            </h1>
-
-            {/* Performance Grade */}
-            <div style={{ 
-              background: 'rgba(255,255,255,0.2)', 
-              padding: isMobile ? '8px 16px' : '12px 24px', 
-              borderRadius: '25px',
-              display: 'inline-block',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              marginBottom: isMobile ? '24px' : '40px'
-            }}>
-              <span style={{ 
-                color: 'white', 
-                fontSize: isMobile ? '12px' : '16px', 
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}>
-                {getPerformanceGrade(average)}
-              </span>
-            </div>
-
-            {/* Quick Stats */}
-            <div style={{ 
-              display: 'flex', 
-              gap: isMobile ? '32px' : '30px',
-              marginTop: isMobile ? '16px' : '20px',
-              justifyContent: 'center'
-            }}>
-              <div>
-                <div style={{ 
-                  color: 'rgba(255,255,255,0.8)', 
-                  fontSize: isMobile ? '11px' : '14px', 
-                  fontWeight: '500',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  marginBottom: '6px'
-                }}>
-                  Total Innings
-                </div>
-                <div style={{ 
-                  color: 'white', 
-                  fontSize: isMobile ? '18px' : '32px', 
-                  fontWeight: '700'
-                }}>
-                  {player.totalInnings}
-                </div>
-              </div>
-              
-              <div>
-                <div style={{ 
-                  color: 'rgba(255,255,255,0.8)', 
-                  fontSize: isMobile ? '11px' : '14px', 
-                  fontWeight: '500',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  marginBottom: '6px'
-                }}>
-                  Total Outs
-                </div>
-                <div style={{ 
-                  color: 'white', 
-                  fontSize: isMobile ? '18px' : '32px', 
-                  fontWeight: '700'
-                }}>
-                  {player.totalOuts}
-                </div>
-              </div>
-            </div>
+        {/* Left Side: Player Info */}
+        <div style={{ flex: isMobile ? 'none' : '0 0 45%', padding: isMobile ? '110px 24px 24px' : '60px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ width: isMobile ? 120 : 220, height: isMobile ? 120 : 220, borderRadius: '50%', background: 'linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: isMobile ? 20 : 30, fontSize: isMobile ? 32 : 64, fontWeight: 'bold', color: '#dc2626', border: '6px solid rgba(255,255,255,0.3)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+            <span>{player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
           </div>
-
-          {/* Right Side - Statistics */}
-          <div className="stats-section" style={{ 
-            flex: isMobile ? '1' : '0 0 55%', 
-            padding: isMobile ? '24px' : '60px 40px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            position: 'relative',
-            zIndex: 2,
-            paddingBottom: isMobile ? '40px' : '60px'
-          }}>
-            {/* Main Stats Header */}
-            <div style={{ 
-              marginBottom: isMobile ? '24px' : '50px',
-              textAlign: 'center'
-            }}>
-              <div style={{ 
-                color: 'rgba(255,255,255,0.8)', 
-                fontSize: isMobile ? '12px' : '18px', 
-                fontWeight: '500',
-                textTransform: 'uppercase',
-                letterSpacing: '2px',
-                marginBottom: '8px'
-              }}>
-                Career Statistics
-              </div>
-              <div style={{ 
-                color: 'white', 
-                fontSize: isMobile ? '28px' : '64px', 
-                fontWeight: '800',
-                lineHeight: '1'
-              }}>
-                {player.totalRuns.toLocaleString()}
-              </div>
-              <div style={{ 
-                color: 'rgba(255,255,255,0.9)', 
-                fontSize: isMobile ? '12px' : '18px', 
-                fontWeight: '500',
-                marginTop: '4px'
-              }}>
-                Total Runs Scored
-              </div>
+          <h1 style={{ color: 'white', fontSize: isMobile ? '2rem' : '3rem', fontWeight: 800, margin: '0 0 16px 0', textShadow: '0 4px 8px rgba(0,0,0,0.5)' }}>{player.name}</h1>
+          <div style={{ background: 'rgba(255,255,255,0.15)', padding: '10px 20px', borderRadius: 25, backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', marginBottom: 32 }}>
+            <span style={{ color: 'white', fontSize: isMobile ? 12 : 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{getPerformanceGrade(average)}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 32, justifyContent: 'center' }}>
+            <div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, textTransform: 'uppercase', marginBottom: 6 }}>Innings</div>
+              <div style={{ color: 'white', fontSize: isMobile ? 20 : 28, fontWeight: 700 }}>{player.totalInnings}</div>
             </div>
-
-            {/* Circular Progress Stats */}
-            <div style={{ 
-              display: 'flex', 
-              gap: isMobile ? '20px' : '50px',
-              marginBottom: isMobile ? '24px' : '50px',
-              justifyContent: 'center',
-              flexWrap: 'nowrap'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <CircularProgress 
-                  percentage={Math.round(performancePercentage)} 
-                  color={getPerformanceColor(average)}
-                  size={isMobile ? 80 : 140}
-                />
-                <div style={{ 
-                  color: 'rgba(255,255,255,0.9)', 
-                  fontSize: isMobile ? '10px' : '14px', 
-                  fontWeight: '600',
-                  marginTop: isMobile ? '8px' : '15px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px'
-                }}>
-                  Batting Average
-                </div>
-                <div style={{ 
-                  color: 'white', 
-                  fontSize: isMobile ? '16px' : '24px', 
-                  fontWeight: '700',
-                  marginTop: '4px'
-                }}>
-                  {player.average !== "N/A" ? Number(player.average).toFixed(1) : "N/A"}
-                </div>
-              </div>
-
-              <div style={{ textAlign: 'center' }}>
-                <CircularProgress 
-                  percentage={Math.round(consistencyPercentage)} 
-                  color="#ffffff"
-                  size={isMobile ? 80 : 140}
-                />
-                <div style={{ 
-                  color: 'rgba(255,255,255,0.9)', 
-                  fontSize: isMobile ? '10px' : '14px', 
-                  fontWeight: '600',
-                  marginTop: isMobile ? '8px' : '15px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px'
-                }}>
-                  Consistency
-                </div>
-                <div style={{ 
-                  color: 'white', 
-                  fontSize: isMobile ? '16px' : '24px', 
-                  fontWeight: '700',
-                  marginTop: '4px'
-                }}>
-                  {Math.round(consistencyPercentage)}%
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Stats Row */}
-            <div style={{ 
-              display: 'flex', 
-              gap: isMobile ? '32px' : '60px',
-              justifyContent: 'center',
-              textAlign: 'center'
-            }}>
-              <div>
-                <div style={{ 
-                  color: 'rgba(255,255,255,0.8)', 
-                  fontSize: isMobile ? '11px' : '14px', 
-                  fontWeight: '500',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  marginBottom: '6px'
-                }}>
-                  Strike Rate
-                </div>
-                <div style={{ 
-                  color: 'white', 
-                  fontSize: isMobile ? '20px' : '36px', 
-                  fontWeight: '700'
-                }}>
-                  {strikeRate}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ 
-                  color: 'rgba(255,255,255,0.8)', 
-                  fontSize: isMobile ? '11px' : '14px', 
-                  fontWeight: '500',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  marginBottom: '6px'
-                }}>
-                  Success Rate
-                </div>
-                <div style={{ 
-                  color: 'white', 
-                  fontSize: isMobile ? '20px' : '36px', 
-                  fontWeight: '700'
-                }}>
-                  {Math.round(((player.totalInnings - player.totalOuts) / player.totalInnings) * 100)}%
-                </div>
-              </div>
+            <div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, textTransform: 'uppercase', marginBottom: 6 }}>Outs</div>
+              <div style={{ color: 'white', fontSize: isMobile ? 20 : 28, fontWeight: 700 }}>{player.totalOuts}</div>
             </div>
           </div>
         </div>
 
-        {/* Navigation Dots */}
-        <div style={{
-          position: 'absolute',
-          bottom: isMobile ? '20px' : '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          gap: isMobile ? '8px' : '12px',
-          zIndex: 3
-        }}>
-          {stats.map((_, idx) => (
-            <div
-              key={idx}
-              onClick={() => {
-                if (!isTransitioning) {
-                  setIsTransitioning(true);
-                  setCurrentPlayerIndex(idx);
-                  setTimeout(() => setIsTransitioning(false), 500);
-                }
-              }}
-              style={{
-                width: isMobile ? '8px' : '12px',
-                height: isMobile ? '8px' : '12px',
-                borderRadius: '50%',
-                background: idx === index 
-                  ? 'rgba(255,255,255,0.9)' 
-                  : 'rgba(255,255,255,0.4)',
-                transition: 'all 0.3s ease',
-                transform: idx === index ? 'scale(1.2)' : 'scale(1)',
-                boxShadow: idx === index 
-                  ? '0 4px 12px rgba(255,255,255,0.4)' 
-                  : 'none',
-                cursor: 'pointer'
-              }}
-            />
-          ))}
+        {/* Right Side: Statistics */}
+        <div style={{ flex: 1, padding: isMobile ? '24px' : '60px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ marginBottom: isMobile ? 32 : 50, textAlign: 'center' }}>
+            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: isMobile ? 14 : 18, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>Career Statistics</div>
+            <div style={{ color: 'white', fontSize: isMobile ? 48 : 64, fontWeight: 800, lineHeight: 1 }}>{player.totalRuns.toLocaleString()}</div>
+            <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: isMobile ? 14 : 18, marginTop: 4 }}>Total Runs Scored</div>
+          </div>
+          <div style={{ display: 'flex', gap: isMobile ? 20 : 40, marginBottom: 40, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ textAlign: 'center' }}>
+              <CircularProgress percentage={performancePercentage} color={getPerformanceColor(average)} size={isMobile ? 100 : 140} />
+              <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: 600, marginTop: 12, textTransform: 'uppercase' }}>Batting Avg</div>
+              <div style={{ color: 'white', fontSize: 20, fontWeight: 700, marginTop: 4 }}>{Number(player.average).toFixed(1)}</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <CircularProgress percentage={consistencyPercentage} color="#ffffff" size={isMobile ? 100 : 140} />
+              <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: 600, marginTop: 12, textTransform: 'uppercase' }}>Consistency</div>
+              <div style={{ color: 'white', fontSize: 20, fontWeight: 700, marginTop: 4 }}>{consistencyPercentage}%</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 40, justifyContent: 'center', textAlign: 'center' }}>
+            <div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, textTransform: 'uppercase', marginBottom: 6 }}>Strike Rate</div>
+              <div style={{ color: 'white', fontSize: isMobile ? 24 : 32, fontWeight: 700 }}>{strikeRate}</div>
+            </div>
+            <div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, textTransform: 'uppercase', marginBottom: 6 }}>Success Rate</div>
+              <div style={{ color: 'white', fontSize: isMobile ? 24 : 32, fontWeight: 700 }}>{consistencyPercentage}%</div>
+            </div>
+          </div>
         </div>
       </div>
     );
   };
+
+  // --- Main Render Logic ---
 
   return (
     <>
       <style>{`
-        @keyframes slideIn {
-          from {
-            transform: translateX(100px);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        .loading-spinner {
-          width: ${isMobile ? '50px' : '60px'};
-          height: ${isMobile ? '50px' : '60px'};
-          border: 4px solid rgba(255,255,255,0.3);
-          border-top: 4px solid #ffffff;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        .full-page-card {
-          animation: slideIn 0.8s ease-out;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-
-        body {
-          margin: 0;
-          padding: 0;
-          overflow-x: hidden;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-
-        .full-page-card {
-          min-height: 100vh;
-          min-height: 100dvh;
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-          .full-page-card {
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-          }
-          
-          .player-info-section {
-            min-height: auto !important;
-            padding: 24px !important;
-          }
-          
-          .stats-section {
-            padding: 16px 24px 40px 24px !important;
-          }
-        }
-
-        /* Improved touch targets */
-        @media (max-width: 768px) and (pointer: coarse) {
-          .full-page-card {
-            cursor: grab;
-          }
-          
-          .full-page-card:active {
-            cursor: grabbing;
-          }
-        }
-
-        /* Handle notched devices */
-        @supports (padding-top: env(safe-area-inset-top)) {
-          @media (max-width: 768px) {
-            .full-page-card {
-              padding-top: env(safe-area-inset-top);
-            }
-          }
-        }
-
-        /* Landscape mobile optimization */
-        @media (max-width: 768px) and (orientation: landscape) {
-          .full-page-card > div:last-child {
-            flex-direction: row !important;
-          }
-          
-          .player-info-section {
-            flex: 0 0 45% !important;
-            padding: 20px !important;
-          }
-          
-          .stats-section {
-            flex: 0 0 55% !important;
-            padding: 20px !important;
-          }
-        }
-
-        /* High DPI displays */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-          .full-page-card {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-          }
-        }
-
-        /* Reduce motion for accessibility */
-        @media (prefers-reduced-motion: reduce) {
-          .full-page-card,
-          .loading-spinner,
-          * {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-          }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #7f1d1d; overflow: hidden; }
+        * { box-sizing: border-box; }
+        .safe-area-padding {
+          padding-top: env(safe-area-inset-top);
+          padding-bottom: env(safe-area-inset-bottom);
         }
       `}</style>
-
-      {/* Loading State */}
+      
       {loading ? (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '100vh',
-          minHeight: '100dvh',
-          background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%)',
-          padding: '20px'
-        }}>
-          <div className="loading-spinner"></div>
-          <p style={{ 
-            marginTop: '24px', 
-            fontSize: isMobile ? '16px' : '18px', 
-            color: 'rgba(255,255,255,0.9)',
-            fontWeight: '500',
-            textAlign: 'center'
-          }}>
-            Loading player statistics...
-          </p>
-        </div>
-      ) : stats.length === 0 ? (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          minHeight: '100dvh',
-          background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%)',
-          color: 'white',
-          textAlign: 'center',
-          padding: '40px 20px'
-        }}>
-          <h3 style={{ 
-            fontSize: isMobile ? '24px' : '32px', 
-            fontWeight: '700',
-            marginBottom: '16px',
-            margin: '0 0 16px 0'
-          }}>
-            No Statistics Available
-          </h3>
-          <p style={{ 
-            fontSize: isMobile ? '16px' : '18px',
-            opacity: 0.8,
-            margin: 0
-          }}>
-            Player statistics will appear here once they are available.
-          </p>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100dvh', background: '#991b1b' }}>
+          <div style={{ width: 50, height: 50, border: '4px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
         </div>
       ) : (
-        /* Player Profile Cards */
-        <div style={{ position: 'relative' }}>
-          {/* Navigation Arrows - Desktop only */}
-          {!isMobile && (
+        <div
+          className="stats-page-container safe-area-padding"
+          style={{ position: 'relative', width: '100vw', height: '100dvh', overflow: 'hidden' }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+        >
+          {/* PERSISTENT UI (Header, Arrows) - Placed here so they don't fade with cards */}
+          {isMobile && (
+            <div style={{ position: 'absolute', top: 'env(safe-area-inset-top)', left: 0, right: 0, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', zIndex: 10 }}>
+              <div style={{ color: 'white', fontSize: '18px', fontWeight: 700 }}>PLAYER STATS</div>
+              {stats.length > 1 && (
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button onClick={prevPlayer} disabled={isTransitioning} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', width: 40, height: 40, color: 'white', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+                  <button onClick={nextPlayer} disabled={isTransitioning} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', width: 40, height: 40, color: 'white', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</button>
+                </div>
+              )}
+            </div>
+          )}
+          {!isMobile && stats.length > 1 && (
             <>
-              <button
-                onClick={prevPlayer}
-                disabled={isTransitioning}
-                style={{
-                  position: 'fixed',
-                  left: '30px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'rgba(255,255,255,0.2)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: '50%',
-                  width: '60px',
-                  height: '60px',
-                  color: 'white',
-                  fontSize: '24px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: isTransitioning ? 0.5 : 1,
-                  zIndex: 1000
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255,255,255,0.3)';
-                  e.target.style.transform = 'translateY(-50%) scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255,255,255,0.2)';
-                  e.target.style.transform = 'translateY(-50%) scale(1)';
-                }}
-              >
-                ←
-              </button>
-
-              <button
-                onClick={nextPlayer}
-                disabled={isTransitioning}
-                style={{
-                  position: 'fixed',
-                  right: '30px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'rgba(255,255,255,0.2)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: '50%',
-                  width: '60px',
-                  height: '60px',
-                  color: 'white',
-                  fontSize: '24px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: isTransitioning ? 0.5 : 1,
-                  zIndex: 1000
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255,255,255,0.3)';
-                  e.target.style.transform = 'translateY(-50%) scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255,255,255,0.2)';
-                  e.target.style.transform = 'translateY(-50%) scale(1)';
-                }}
-              >
-                →
-              </button>
+              <button onClick={prevPlayer} disabled={isTransitioning} style={{ position: 'fixed', left: 30, top: '50%', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.2)', border: 'none', borderRadius: '50%', width: 50, height: 50, color: 'white', fontSize: 24, cursor: 'pointer', transition: 'background 0.3s' }}>←</button>
+              <button onClick={nextPlayer} disabled={isTransitioning} style={{ position: 'fixed', right: 30, top: '50%', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.2)', border: 'none', borderRadius: '50%', width: 50, height: 50, color: 'white', fontSize: 24, cursor: 'pointer', transition: 'background 0.3s' }}>→</button>
             </>
           )}
 
-          {/* Player Counter - Desktop */}
-          {!isMobile && stats.length > 1 && (
-            <div style={{
-              position: 'fixed',
-              top: '30px',
-              right: '30px',
-              background: 'rgba(255,255,255,0.2)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              borderRadius: '25px',
-              padding: '12px 20px',
-              color: 'white',
-              fontSize: '16px',
-              fontWeight: '600',
-              zIndex: 1000
-            }}>
-              {currentPlayerIndex + 1} / {stats.length}
+          {/* This wrapper holds the stacked, transitioning cards */}
+          <div className="cards-wrapper" style={{ position: 'relative', width: '100%', height: '100%' }}>
+            {stats.length > 0 ? stats.map((player, index) => (
+              <div
+                key={player._id || index} // Use a unique ID from your data if possible
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  opacity: index === currentPlayerIndex ? 1 : 0,
+                  transform: `scale(${index === currentPlayerIndex ? 1 : 0.97})`,
+                  transition: 'opacity 0.5s ease, transform 0.5s ease',
+                  pointerEvents: index === currentPlayerIndex ? 'auto' : 'none',
+                  // THIS IS THE KEY FIX: Allows vertical scrolling within each card
+                  overflowY: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+              >
+                <PlayerProfileCard player={player} />
+              </div>
+            )) : (
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'white', textAlign: 'center', padding: '20px' }}>
+                <h3 style={{ fontSize: '24px', fontWeight: 700 }}>No Statistics Available</h3>
+                <p style={{ opacity: 0.8 }}>Player statistics will appear here once available.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Navigation Dots */}
+          {stats.length > 1 && (
+            <div style={{ position: 'absolute', bottom: isMobile ? 20 : 30, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 10, zIndex: 10, paddingBottom: 'env(safe-area-inset-bottom)' }}>
+              {stats.map((_, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => changePlayer(idx)}
+                  style={{ width: 10, height: 10, borderRadius: '50%', background: idx === currentPlayerIndex ? 'white' : 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all 0.3s' }}
+                />
+              ))}
             </div>
           )}
-
-          {/* Render current player */}
-          {stats.map((player, index) => (
-            <div
-              key={index}
-              style={{
-                position: index === currentPlayerIndex ? 'relative' : 'absolute',
-                top: index === currentPlayerIndex ? 0 : 0,
-                left: 0,
-                right: 0,
-                zIndex: index === currentPlayerIndex ? 1 : 0,
-                pointerEvents: index === currentPlayerIndex ? 'auto' : 'none'
-              }}
-            >
-              <PlayerProfileCard 
-                player={player} 
-                index={index}
-                isActive={index === currentPlayerIndex}
-              />
-            </div>
-          ))}
         </div>
       )}
     </>
