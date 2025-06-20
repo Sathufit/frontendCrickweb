@@ -130,6 +130,17 @@ const PlayerStats = () => {
     }
   };
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const PlayerProfileCard = ({ player, index, isActive }) => {
     const average = player.average !== "N/A" ? Number(player.average) : 0;
     const strikeRate = calculateStrikeRate(player.totalRuns, player.totalInnings);
@@ -148,7 +159,7 @@ const PlayerStats = () => {
           transform: isActive ? 'scale(1)' : 'scale(0.95)',
           opacity: isActive ? 1 : 0,
           transition: 'all 0.5s ease',
-          flexDirection: window.innerWidth <= 768 ? 'column' : 'row'
+          flexDirection: isMobile ? 'column' : 'row'
         }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -160,9 +171,11 @@ const PlayerStats = () => {
             position: 'absolute',
             top: 0,
             right: 0,
-            width: '60%',
+            width: isMobile ? '100%' : '60%',
             height: '100%',
-            background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            background: isMobile 
+              ? 'radial-gradient(circle at 50% 10%, rgba(255,255,255,0.1) 0%, transparent 50%)'
+              : 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
             pointerEvents: 'none'
           }}
         />
@@ -173,45 +186,73 @@ const PlayerStats = () => {
             position: 'absolute',
             top: 0,
             right: 0,
-            width: '50%',
+            width: isMobile ? '100%' : '50%',
             height: '100%',
             backgroundImage: `
               linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
               linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
             `,
-            backgroundSize: '40px 40px',
+            backgroundSize: isMobile ? '30px 30px' : '40px 40px',
             pointerEvents: 'none'
           }}
         />
 
+        {/* Mobile Header Bar */}
+        {isMobile && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '80px',
+            background: 'rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10
+          }}>
+            <div style={{
+              color: 'white',
+              fontSize: '18px',
+              fontWeight: '600',
+              letterSpacing: '1px'
+            }}>
+              PLAYER STATS
+            </div>
+          </div>
+        )}
+
         {/* Left Side - Player Image & Basic Info */}
         <div className="player-info-section" style={{ 
-          flex: window.innerWidth <= 768 ? '0 0 auto' : '0 0 45%', 
-          padding: window.innerWidth <= 768 ? '40px 20px 20px 20px' : '60px 40px',
+          flex: isMobile ? '0 0 auto' : '0 0 45%', 
+          padding: isMobile ? '100px 24px 32px 24px' : '60px 40px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: window.innerWidth <= 768 ? 'flex-start' : 'center',
-          alignItems: window.innerWidth <= 768 ? 'center' : 'flex-start',
+          justifyContent: isMobile ? 'flex-start' : 'center',
+          alignItems: 'center',
           position: 'relative',
           zIndex: 2,
-          textAlign: window.innerWidth <= 768 ? 'center' : 'left'
+          textAlign: 'center'
         }}>
           {/* Player Avatar */}
           <div 
             style={{
-              width: window.innerWidth <= 768 ? '180px' : '280px',
-              height: window.innerWidth <= 768 ? '180px' : '280px',
+              width: isMobile ? '140px' : '280px',
+              height: isMobile ? '140px' : '280px',
               borderRadius: '50%',
               background: 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: window.innerWidth <= 768 ? '24px' : '40px',
-              fontSize: window.innerWidth <= 768 ? '48px' : '80px',
+              marginBottom: isMobile ? '20px' : '40px',
+              fontSize: isMobile ? '36px' : '80px',
               fontWeight: 'bold',
               color: 'white',
-              border: window.innerWidth <= 768 ? '6px solid rgba(255,255,255,0.2)' : '8px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
+              border: isMobile ? '4px solid rgba(255,255,255,0.2)' : '8px solid rgba(255,255,255,0.2)',
+              boxShadow: isMobile 
+                ? '0 15px 35px rgba(0,0,0,0.3)' 
+                : '0 30px 60px rgba(0,0,0,0.3)',
               position: 'relative',
               overflow: 'hidden'
             }}
@@ -219,7 +260,7 @@ const PlayerStats = () => {
             {/* Inner glow effect */}
             <div style={{
               position: 'absolute',
-              inset: '20px',
+              inset: isMobile ? '15px' : '20px',
               borderRadius: '50%',
               background: 'rgba(255,255,255,0.1)',
               backdropFilter: 'blur(10px)'
@@ -232,9 +273,9 @@ const PlayerStats = () => {
           {/* Player Name */}
           <h1 style={{ 
             color: 'white', 
-            fontSize: window.innerWidth <= 768 ? '32px' : '48px', 
+            fontSize: isMobile ? '24px' : '48px', 
             fontWeight: '800', 
-            margin: '0 0 20px 0',
+            margin: '0 0 16px 0',
             textShadow: '0 4px 8px rgba(0,0,0,0.5)',
             lineHeight: '1.1'
           }}>
@@ -244,16 +285,16 @@ const PlayerStats = () => {
           {/* Performance Grade */}
           <div style={{ 
             background: 'rgba(255,255,255,0.15)', 
-            padding: '12px 24px', 
+            padding: isMobile ? '10px 20px' : '12px 24px', 
             borderRadius: '25px',
             display: 'inline-block',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255,255,255,0.2)',
-            marginBottom: '40px'
+            marginBottom: isMobile ? '24px' : '40px'
           }}>
             <span style={{ 
               color: 'white', 
-              fontSize: '16px', 
+              fontSize: isMobile ? '14px' : '16px', 
               fontWeight: '600',
               textTransform: 'uppercase',
               letterSpacing: '1px'
@@ -265,25 +306,24 @@ const PlayerStats = () => {
           {/* Quick Stats */}
           <div style={{ 
             display: 'flex', 
-            gap: window.innerWidth <= 768 ? '20px' : '30px',
-            marginTop: '20px',
-            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
-            alignItems: window.innerWidth <= 768 ? 'center' : 'flex-start'
+            gap: isMobile ? '32px' : '30px',
+            marginTop: isMobile ? '16px' : '20px',
+            justifyContent: 'center'
           }}>
             <div>
               <div style={{ 
                 color: 'rgba(255,255,255,0.7)', 
-                fontSize: '14px', 
+                fontSize: isMobile ? '12px' : '14px', 
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                marginBottom: '8px'
+                marginBottom: '6px'
               }}>
                 Total Innings
               </div>
               <div style={{ 
                 color: 'white', 
-                fontSize: window.innerWidth <= 768 ? '24px' : '32px', 
+                fontSize: isMobile ? '20px' : '32px', 
                 fontWeight: '700'
               }}>
                 {player.totalInnings}
@@ -293,17 +333,17 @@ const PlayerStats = () => {
             <div>
               <div style={{ 
                 color: 'rgba(255,255,255,0.7)', 
-                fontSize: '14px', 
+                fontSize: isMobile ? '12px' : '14px', 
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                marginBottom: '8px'
+                marginBottom: '6px'
               }}>
                 Total Outs
               </div>
               <div style={{ 
                 color: 'white', 
-                fontSize: window.innerWidth <= 768 ? '24px' : '32px', 
+                fontSize: isMobile ? '20px' : '32px', 
                 fontWeight: '700'
               }}>
                 {player.totalOuts}
@@ -314,32 +354,33 @@ const PlayerStats = () => {
 
         {/* Right Side - Statistics */}
         <div className="stats-section" style={{ 
-          flex: window.innerWidth <= 768 ? '1' : '0 0 55%', 
-          padding: window.innerWidth <= 768 ? '20px' : '60px 40px',
+          flex: isMobile ? '1' : '0 0 55%', 
+          padding: isMobile ? '24px' : '60px 40px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: window.innerWidth <= 768 ? 'flex-start' : 'center',
+          justifyContent: isMobile ? 'flex-start' : 'center',
           position: 'relative',
-          zIndex: 2
+          zIndex: 2,
+          paddingBottom: isMobile ? '100px' : '60px'
         }}>
           {/* Main Stats Header */}
           <div style={{ 
-            marginBottom: window.innerWidth <= 768 ? '30px' : '50px',
-            textAlign: window.innerWidth <= 768 ? 'center' : 'left'
+            marginBottom: isMobile ? '24px' : '50px',
+            textAlign: 'center'
           }}>
             <div style={{ 
               color: 'rgba(255,255,255,0.7)', 
-              fontSize: '18px', 
+              fontSize: isMobile ? '14px' : '18px', 
               fontWeight: '500',
               textTransform: 'uppercase',
               letterSpacing: '2px',
-              marginBottom: '10px'
+              marginBottom: '8px'
             }}>
               Career Statistics
             </div>
             <div style={{ 
               color: 'white', 
-              fontSize: window.innerWidth <= 768 ? '42px' : '64px', 
+              fontSize: isMobile ? '32px' : '64px', 
               fontWeight: '800',
               lineHeight: '1'
             }}>
@@ -347,9 +388,9 @@ const PlayerStats = () => {
             </div>
             <div style={{ 
               color: 'rgba(255,255,255,0.8)', 
-              fontSize: '18px', 
+              fontSize: isMobile ? '14px' : '18px', 
               fontWeight: '500',
-              marginTop: '5px'
+              marginTop: '4px'
             }}>
               Total Runs Scored
             </div>
@@ -358,22 +399,22 @@ const PlayerStats = () => {
           {/* Circular Progress Stats */}
           <div style={{ 
             display: 'flex', 
-            gap: window.innerWidth <= 768 ? '30px' : '50px',
-            marginBottom: window.innerWidth <= 768 ? '30px' : '50px',
-            justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start',
-            flexWrap: window.innerWidth <= 768 ? 'wrap' : 'nowrap'
+            gap: isMobile ? '24px' : '50px',
+            marginBottom: isMobile ? '32px' : '50px',
+            justifyContent: 'center',
+            flexWrap: 'nowrap'
           }}>
             <div style={{ textAlign: 'center' }}>
               <CircularProgress 
                 percentage={Math.round(performancePercentage)} 
                 color={getPerformanceColor(average)}
-                size={window.innerWidth <= 768 ? 110 : 140}
+                size={isMobile ? 90 : 140}
               />
               <div style={{ 
                 color: 'rgba(255,255,255,0.8)', 
-                fontSize: '14px', 
+                fontSize: isMobile ? '11px' : '14px', 
                 fontWeight: '600',
-                marginTop: '15px',
+                marginTop: isMobile ? '10px' : '15px',
                 textTransform: 'uppercase',
                 letterSpacing: '1px'
               }}>
@@ -381,9 +422,9 @@ const PlayerStats = () => {
               </div>
               <div style={{ 
                 color: 'white', 
-                fontSize: '24px', 
+                fontSize: isMobile ? '18px' : '24px', 
                 fontWeight: '700',
-                marginTop: '5px'
+                marginTop: '4px'
               }}>
                 {player.average !== "N/A" ? Number(player.average).toFixed(1) : "N/A"}
               </div>
@@ -393,13 +434,13 @@ const PlayerStats = () => {
               <CircularProgress 
                 percentage={Math.round(consistencyPercentage)} 
                 color="#3b82f6"
-                size={window.innerWidth <= 768 ? 110 : 140}
+                size={isMobile ? 90 : 140}
               />
               <div style={{ 
                 color: 'rgba(255,255,255,0.8)', 
-                fontSize: '14px', 
+                fontSize: isMobile ? '11px' : '14px', 
                 fontWeight: '600',
-                marginTop: '15px',
+                marginTop: isMobile ? '10px' : '15px',
                 textTransform: 'uppercase',
                 letterSpacing: '1px'
               }}>
@@ -407,9 +448,9 @@ const PlayerStats = () => {
               </div>
               <div style={{ 
                 color: 'white', 
-                fontSize: '24px', 
+                fontSize: isMobile ? '18px' : '24px', 
                 fontWeight: '700',
-                marginTop: '5px'
+                marginTop: '4px'
               }}>
                 {Math.round(consistencyPercentage)}%
               </div>
@@ -419,24 +460,24 @@ const PlayerStats = () => {
           {/* Bottom Stats Row */}
           <div style={{ 
             display: 'flex', 
-            gap: window.innerWidth <= 768 ? '40px' : '60px',
-            justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start',
-            textAlign: window.innerWidth <= 768 ? 'center' : 'left'
+            gap: isMobile ? '32px' : '60px',
+            justifyContent: 'center',
+            textAlign: 'center'
           }}>
             <div>
               <div style={{ 
                 color: 'rgba(255,255,255,0.7)', 
-                fontSize: '14px', 
+                fontSize: isMobile ? '12px' : '14px', 
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                marginBottom: '8px'
+                marginBottom: '6px'
               }}>
                 Strike Rate
               </div>
               <div style={{ 
                 color: 'white', 
-                fontSize: window.innerWidth <= 768 ? '28px' : '36px', 
+                fontSize: isMobile ? '22px' : '36px', 
                 fontWeight: '700'
               }}>
                 {strikeRate}
@@ -446,17 +487,17 @@ const PlayerStats = () => {
             <div>
               <div style={{ 
                 color: 'rgba(255,255,255,0.7)', 
-                fontSize: '14px', 
+                fontSize: isMobile ? '12px' : '14px', 
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                marginBottom: '8px'
+                marginBottom: '6px'
               }}>
                 Success Rate
               </div>
               <div style={{ 
                 color: 'white', 
-                fontSize: window.innerWidth <= 768 ? '28px' : '36px', 
+                fontSize: isMobile ? '22px' : '36px', 
                 fontWeight: '700'
               }}>
                 {Math.round(((player.totalInnings - player.totalOuts) / player.totalInnings) * 100)}%
@@ -468,19 +509,28 @@ const PlayerStats = () => {
         {/* Navigation Dots */}
         <div style={{
           position: 'absolute',
-          bottom: window.innerWidth <= 768 ? '20px' : '40px',
+          bottom: isMobile ? '24px' : '40px',
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
-          gap: '12px',
+          gap: isMobile ? '8px' : '12px',
           zIndex: 3
         }}>
           {stats.map((_, idx) => (
             <div
               key={idx}
+              onClick={() => {
+                if (!isTransitioning) {
+                  setIsTransitioning(true);
+                  setTimeout(() => {
+                    setCurrentPlayerIndex(idx);
+                    setIsTransitioning(false);
+                  }, 300);
+                }
+              }}
               style={{
-                width: '12px',
-                height: '12px',
+                width: isMobile ? '10px' : '12px',
+                height: isMobile ? '10px' : '12px',
                 borderRadius: '50%',
                 background: idx === index 
                   ? 'rgba(255,255,255,0.9)' 
@@ -489,11 +539,41 @@ const PlayerStats = () => {
                 transform: idx === index ? 'scale(1.2)' : 'scale(1)',
                 boxShadow: idx === index 
                   ? '0 4px 12px rgba(255,255,255,0.4)' 
-                  : 'none'
+                  : 'none',
+                cursor: 'pointer'
               }}
             />
           ))}
         </div>
+
+        {/* Mobile Swipe Indicator */}
+        {isMobile && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            display: stats.length > 1 ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 1,
+            opacity: 0.3
+          }}>
+            <div style={{
+              color: 'white',
+              fontSize: '12px',
+              fontWeight: '500',
+              textAlign: 'center',
+              background: 'rgba(0,0,0,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              backdropFilter: 'blur(10px)'
+            }}>
+              ← Swipe to navigate →
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -522,8 +602,8 @@ const PlayerStats = () => {
         }
 
         .loading-spinner {
-          width: 60px;
-          height: 60px;
+          width: ${isMobile ? '50px' : '60px'};
+          height: ${isMobile ? '50px' : '60px'};
           border: 4px solid rgba(255,255,255,0.3);
           border-top: 4px solid #ffffff;
           border-radius: 50%;
@@ -534,57 +614,91 @@ const PlayerStats = () => {
           animation: slideIn 0.8s ease-out;
         }
 
+        * {
+          box-sizing: border-box;
+        }
+
         body {
           margin: 0;
           padding: 0;
           overflow-x: hidden;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
 
-        /* Mobile Responsive Styles */
+        /* Mobile-first responsive design */
+        .full-page-card {
+          min-height: 100vh;
+          min-height: 100dvh; /* Dynamic viewport height for mobile */
+        }
+
+        /* Smooth touch scrolling for mobile */
         @media (max-width: 768px) {
           .full-page-card {
-            flex-direction: column !important;
-            padding: 20px 0 !important;
-          }
-          
-          .player-info-section {
-            flex: 0 0 auto !important;
-            padding: 40px 20px 20px 20px !important;
-            text-align: center !important;
-            align-items: center !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
           }
           
           .stats-section {
-            flex: 1 !important;
+            padding-bottom: 120px !important;
+          }
+        }
+
+        /* Improved touch targets */
+        @media (max-width: 768px) and (pointer: coarse) {
+          .full-page-card {
+            cursor: grab;
+          }
+          
+          .full-page-card:active {
+            cursor: grabbing;
+          }
+        }
+
+        /* Handle notched devices */
+        @supports (padding-top: env(safe-area-inset-top)) {
+          @media (max-width: 768px) {
+            .player-info-section {
+              padding-top: calc(100px + env(safe-area-inset-top)) !important;
+            }
+          }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-width: 768px) and (orientation: landscape) {
+          .full-page-card {
+            flex-direction: row !important;
+          }
+          
+          .player-info-section {
+            flex: 0 0 40% !important;
             padding: 20px !important;
-            justify-content: flex-start !important;
-          }
-
-          .full-page-card {
-            min-height: 100vh;
-            overflow-y: auto;
-          }
-        }
-
-        /* Tablet Responsive Styles */
-        @media (max-width: 1024px) and (min-width: 769px) {
-          .full-page-card {
-            padding: 40px 20px;
-          }
-          
-          .player-info-section {
-            padding: 40px 20px !important;
+            justify-content: center !important;
           }
           
           .stats-section {
-            padding: 40px 20px !important;
+            flex: 0 0 60% !important;
+            padding: 20px !important;
+            justify-content: center !important;
+            padding-bottom: 60px !important;
           }
         }
 
-        /* Touch-friendly interactions */
-        @media (max-width: 768px) {
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
           .full-page-card {
-            touch-action: pan-y;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+          }
+        }
+
+        /* Reduce motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+          .full-page-card,
+          .loading-spinner,
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
           }
         }
       `}</style>
@@ -597,14 +711,17 @@ const PlayerStats = () => {
           justifyContent: 'center', 
           alignItems: 'center', 
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e1b4b 100%)'
+          minHeight: '100dvh',
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e1b4b 100%)',
+          padding: '20px'
         }}>
           <div className="loading-spinner"></div>
           <p style={{ 
             marginTop: '24px', 
-            fontSize: '18px', 
+            fontSize: isMobile ? '16px' : '18px', 
             color: 'rgba(255,255,255,0.8)',
-            fontWeight: '500'
+            fontWeight: '500',
+            textAlign: 'center'
           }}>
             Loading player statistics...
           </p>
@@ -616,21 +733,24 @@ const PlayerStats = () => {
           justifyContent: 'center',
           alignItems: 'center',
           minHeight: '100vh',
+          minHeight: '100dvh',
           background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e1b4b 100%)',
           color: 'white',
           textAlign: 'center',
-          padding: '40px'
+          padding: '40px 20px'
         }}>
           <h3 style={{ 
-            fontSize: '32px', 
+            fontSize: isMobile ? '24px' : '32px', 
             fontWeight: '700',
-            marginBottom: '16px'
+            marginBottom: '16px',
+            margin: '0 0 16px 0'
           }}>
             No Statistics Available
           </h3>
           <p style={{ 
-            fontSize: '18px',
-            opacity: 0.7
+            fontSize: isMobile ? '16px' : '18px',
+            opacity: 0.7,
+            margin: 0
           }}>
             Player statistics will appear here once they are available.
           </p>
@@ -638,62 +758,82 @@ const PlayerStats = () => {
       ) : (
         /* Player Profile Cards */
         <div style={{ position: 'relative' }}>
-          {/* Navigation Arrows - Hidden on mobile */}
-          <button
-            onClick={prevPlayer}
-            disabled={isTransitioning}
-            style={{
-              position: 'fixed',
-              left: '30px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '50%',
-              width: '60px',
-              height: '60px',
-              color: 'white',
-              fontSize: '24px',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: window.innerWidth <= 768 ? 'none' : 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: isTransitioning ? 0.5 : 1,
-              zIndex: 1000
-            }}
-          >
-            ←
-          </button>
+          {/* Navigation Arrows - Desktop only */}
+          {!isMobile && (
+            <>
+              <button
+                onClick={prevPlayer}
+                disabled={isTransitioning}
+                style={{
+                  position: 'fixed',
+                  left: '30px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '50%',
+                  width: '60px',
+                  height: '60px',
+                  color: 'white',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: isTransitioning ? 0.5 : 1,
+                  zIndex: 1000
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.2)';
+                  e.target.style.transform = 'translateY(-50%) scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.1)';
+                  e.target.style.transform = 'translateY(-50%) scale(1)';
+                }}
+              >
+                ←
+              </button>
 
-          <button
-            onClick={nextPlayer}
-            disabled={isTransitioning}
-            style={{
-              position: 'fixed',
-              right: '30px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '50%',
-              width: '60px',
-              height: '60px',
-              color: 'white',
-              fontSize: '24px',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: window.innerWidth <= 768 ? 'none' : 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: isTransitioning ? 0.5 : 1,
-              zIndex: 1000
-            }}
-          >
-            →
-          </button>
+              <button
+                onClick={nextPlayer}
+                disabled={isTransitioning}
+                style={{
+                  position: 'fixed',
+                  right: '30px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '50%',
+                  width: '60px',
+                  height: '60px',
+                  color: 'white',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: isTransitioning ? 0.5 : 1,
+                  zIndex: 1000
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.2)';
+                  e.target.style.transform = 'translateY(-50%) scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.1)';
+                  e.target.style.transform = 'translateY(-50%) scale(1)';
+                }}
+              >
+                →
+              </button>
+            </>
+          )}
 
           {/* Player Cards */}
           {stats.map((player, index) => (
@@ -701,13 +841,12 @@ const PlayerStats = () => {
               key={index}
               style={{
                 position: index === 0 ? 'relative' : 'absolute',
-                top: index === 0 ? 0 : 0,
+                top: 0,
                 left: 0,
                 width: '100%',
-                height: '100vh',
-                transition: 'all 0.5s ease',
-                transform: `translateX(${(index - currentPlayerIndex) * 100}%)`,
-                opacity: index === currentPlayerIndex ? 1 : 0,
+                minHeight: '100vh',
+                minHeight: '100dvh',
+                zIndex: index === currentPlayerIndex ? 1 : 0,
                 pointerEvents: index === currentPlayerIndex ? 'auto' : 'none'
               }}
             >
