@@ -1,277 +1,395 @@
 import React from 'react';
-import { Link } from "react-router-dom";
+// We'll use a popular icon library for a professional look.
+// Make sure to run: npm install react-icons
+import {
+  FaTrophy,
+  FaRegChartBar,
+  FaUserFriends,
+  FaPlaneDeparture,
+  FaStar,
+  FaListOl,
+  FaDownload
+} from 'react-icons/fa';
 
-const Analyst = () => {
-  // Sample data for the cricket analytics
-  const playerStats = {
-    topPerformance: {
-      name: "Dulshan Thanoj",
-      achievement: "Most dropped catches in a single match",
-      value: "6",
-      image: "/images/1.4.JPG",
-      color: "#FF6B6B" // Red shade
-    },
-    highestRuns: {
-      name: "Chanuka de Silva",
-      runs: "132*",
-      image: "/images/1.2.JPG",
-      color: "#4ECDC4" // Teal shade
-    },
-    awayPerformance: {
-      name: "Yamila Dilhara",
-      fifties: "2",
-      image: "/images/5.JPG",
-      color: "#6A0572" // Purple shade
-    },
-    highestPartnership: {
-      players: "Yamila Dilhara and Dulshan Thanoj",
-      runs: "147",
-      image: "/images/5.JPG",
-      color: "#1A936F" // Green shade
-    },
-    mostCenturies: [
-      { name: "Sathush Nanayakkara", centuries: "4", image: "/images/2.png", color: "#3A86FF" }, // Blue shade
-      { name: "Chanuka de Silva", centuries: "2", image: "/images/1.2.JPG", color: "#FF006E" }, // Pink shade
-      { name: "Yamila Dilhara", centuries: "2", image: "/images/5.JPG", color: "#8338EC" }, // Purple shade
-      { name: "Achala Shashvika", centuries: "1", image: "/images/8.png", color: "#FB5607" } // Orange shade
-    ],
-    mostFifties: [
-      { name: "Yamila Dilhara", fifties: "25", image: "/images/5.JPG", color: "#06D6A0" }, // Mint shade
-      { name: "Sathush Nanayakkara", fifties: "16", image: "/images/2.png", color: "#118AB2" }, // Blue shade
-      { name: "Achala Shashvika", fifties: "8", image: "/images/8.png", color: "#06D6A0" }, // Mint shade
-      { name: "Chanuka de Silva", fifties: "8", image: "/images/1.2.JPG", color: "#EF476F" }, // Pink shade
-      { name: "Shanaka", fifties: "4", image: "https://via.placeholder.com/150", color: "#FF6B6B" }, // Red shade
-      { name: "Dulshan Thanoj", fifties: "4", image: "/images/1.4.JPG", color: "#073B4C" }, // Dark blue shade
-      { name: "Savindu Weerarathna", fifties: "3", image: "/images/3.jpeg", color: "#FFD166" }, // Yellow shade
-      { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg", color: "#9B5DE5" },
-      { name: "Dihindu Nimsath", fifties: "1", image: "/images/1.3.jpg", color: "#9B5DE5" }
-    ] 
-  };
+// --- Data remains the same ---
+const playerStats = {
+  topPerformance: {
+    name: "Dulshan Thanoj",
+    achievement: "Most dropped catches in a single match",
+    value: "6",
+    image: "/images/1.4.JPG",
+  },
+  highestRuns: {
+    name: "Chanuka de Silva",
+    runs: "132*",
+    image: "/images/1.2.JPG",
+  },
+  awayPerformance: {
+    name: "Yamila Dilhara",
+    fifties: "2",
+    image: "/images/5.JPG",
+  },
+  highestPartnership: {
+    players: "Yamila Dilhara and Dulshan Thanoj",
+    runs: "147",
+    image: "/images/partnership.jpg", // A generic image for partnership
+  },
+  mostCenturies: [
+    { name: "Sathush Nanayakkara", centuries: "4", image: "/images/2.png" },
+    { name: "Chanuka de Silva", centuries: "2", image: "/images/1.2.JPG" },
+    { name: "Yamila Dilhara", centuries: "2", image: "/images/5.JPG" },
+    { name: "Achala Shashvika", centuries: "1", image: "/images/8.png" },
+  ],
+  mostFifties: [
+    { name: "Yamila Dilhara", fifties: "25", image: "/images/5.JPG" },
+    { name: "Sathush Nanayakkara", fifties: "16", image: "/images/2.png" },
+    { name: "Achala Shashvika", fifties: "8", image: "/images/8.png" },
+    { name: "Chanuka de Silva", fifties: "8", image: "/images/1.2.JPG" },
+    { name: "Shanaka", fifties: "4", image: "https://via.placeholder.com/150/cccccc/333333?text=S" },
+    { name: "Dulshan Thanoj", fifties: "4", image: "/images/1.4.JPG" },
+    { name: "Savindu Weerarathna", fifties: "3", image: "/images/3.jpeg" },
+    { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg" },
+    { name: "Dihindu Nimsath", fifties: "1", image: "/images/1.3.jpg" },
+  ]
+};
 
-  // Player card component with colorful styling
-  const PlayerCard = ({ image, name, statTitle, statValue, color }) => (
-    <div style={{
-      display: 'flex',
-      backgroundColor: '#fff',
-      borderRadius: '12px',
-      padding: '16px',
-      marginBottom: '16px',
-      boxShadow: `0 4px 12px rgba(0,0,0,0.1)`,
-      alignItems: 'center',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-      borderLeft: `6px solid ${color}`,
-    }} className="player-card" 
-       onMouseOver={(e) => {
-         e.currentTarget.style.transform = 'translateY(-5px)';
-         e.currentTarget.style.boxShadow = `0 8px 16px rgba(0,0,0,0.15)`;
-       }} 
-       onMouseOut={(e) => {
-         e.currentTarget.style.transform = 'translateY(0)';
-         e.currentTarget.style.boxShadow = `0 4px 12px rgba(0,0,0,0.1)`;
-       }}>
-      <div style={{
-        width: '60px',
-        height: '60px',
-        borderRadius: '50%',
-        overflow: 'hidden',
-        marginRight: '16px',
-        flexShrink: 0,
-        border: `3px solid ${color}`,
-      }}>
-        <img src={image} alt={name} style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-        }} />
-      </div>
-      <div>
-        <h3 style={{
-          margin: '0 0 8px 0',
-          color: '#2c3e50',
-          fontSize: '16px',
-          fontWeight: 'bold',
-        }}>{name}</h3>
-        <p style={{
-          margin: '0',
-          fontSize: '14px',
-          display: 'flex',
-          alignItems: 'center',
-        }}>
-          <span style={{ 
-            backgroundColor: color,
-            color: '#fff',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontWeight: 'bold',
-            marginRight: '8px',
-            fontSize: '12px',
-          }}>{statTitle}</span>
-          <span style={{ 
-            fontSize: '16px', 
-            fontWeight: 'bold',
-            color: color,
-          }}>{statValue}</span>
-        </p>
-      </div>
+// --- Reusable UI Components ---
+
+// A clean, modern card for highlighting a key statistic.
+const StatCard = ({ icon, title, value, footerText, playerImage }) => (
+  <div className="stat-card">
+    <div className="stat-card-header">
+      <div className="stat-card-icon">{icon}</div>
+      <div className="stat-card-title">{title}</div>
     </div>
-  );
+    <div className="stat-card-value">{value}</div>
+    <div className="stat-card-footer">
+      <img src={playerImage} alt={footerText} className="stat-card-player-img" />
+      <span>{footerText}</span>
+    </div>
+  </div>
+);
 
-  // Section component for consistent styling with color themes
-  const StatsSection = ({ title, children, color }) => (
-    <div style={{
-      backgroundColor: '#fff',
-      borderRadius: '12px',
-      padding: '20px',
-      marginBottom: '24px',
-      boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
-      overflow: 'hidden',
-      position: 'relative',
-    }}>
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '6px',
-        background: `linear-gradient(90deg, ${color} 0%, ${color}88 100%)`,
-      }}></div>
-      <h2 style={{
-        color: color,
-        fontSize: '20px',
-        marginTop: '8px',
-        marginBottom: '20px',
-        paddingBottom: '10px',
-        borderBottom: '2px solid #f0f0f0',
-        fontWeight: 'bold',
-      }}>{title}</h2>
+// A compact list item for player rankings.
+const PlayerListItem = ({ rank, image, name, statValue, statLabel }) => (
+  <div className="player-list-item">
+    <div className="player-info">
+      <span className="player-rank">{rank}</span>
+      <img src={image} alt={name} className="player-img" />
+      <span className="player-name">{name}</span>
+    </div>
+    <div className="player-stat">
+      {statValue} <span className="stat-label">{statLabel}</span>
+    </div>
+  </div>
+);
+
+// A simple, clean section container.
+const Section = ({ title, icon, children, gridColumn }) => (
+  <div className="section" style={{ gridColumn }}>
+    <h2 className="section-title">
+      {icon}
+      <span>{title}</span>
+    </h2>
+    <div className="section-content">
       {children}
     </div>
-  );
+  </div>
+);
+
+
+// --- Main Analyst Component ---
+
+const Analyst = () => {
+  const primaryRed = '#D92121';
 
   return (
-    <div style={{
-      fontFamily: 'Segoe UI, Roboto, Arial, sans-serif',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%)',
-      padding: '24px',
-      maxWidth: '1200px',
-      margin: '0 auto',
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '32px',
-        background: 'linear-gradient(90deg, #2c3e50 0%, #4c6279 100%)',
-        padding: '20px 24px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-      }}>
-        <h1 style={{
-          color: '#ffffff',
-          fontSize: '28px',
-          margin: '0',
-          fontWeight: 'bold',
-          textShadow: '1px 1px 2px rgba(0,0,0,0.2)',
-        }}>Cricket Team Analytics</h1>
-        <div style={{
-          background: 'linear-gradient(90deg, #3498db 0%, #2980b9 100%)',
-          color: 'white',
-          padding: '10px 20px',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-          transition: 'all 0.3s ease',
-        }} onMouseOver={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.3)';
-        }} onMouseOut={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-        }}>
-          Export Report
-        </div>
-      </div>
+    <>
+      {/* 
+        This <style> tag is a clean way to include component-specific CSS, 
+        including responsiveness (media queries) and hover effects, all within 
+        a single file as requested. It's more powerful and maintainable than
+        inline styles for complex UI.
+      */}
+      <style>{`
+        :root {
+          --primary-red: ${primaryRed};
+          --soft-red: #FFEBEB;
+          --white: #FFFFFF;
+          --background-gray: #F9FAFB;
+          --text-dark: #1A1A1A;
+          --text-light: #666666;
+          --border-color: #EAEAEA;
+        }
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-        gap: '24px',
-      }}>
-        <StatsSection title="Top Performance" color={playerStats.topPerformance.color}>
-          <PlayerCard 
-            image={playerStats.topPerformance.image}
-            name={playerStats.topPerformance.name}
-            statTitle={playerStats.topPerformance.achievement}
-            statValue={playerStats.topPerformance.value}
-            color={playerStats.topPerformance.color}
+        .analyst-dashboard {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background-color: var(--background-gray);
+          color: var(--text-dark);
+          padding: 24px;
+        }
+
+        /* --- Header --- */
+        .dashboard-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 8px 24px 8px;
+          margin-bottom: 24px;
+          border-bottom: 1px solid var(--border-color);
+        }
+        .dashboard-title {
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .export-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background-color: var(--primary-red);
+          color: var(--white);
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .export-button:hover {
+          background-color: #b81c1c;
+          transform: translateY(-2px);
+        }
+
+        /* --- Main Grid Layout --- */
+        .dashboard-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 24px;
+        }
+
+        /* --- Section Styling --- */
+        .section {
+          background-color: var(--white);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+        }
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 20px;
+          font-weight: 600;
+          margin: 0 0 20px 0;
+          padding-bottom: 16px;
+          border-bottom: 1px solid var(--border-color);
+        }
+        .section-title svg {
+          color: var(--primary-red);
+        }
+
+        /* --- Stat Card Styling --- */
+        .stat-card {
+          background-color: var(--white);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+        .stat-card-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .stat-card-icon {
+          display: grid;
+          place-items: center;
+          width: 40px;
+          height: 40px;
+          background-color: var(--soft-red);
+          color: var(--primary-red);
+          border-radius: 8px;
+          font-size: 18px;
+        }
+        .stat-card-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--text-light);
+        }
+        .stat-card-value {
+          font-size: 48px;
+          font-weight: 700;
+          color: var(--primary-red);
+          line-height: 1;
+        }
+        .stat-card-footer {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-dark);
+          margin-top: auto;
+        }
+        .stat-card-player-img {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid var(--border-color);
+        }
+        
+        /* --- Player List Item Styling --- */
+        .player-list-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 0;
+          transition: background-color 0.2s ease;
+          border-radius: 8px;
+        }
+        .player-list-item:not(:last-child) {
+          border-bottom: 1px solid var(--border-color);
+        }
+        .player-list-item:hover {
+          background-color: var(--background-gray);
+        }
+        .player-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .player-rank {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--text-light);
+          width: 20px;
+          text-align: center;
+        }
+        .player-img {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+        .player-name {
+          font-weight: 600;
+        }
+        .player-stat {
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--primary-red);
+          background-color: var(--soft-red);
+          padding: 6px 12px;
+          border-radius: 20px;
+        }
+        .player-stat .stat-label {
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--primary-red);
+          margin-left: 4px;
+        }
+
+        /* --- Responsive Design for Mobile --- */
+        @media (max-width: 768px) {
+          .analyst-dashboard {
+            padding: 16px;
+          }
+          .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+          }
+          .dashboard-title {
+            font-size: 24px;
+          }
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+          .section {
+            padding: 16px;
+          }
+        }
+      `}</style>
+      
+      <div className="analyst-dashboard">
+        <header className="dashboard-header">
+          <h1 className="dashboard-title">Cricket Team Analytics</h1>
+          <button className="export-button">
+            <FaDownload />
+            Export Report
+          </button>
+        </header>
+
+        <main className="dashboard-grid">
+          {/* Highlighted Single Stat Cards */}
+          <StatCard
+            icon={<FaTrophy />}
+            title={playerStats.topPerformance.achievement}
+            value={playerStats.topPerformance.value}
+            footerText={playerStats.topPerformance.name}
+            playerImage={playerStats.topPerformance.image}
           />
-        </StatsSection>
-
-        <StatsSection title="Highest Runs" color={playerStats.highestRuns.color}>
-          <PlayerCard 
-            image={playerStats.highestRuns.image}
-            name={playerStats.highestRuns.name}
-            statTitle="Runs"
-            statValue={playerStats.highestRuns.runs}
-            color={playerStats.highestRuns.color}
+          <StatCard
+            icon={<FaRegChartBar />}
+            title="Highest Individual Score"
+            value={playerStats.highestRuns.runs}
+            footerText={playerStats.highestRuns.name}
+            playerImage={playerStats.highestRuns.image}
           />
-        </StatsSection>
-
-        <StatsSection title="Away Performance" color={playerStats.awayPerformance.color}>
-          <PlayerCard 
-            image={playerStats.awayPerformance.image}
-            name={playerStats.awayPerformance.name}
-            statTitle="50s"
-            statValue={playerStats.awayPerformance.fifties}
-            color={playerStats.awayPerformance.color}
+          <StatCard
+            icon={<FaUserFriends />}
+            title="Highest Partnership Runs"
+            value={playerStats.highestPartnership.runs}
+            footerText={playerStats.highestPartnership.players}
+            playerImage={playerStats.highestPartnership.image}
           />
-        </StatsSection>
-
-        <StatsSection title="Highest Partnership" color={playerStats.highestPartnership.color}>
-          <PlayerCard 
-            image={playerStats.highestPartnership.image}
-            name={playerStats.highestPartnership.players}
-            statTitle="Total Runs"
-            statValue={playerStats.highestPartnership.runs}
-            color={playerStats.highestPartnership.color}
+          <StatCard
+            icon={<FaPlaneDeparture />}
+            title="Most Fifties (Away)"
+            value={playerStats.awayPerformance.fifties}
+            footerText={playerStats.awayPerformance.name}
+            playerImage={playerStats.awayPerformance.image}
           />
-        </StatsSection>
 
-        <StatsSection title="Most Centuries" color="#3A86FF">
-          {playerStats.mostCenturies.map((player, index) => (
-            <PlayerCard 
-              key={`century-${index}`}
-              image={player.image}
-              name={player.name}
-              statTitle="100s"
-              statValue={player.centuries}
-              color={player.color}
-            />
-          ))}
-        </StatsSection>
-
-        <StatsSection title="Most Fifties" color="#06D6A0" style={{ gridColumn: '1 / -1' }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '16px',
-          }}>
-            {playerStats.mostFifties.map((player, index) => (
-              <PlayerCard 
-                key={`fifty-${index}`}
+          {/* List-based Sections */}
+          <Section title="Most Centuries" icon={<FaStar />}>
+            {playerStats.mostCenturies.map((player, index) => (
+              <PlayerListItem
+                key={`century-${index}`}
+                rank={index + 1}
                 image={player.image}
                 name={player.name}
-                statTitle="50s"
-                statValue={player.fifties}
-                color={player.color}
+                statValue={player.centuries}
+                statLabel="100s"
               />
             ))}
-          </div>
-        </StatsSection>
+          </Section>
+          
+          <Section title="Most Fifties" icon={<FaListOl />} gridColumn="1 / -1">
+            {playerStats.mostFifties.map((player, index) => (
+              <PlayerListItem
+                key={`fifty-${index}`}
+                rank={index + 1}
+                image={player.image}
+                name={player.name}
+                statValue={player.fifties}
+                statLabel="50s"
+              />
+            ))}
+          </Section>
+        </main>
       </div>
-    </div>
+    </>
   );
 };
 

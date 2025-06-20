@@ -1,11 +1,10 @@
-// WicketAnalysis.js with inline styles
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+
 const API_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:5001"
     : "https://frontyardcricket.onrender.com";
-
 
 const WicketAnalysis = () => {
   const [wicketsData, setWicketsData] = useState([]);
@@ -13,11 +12,9 @@ const WicketAnalysis = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'rate', direction: 'descending' });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  // --- Data Fetching and Sorting Logic (Unchanged) ---
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -27,8 +24,6 @@ const WicketAnalysis = () => {
       try {
         const response = await axios.get(`${API_URL}/wickets`);
         const data = response.data;
-
-        // Group by bowler and aggregate
         const analysisMap = {};
         data.forEach(w => {
           const key = w.bowler_name;
@@ -38,399 +33,375 @@ const WicketAnalysis = () => {
           analysisMap[key].wickets += Number(w.wickets);
           analysisMap[key].innings += Number(w.innings);
         });
-
-        // Convert to array and calculate rate
         const analysisArray = Object.entries(analysisMap).map(([name, stats]) => ({
           bowler_name: name,
           total_wickets: stats.wickets,
           total_innings: stats.innings,
           rate: stats.innings === 0 ? 0 : (stats.wickets / stats.innings).toFixed(2),
         }));
-
-        // Sort by rate
-        sortData(analysisArray, 'rate', 'descending');
-        setWicketsData(analysisArray);
+        sortAndSetData(analysisArray, 'rate', 'descending');
       } catch (err) {
         console.error("❌ Error fetching wicket analysis:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchWickets();
   }, []);
 
-  const sortData = (data, key, direction) => {
+  const sortAndSetData = (data, key, direction) => {
     const sortedData = [...data].sort((a, b) => {
       if (key === 'bowler_name') {
-        return direction === 'ascending' 
-          ? a[key].localeCompare(b[key])
-          : b[key].localeCompare(a[key]);
-      } else {
-        return direction === 'ascending' 
-          ? parseFloat(a[key]) - parseFloat(b[key])
-          : parseFloat(b[key]) - parseFloat(a[key]);
+        return direction === 'ascending' ? a[key].localeCompare(b[key]) : b[key].localeCompare(a[key]);
       }
+      return direction === 'ascending' ? parseFloat(a[key]) - parseFloat(b[key]) : parseFloat(b[key]) - parseFloat(a[key]);
     });
-    
     setWicketsData(sortedData);
   };
 
   const requestSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-    sortData(wicketsData, key, direction);
+    const newDirection = sortConfig.key === key && sortConfig.direction === 'descending' ? 'ascending' : 'descending';
+    setSortConfig({ key, direction: newDirection });
+    sortAndSetData(wicketsData, key, newDirection);
   };
 
   const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return "↕️";
-    return sortConfig.direction === 'ascending' ? "↑" : "↓";
+    if (sortConfig.key !== key) return " ";
+    return sortConfig.direction === 'ascending' ? "▲" : "▼";
   };
 
-  // Styles object containing all the CSS
+  // --- New UI Styles ---
+  const palette = {
+    primaryRed: '#D32F2F',
+    primaryWhite: '#FFFFFF',
+    background: '#F8F9FA',
+    darkText: '#1a1a1a',
+    lightText: '#6c757d',
+    borderColor: '#e9ecef',
+    shadow: 'rgba(211, 47, 47, 0.15)',
+    hoverShadow: 'rgba(211, 47, 47, 0.25)',
+  };
+
   const styles = {
-    wicketAnalysis: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '2rem 1rem',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      color: '#333'
+    container: {
+      backgroundColor: palette.background,
+      minHeight: '100vh',
+      padding: isMobile ? '1.5rem 1rem' : '3rem 2rem',
+      fontFamily: "'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+    main: {
+        maxWidth: '1000px',
+        margin: '0 auto',
     },
     header: {
       textAlign: 'center',
-      marginBottom: '3rem'
+      marginBottom: '3rem',
     },
     headerTitle: {
-      fontSize: isMobile ? '2rem' : '2.5rem',
-      fontWeight: 700,
-      color: '#0f2c5c',
-      marginBottom: '0.5rem',
-      position: 'relative',
-      display: 'inline-block',
-      paddingBottom: '15px'
+      fontSize: isMobile ? '2.5rem' : '3.5rem',
+      fontWeight: 800,
+      color: palette.darkText,
+      letterSpacing: '-2px',
     },
-    headerTitleAfter: {
-      content: '""',
-      position: 'absolute',
-      left: '0',
-      bottom: '0',
-      width: '100%',
-      height: '4px',
-      background: 'linear-gradient(90deg, #4caf50, #2196f3)',
-      borderRadius: '2px'
+    headerTitleSpan: {
+      color: palette.primaryRed,
     },
-    subtitle: {
-      color: '#666',
-      fontSize: isMobile ? '1rem' : '1.1rem',
-      marginTop: '1rem'
+    headerSubtitle: {
+      color: palette.lightText,
+      fontSize: isMobile ? '1rem' : '1.15rem',
+      marginTop: '0.5rem',
+      maxWidth: '500px',
+      margin: '0.5rem auto 0',
     },
-    loading: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '300px'
+    loadingContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '1rem',
     },
-    cricketLoader: {
-      position: 'relative',
-      width: '80px',
-      height: '80px'
-    },
-    cricketBall: {
-      position: 'absolute',
-      width: '40px',
-      height: '40px',
-      background: 'linear-gradient(45deg, #e53935, #e53935)',
-      borderRadius: '50%',
-      top: '20px',
-      left: '20px',
-      animation: 'cricketSpin 1.5s infinite cubic-bezier(0.65, 0.05, 0.36, 1)'
+    loader: {
+        width: '50px',
+        height: '50px',
+        border: `5px solid ${palette.borderColor}`,
+        borderTopColor: palette.primaryRed,
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
     },
     loadingText: {
-      marginTop: '1.5rem',
-      color: '#666',
-      fontSize: '1rem'
+        color: palette.lightText,
+        fontWeight: 500,
     },
-    tableContainer: {
-      width: '100%',
-      overflowX: 'auto',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-      borderRadius: '10px',
-      backgroundColor: 'white'
+    // Desktop List View Styles
+    listContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
     },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      fontSize: '1rem'
+    listHeader: {
+        display: 'grid',
+        gridTemplateColumns: '50px 3fr 1fr 1fr 1fr',
+        alignItems: 'center',
+        padding: '0.75rem 1.5rem',
+        color: palette.lightText,
+        fontWeight: 600,
+        fontSize: '0.8rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
     },
-    tableHeader: {
-      backgroundColor: '#f5f7fa',
-      padding: '1rem',
-      textAlign: 'left',
-      fontWeight: 600,
-      color: '#0f2c5c',
-      borderBottom: '2px solid #e1e5eb',
-      cursor: 'pointer',
-      userSelect: 'none',
-      transition: 'background-color 0.2s'
+    headerCell: {
+        cursor: 'pointer',
+        userSelect: 'none',
+        transition: 'color 0.2s ease',
     },
-    tableHeaderHover: {
-      backgroundColor: '#e9f0f7'
+    headerCellHover: {
+        color: palette.darkText,
     },
-    rankColumn: {
-      width: '60px',
-      textAlign: 'center'
-    },
-    tableRow: (index) => ({
-      transition: 'background-color 0.2s, transform 0.2s',
-      animation: 'fadeIn 0.5s ease-out forwards',
-      opacity: 0,
-      animationDelay: `${index * 0.05}s`,
-      backgroundColor: index % 2 === 1 ? '#f9fafc' : 'transparent'
+    playerRow: (index) => ({
+        display: 'grid',
+        gridTemplateColumns: '50px 3fr 1fr 1fr 1fr',
+        alignItems: 'center',
+        backgroundColor: palette.primaryWhite,
+        padding: '1rem 1.5rem',
+        borderRadius: '12px',
+        boxShadow: `0 4px 15px ${palette.shadow}`,
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        animation: 'fadeInUp 0.5s ease-out forwards',
+        opacity: 0,
+        animationDelay: `${index * 0.05}s`,
     }),
-    tableRowHover: {
-      backgroundColor: '#f0f7ff',
-      transform: 'translateY(-2px)'
+    playerRowHover: {
+        transform: 'translateY(-4px) scale(1.02)',
+        boxShadow: `0 8px 25px ${palette.hoverShadow}`,
     },
-    tableCell: {
-      padding: '1rem',
-      borderBottom: '1px solid #e1e5eb'
+    rank: {
+        fontSize: '1rem',
+        fontWeight: 700,
+        color: palette.lightText,
     },
-    rateColumn: {
-      fontWeight: 600,
-      color: '#2e7d32'
+    playerName: {
+        fontSize: '1.1rem',
+        fontWeight: 600,
+        color: palette.darkText,
     },
+    playerStat: {
+        fontSize: '1.1rem',
+        fontWeight: 500,
+        color: palette.darkText,
+        textAlign: 'center',
+    },
+    playerRate: {
+        fontWeight: 700,
+        color: palette.primaryRed,
+    },
+    // Mobile Card View Styles
     cardsContainer: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-      gap: '1rem'
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
     },
     card: (index) => ({
-      background: 'white',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-      transition: 'transform 0.3s, box-shadow 0.3s',
-      animation: 'fadeIn 0.5s ease-out forwards',
-      opacity: 0,
-      animationDelay: `${index * 0.1}s`,
-      borderLeft: '4px solid #4caf50'
+        display: 'flex',
+        backgroundColor: palette.primaryWhite,
+        borderRadius: '12px',
+        boxShadow: `0 4px 15px ${palette.shadow}`,
+        overflow: 'hidden',
+        animation: 'fadeInUp 0.5s ease-out forwards',
+        opacity: 0,
+        animationDelay: `${index * 0.08}s`,
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
     }),
     cardHover: {
-      transform: 'translateY(-5px)',
-      boxShadow: '0 12px 20px rgba(0, 0, 0, 0.12)'
-    },
-    cardHeader: {
-      padding: '1rem',
-      background: 'linear-gradient(135deg, #f5f7fa, #e9f0f7)',
-      display: 'flex',
-      alignItems: 'center'
+        transform: 'translateY(-5px)',
+        boxShadow: `0 8px 25px ${palette.hoverShadow}`,
     },
     cardRank: {
-      width: '30px',
-      height: '30px',
-      background: '#0f2c5c',
-      borderRadius: '50%',
-      color: 'white',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontWeight: 'bold',
-      marginRight: '10px'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        width: '60px',
+        backgroundColor: palette.primaryRed,
+        color: palette.primaryWhite,
+        fontSize: '1.5rem',
+        fontWeight: 700,
+    },
+    cardContent: {
+        padding: '1rem',
+        width: '100%',
     },
     cardName: {
-      color: '#0f2c5c',
-      margin: 0,
-      fontSize: '1.2rem',
-      fontWeight: 600
+        fontSize: '1.2rem',
+        fontWeight: 700,
+        color: palette.darkText,
+        marginBottom: '1rem',
     },
     cardStats: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      padding: '1rem'
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '0.5rem',
     },
-    stat: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '0.5rem'
+    statPill: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0.5rem 0.75rem',
+        borderRadius: '20px',
+        backgroundColor: palette.borderColor,
+        flex: 1,
     },
-    statHighlight: {
-      backgroundColor: '#f9fff9',
-      borderRadius: '8px'
+    statPillHighlight: {
+        backgroundColor: palette.primaryRed,
     },
     statValue: {
-      fontSize: '1.4rem',
-      fontWeight: 700,
-      color: '#333'
+        fontSize: '1.1rem',
+        fontWeight: 700,
+        color: palette.darkText,
     },
     statValueHighlight: {
-      color: '#2e7d32'
+        color: palette.primaryWhite,
     },
     statLabel: {
-      fontSize: '0.8rem',
-      color: '#666',
-      marginTop: '4px'
-    }
+        fontSize: '0.7rem',
+        fontWeight: 500,
+        color: palette.lightText,
+        textTransform: 'uppercase',
+    },
+    statLabelHighlight: {
+        color: 'rgba(255, 255, 255, 0.8)',
+    },
   };
 
-  // Adding keyframes for animations
   useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes cricketSpin {
-        0% { transform: rotate(0deg) translateX(0); }
-        25% { transform: rotate(90deg) translateX(15px); }
-        50% { transform: rotate(180deg) translateX(0); }
-        75% { transform: rotate(270deg) translateX(-15px); }
-        100% { transform: rotate(360deg) translateX(0); }
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
     `;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
+    document.head.appendChild(styleTag);
+    return () => document.head.removeChild(styleTag);
   }, []);
 
-  const renderPlayerCards = () => {
-    return (
-      <div style={styles.cardsContainer}>
-        {wicketsData.map((bowler, index) => (
-          <div 
-            key={index}
-            style={styles.card(index)}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = styles.cardHover.transform;
-              e.currentTarget.style.boxShadow = styles.cardHover.boxShadow;
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = '';
-              e.currentTarget.style.boxShadow = '';
-            }}
-          >
-            <div style={styles.cardHeader}>
-              <div style={styles.cardRank}>{index + 1}</div>
-              <h3 style={styles.cardName}>{bowler.bowler_name}</h3>
-            </div>
-            <div style={styles.cardStats}>
-              <div style={styles.stat}>
-                <span style={styles.statValue}>{bowler.total_wickets}</span>
-                <span style={styles.statLabel}>Wickets</span>
-              </div>
-              <div style={styles.stat}>
-                <span style={styles.statValue}>{bowler.total_innings}</span>
-                <span style={styles.statLabel}>Innings</span>
-              </div>
-              <div style={{...styles.stat, ...styles.statHighlight}}>
-                <span style={{...styles.statValue, ...styles.statValueHighlight}}>{bowler.rate}</span>
-                <span style={styles.statLabel}>Rate</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderTable = () => {
-    return (
-      <div style={styles.tableContainer}>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={{...styles.tableHeader, ...styles.rankColumn}}>#</th>
-              <th 
-                style={styles.tableHeader}
-                onClick={() => requestSort('bowler_name')}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = styles.tableHeaderHover.backgroundColor}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = styles.tableHeader.backgroundColor}
-              >
+  const renderDesktopList = () => (
+    <div style={styles.listContainer}>
+        <div style={styles.listHeader}>
+            <div style={{...styles.headerCell, textAlign: 'center'}}>#</div>
+            <div 
+                style={styles.headerCell} 
+                onClick={() => requestSort('bowler_name')} 
+                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
+                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
+            >
                 Bowler {getSortIcon('bowler_name')}
-              </th>
-              <th 
-                style={styles.tableHeader}
+            </div>
+            <div 
+                style={{...styles.headerCell, textAlign: 'center'}} 
                 onClick={() => requestSort('total_wickets')}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = styles.tableHeaderHover.backgroundColor}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = styles.tableHeader.backgroundColor}
-              >
+                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
+                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
+            >
                 Wickets {getSortIcon('total_wickets')}
-              </th>
-              <th 
-                style={styles.tableHeader}
+            </div>
+            <div 
+                style={{...styles.headerCell, textAlign: 'center'}} 
                 onClick={() => requestSort('total_innings')}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = styles.tableHeaderHover.backgroundColor}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = styles.tableHeader.backgroundColor}
-              >
+                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
+                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
+            >
                 Innings {getSortIcon('total_innings')}
-              </th>
-              <th 
-                style={styles.tableHeader}
+            </div>
+            <div 
+                style={{...styles.headerCell, textAlign: 'center'}} 
                 onClick={() => requestSort('rate')}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = styles.tableHeaderHover.backgroundColor}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = styles.tableHeader.backgroundColor}
-              >
+                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
+                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
+            >
                 Rate {getSortIcon('rate')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {wicketsData.map((bowler, index) => (
-              <tr 
+            </div>
+        </div>
+        {wicketsData.map((bowler, index) => (
+            <div 
                 key={index} 
-                style={styles.tableRow(index)}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = styles.tableRowHover.backgroundColor;
-                  e.currentTarget.style.transform = styles.tableRowHover.transform;
+                style={styles.playerRow(index)}
+                onMouseOver={e => Object.assign(e.currentTarget.style, styles.playerRowHover)}
+                onMouseOut={e => {
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.boxShadow = `0 4px 15px ${palette.shadow}`;
                 }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = index % 2 === 1 ? '#f9fafc' : 'transparent';
-                  e.currentTarget.style.transform = '';
+            >
+                <div style={{...styles.rank, textAlign: 'center'}}>{index + 1}</div>
+                <div style={styles.playerName}>{bowler.bowler_name}</div>
+                <div style={styles.playerStat}>{bowler.total_wickets}</div>
+                <div style={styles.playerStat}>{bowler.total_innings}</div>
+                <div style={{...styles.playerStat, ...styles.playerRate}}>{bowler.rate}</div>
+            </div>
+        ))}
+    </div>
+  );
+
+  const renderMobileCards = () => (
+    <div style={styles.cardsContainer}>
+        {wicketsData.map((bowler, index) => (
+            <div 
+                key={index}
+                style={styles.card(index)}
+                onMouseOver={e => Object.assign(e.currentTarget.style, styles.cardHover)}
+                onMouseOut={e => {
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.boxShadow = `0 4px 15px ${palette.shadow}`;
                 }}
-              >
-                <td style={{...styles.tableCell, ...styles.rankColumn}}>{index + 1}</td>
-                <td style={styles.tableCell}>{bowler.bowler_name}</td>
-                <td style={styles.tableCell}>{bowler.total_wickets}</td>
-                <td style={styles.tableCell}>{bowler.total_innings}</td>
-                <td style={{...styles.tableCell, ...styles.rateColumn}}>{bowler.rate}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+            >
+                <div style={styles.cardRank}>{index + 1}</div>
+                <div style={styles.cardContent}>
+                    <div style={styles.cardName}>{bowler.bowler_name}</div>
+                    <div style={styles.cardStats}>
+                        <div style={styles.statPill}>
+                            <span style={styles.statValue}>{bowler.total_wickets}</span>
+                            <span style={styles.statLabel}>Wkts</span>
+                        </div>
+                        <div style={styles.statPill}>
+                            <span style={styles.statValue}>{bowler.total_innings}</span>
+                            <span style={styles.statLabel}>Inns</span>
+                        </div>
+                        <div style={{...styles.statPill, ...styles.statPillHighlight}}>
+                            <span style={{...styles.statValue, ...styles.statValueHighlight}}>{bowler.rate}</span>
+                            <span style={{...styles.statLabel, ...styles.statLabelHighlight}}>Rate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+  );
 
   return (
-    <div style={styles.wicketAnalysis}>
-      <div style={styles.header}>
-        <h1 style={styles.headerTitle}>
-          Wicket Rate Analysis
-          <div style={styles.headerTitleAfter}></div>
-        </h1>
-        <p style={styles.subtitle}>
-          Comparing bowlers based on wickets taken per innings
-        </p>
-      </div>
+    <div style={styles.container}>
+        <main style={styles.main}>
+            <header style={styles.header}>
+                <h1 style={styles.headerTitle}>
+                    Wicket<span style={styles.headerTitleSpan}>Leaders</span>
+                </h1>
+                <p style={styles.headerSubtitle}>
+                    An interactive leaderboard of bowler performance, ranked by wicket-taking rate.
+                </p>
+            </header>
 
-      {loading ? (
-        <div style={styles.loading}>
-          <div style={styles.cricketLoader}>
-            <div style={styles.cricketBall}></div>
-          </div>
-          <p style={styles.loadingText}>Loading analysis...</p>
-        </div>
-      ) : (
-        <div>
-          {isMobile ? renderPlayerCards() : renderTable()}
-        </div>
-      )}
+            {loading ? (
+                <div style={styles.loadingContainer}>
+                    <div style={styles.loader}></div>
+                    <p style={styles.loadingText}>Calculating Rates...</p>
+                </div>
+            ) : (
+                isMobile ? renderMobileCards() : renderDesktopList()
+            )}
+        </main>
     </div>
   );
 };

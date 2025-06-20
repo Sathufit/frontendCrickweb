@@ -1,412 +1,440 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import styled from "styled-components";
+import { NavLink } from "react-router-dom"; // Use NavLink for active styles
+import styled, { createGlobalStyle } from "styled-components";
 
-const Navbar = styled.nav`
-  display: none;
-
-  @media (min-width: 768px) {
-    display: flex;
-    gap: 1.5rem;
+// --- GLOBAL STYLES ---
+// Best practice for setting base font-family and resets
+const GlobalStyle = createGlobalStyle`
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #F9FAFB; // A light grey background for better contrast
+    color: #1F2937; // Dark grey for text
   }
 `;
 
+// --- THEME & COLOR PALETTE ---
+const theme = {
+  colors: {
+    primary: "#D92626", // A strong, vibrant red
+    primaryDark: "#B91C1C", // Darker red for hover
+    white: "#FFFFFF",
+    text: "#1F2937", // Near-black for main text
+    textSecondary: "#6B7280", // Grey for secondary text
+    background: "#F9FAFB",
+    border: "#E5E7EB",
+  },
+  shadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+  borderRadius: "8px",
+};
+
+// --- STYLED COMPONENTS ---
+
+const PageWrapper = styled.div`
+  min-height: 100vh;
+`;
+
+// --- Header & Navigation ---
+const Header = styled.header`
+  background-color: ${theme.colors.white};
+  box-shadow: ${theme.shadow};
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 70px;
+  padding: 0 1.5rem;
+`;
+
+const NavContainer = styled.div`
+  max-width: 1280px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const LogoLink = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+`;
+
+const LogoText = styled.h1`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: ${theme.colors.primary};
+  margin: 0;
+`;
+
+const DesktopNav = styled.nav`
+  display: none;
+  gap: 1rem;
+  
+  @media (min-width: 768px) {
+    display: flex;
+  }
+`;
+
+const StyledNavLink = styled(NavLink)`
+  padding: 0.5rem;
+  font-weight: 500;
+  color: ${theme.colors.textSecondary};
+  text-decoration: none;
+  position: relative;
+  transition: color 0.2s ease-in-out;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background-color: ${theme.colors.primary};
+    transition: width 0.3s ease;
+  }
+
+  &:hover {
+    color: ${theme.colors.text};
+  }
+
+  &.active {
+    color: ${theme.colors.primary};
+    font-weight: 600;
+    &:after {
+      width: 100%;
+    }
+  }
+`;
+
+const MobileMenuToggle = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 1001;
+
+  span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: ${theme.colors.primary};
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  ${({ isOpen }) => isOpen && `
+    span:nth-child(1) {
+      transform: translateY(8px) rotate(45deg);
+    }
+    span:nth-child(2) {
+      opacity: 0;
+    }
+    span:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
+  `}
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileMenu = styled.div`
+  position: absolute;
+  top: 70px;
+  left: 0;
+  right: 0;
+  background-color: ${theme.colors.white};
+  padding: 1rem 1.5rem 2rem;
+  box-shadow: ${theme.shadow};
+  transform: ${({ isOpen }) => isOpen ? 'translateY(0)' : 'translateY(-120%)'};
+  transition: transform 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+// --- Hero Section ---
+const HeroSection = styled.section`
+  background-color: ${theme.colors.white};
+  text-align: center;
+  padding: 4rem 1.5rem 5rem;
+`;
+
+const HeroContent = styled.div`
+  max-width: 768px;
+  margin: 0 auto;
+`;
+
+const HeroTitle = styled.h2`
+  font-size: 3rem;
+  font-weight: 800;
+  color: ${theme.colors.text};
+  margin-bottom: 1.5rem;
+
+  span {
+    color: ${theme.colors.primary};
+  }
+`;
+
+const HeroSubtitle = styled.p`
+  font-size: 1.125rem;
+  color: ${theme.colors.textSecondary};
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+`;
+
+const Button = styled(NavLink)`
+  padding: 0.875rem 2rem;
+  border-radius: ${theme.borderRadius};
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+`;
+
+const PrimaryButton = styled(Button)`
+  background-color: ${theme.colors.primary};
+  color: ${theme.colors.white};
+
+  &:hover {
+    background-color: ${theme.colors.primaryDark};
+  }
+`;
+
+const SecondaryButton = styled(Button)`
+  background-color: ${theme.colors.white};
+  color: ${theme.colors.primary};
+  border-color: ${theme.colors.border};
+
+  &:hover {
+    border-color: ${theme.colors.primary};
+  }
+`;
+
+
+// --- Features Section ---
+const FeaturesSection = styled.section`
+  padding: 5rem 1.5rem;
+  background-color: ${theme.colors.background};
+`;
+
+const FeaturesContainer = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 2.25rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4rem;
+`;
+
+const FeaturesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+`;
+
+const FeatureCard = styled.div`
+  background-color: ${theme.colors.white};
+  border-radius: ${theme.borderRadius};
+  padding: 2rem;
+  box-shadow: ${theme.shadow};
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const FeatureIconWrapper = styled.div`
+  margin: 0 auto 1.5rem;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #FEE2E2; // Light red background
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${theme.colors.primary};
+`;
+
+const FeatureTitle = styled.h4`
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+`;
+
+const FeatureDescription = styled.p`
+  color: ${theme.colors.textSecondary};
+  line-height: 1.6;
+`;
+
+// --- Footer ---
+const Footer = styled.footer`
+  background-color: ${theme.colors.white};
+  padding: 3rem 1.5rem;
+  border-top: 1px solid ${theme.colors.border};
+`;
+
+const FooterContainer = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: center;
+  color: ${theme.colors.textSecondary};
+`;
+
+const FooterText = styled.p`
+  margin: 1rem 0;
+  font-size: 0.875rem;
+`;
+
+// --- The Main Component ---
 const Home = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const closeMenu = () => setMenuOpen(false);
+
+  // Reusable NavLinks array
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/view-runs", label: "Runs" },
+    { to: "/view-wickets", label: "Wickets" },
+    { to: "/wicket-analysis", label: "Wicket Analysis" },
+    { to: "/stats", label: "Batting Stats" },
+    { to: "/analyst", label: "Analysis" },
+    { to: "/live-match", label: "Live Match" },
+  ];
 
   return (
-    <div style={{
-      fontFamily: "'Inter', 'Segoe UI', -apple-system, sans-serif",
-      color: "#111827",
-      backgroundColor: "#f9fafb",
-      minHeight: "100vh",
-    }}>
-      {/* Navbar */}
-      <header style={{
-        backgroundColor: "#ffffff",
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-      }}>
-        <div style={{
-          maxWidth: "1280px",
-          margin: "0 auto",
-          padding: "0 1.5rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          height: "70px",
-        }}>
-          {/* Logo */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-          }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "0.75rem" }}>
-              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#4f46e5" strokeWidth="2" />
-              <path d="M12 8V12L15 15" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <h1 style={{
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              background: "linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              margin: 0,
-            }}>
-              FrontyardCricket
-            </h1>
-          </div>
-
-          {/* Desktop Navigation */}
-          <Navbar>
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/view-runs">Runs</NavLink>
-            <NavLink to="/view-wickets">Wickets</NavLink>
-            <NavLink to="/analyst">Analysis</NavLink>
-            <NavLink to="/wicket-analysis">Wicket Analysis</NavLink>
-            <NavLink to="/stats">Batting Stats</NavLink>
-            <NavLink to="/live-match">Live Match</NavLink> {/* Added Live Match link */}
-          </Navbar>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={toggleMenu}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              width: "24px",
-              height: "18px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              '@media (min-width: 768px)': {
-                display: "none",
-              },
-            }}
-          >
-            <span style={{
-              width: "100%",
-              height: "2px",
-              backgroundColor: "#4f46e5",
-              borderRadius: "2px",
-              transition: "transform 0.3s ease",
-              transform: menuOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
-            }} />
-            <span style={{
-              width: "100%",
-              height: "2px",
-              backgroundColor: "#4f46e5",
-              borderRadius: "2px",
-              opacity: menuOpen ? 0 : 1,
-              transition: "opacity 0.3s ease",
-            }} />
-            <span style={{
-              width: "100%",
-              height: "2px",
-              backgroundColor: "#4f46e5",
-              borderRadius: "2px",
-              transition: "transform 0.3s ease",
-              transform: menuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none",
-            }} />
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <div style={{
-            backgroundColor: "#ffffff",
-            padding: "1rem 1.5rem",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-            '@media (min-width: 768px)': {
-              display: "none",
-            },
-          }}>
-            <nav style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-            }}>
-              <MobileNavLink to="/" onClick={toggleMenu}>Home</MobileNavLink>
-              <MobileNavLink to="/view-runs" onClick={toggleMenu}>Runs</MobileNavLink>
-              <MobileNavLink to="/view-wickets" onClick={toggleMenu}>Wickets</MobileNavLink>
-              <MobileNavLink to="/analyst" onClick={toggleMenu}>Analysis</MobileNavLink>
-              <MobileNavLink to="/wicket-analysis" onClick={toggleMenu}>Wicket Analysis</MobileNavLink>
-              <MobileNavLink to="/stats" onClick={toggleMenu}>Batting Analysis</MobileNavLink>
-              <MobileNavLink to="/live-match" onClick={toggleMenu}>Live Match</MobileNavLink>
-            </nav>
-          </div>
-        )}
-      </header>
-
-      {/* Hero Section */}
-      <div style={{
-        background: "linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%)",
-        padding: "4rem 1.5rem",
-        textAlign: "center",
-        color: "#ffffff",
-      }}>
-        <div style={{
-          maxWidth: "1024px",
-          margin: "0 auto",
-        }}>
-          <h1 style={{
-            fontSize: "2.5rem",
-            fontWeight: 800,
-            marginBottom: "1.5rem",
-          }}>
-            Welcome to Cricket Info
-          </h1>
-          <p style={{
-            fontSize: "1.125rem",
-            maxWidth: "640px",
-            margin: "0 auto 2rem",
-            opacity: 0.9,
-          }}>
-            Track runs, wickets, and all your cricket statistics in one place with our intuitive dashboard.
-          </p>
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-            flexWrap: "wrap",
-          }}>
-            <Link to="/stats" style={{
-              backgroundColor: "#ffffff",
-              color: "#4f46e5",
-              padding: "0.75rem 1.5rem",
-              borderRadius: "0.5rem",
-              fontWeight: 600,
-              textDecoration: "none",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-            }}>
-              View Statistics
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <>
+      <GlobalStyle />
+      <PageWrapper>
+        {/* Navbar */}
+        <Header>
+          <NavContainer>
+            <LogoLink to="/" onClick={closeMenu}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16.5 13.5L18 12L16.5 10.5M18 12H6M19.9997 12C19.9997 16.9706 15.9703 21 10.9997 21C6.02918 21 1.99976 16.9706 1.99976 12C1.99976 7.02944 6.02918 3 10.9997 3C15.9703 3 19.9997 7.02944 19.9997 12Z" stroke={theme.colors.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            </Link>
-            <Link to="/add-runs" style={{
-              backgroundColor: "rgba(255, 255, 255, 0.15)",
-              color: "#ffffff",
-              padding: "0.75rem 1.5rem",
-              borderRadius: "0.5rem",
-              fontWeight: 600,
-              textDecoration: "none",
-              transition: "background-color 0.2s ease",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              backdropFilter: "blur(12px)",
-            }}>
-              Add New Entry
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 5V19M5 12H19" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </div>
+              <LogoText>FrontyardCricket</LogoText>
+            </LogoLink>
 
-      {/* Features Section */}
-      <div style={{
-        maxWidth: "1280px",
-        margin: "4rem auto",
-        padding: "0 1.5rem",
-      }}>
-        <h2 style={{
-          fontSize: "1.875rem",
-          fontWeight: 700,
-          textAlign: "center",
-          marginBottom: "3rem",
-        }}>
-          Easy Cricket Statistics Management
-        </h2>
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "2rem",
-        }}>
-          <FeatureCard 
-            title="Track Runs" 
-            description="Record and analyze batting performances with detailed run statistics."
-            icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 16L12 12M12 12L16 8M12 12L8 8M12 12L16 16M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            }
-          />
-          <FeatureCard 
-            title="Monitor Wickets" 
-            description="Keep track of bowling performances and wicket-taking abilities."
-            icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            }
-          />
-          <FeatureCard 
-            title="Manage Data" 
-            description="Easily update, edit, and maintain your cricket statistics."
-            icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4V20M20 12H4" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            }
-          />
-        </div>
-      </div>
+            <DesktopNav>
+              {navLinks.map(link => (
+                <StyledNavLink key={link.to} to={link.to} end>{link.label}</StyledNavLink>
+              ))}
+            </DesktopNav>
 
-      {/* Footer */}
-      <footer style={{
-        backgroundColor: "#f3f4f6",
-        padding: "2rem 1.5rem",
-        borderTop: "1px solid #e5e7eb",
-      }}>
-        <div style={{
-          maxWidth: "1280px",
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          textAlign: "center",
-        }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "1.5rem",
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "0.5rem" }}>
-              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#4f46e5" strokeWidth="2" />
-              <path d="M12 8V12L15 15" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <h3 style={{
-              fontSize: "1.25rem",
-              fontWeight: 700,
-              background: "linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              margin: 0,
-            }}>
-              FriendSpehere Cricket
-            </h3>
-          </div>
-          <p style={{
-            color: "#6b7280",
-            fontSize: "0.875rem",
-            marginBottom: "1.5rem",
-          }}>
-            © 2025 Cricket Info. All rights reserved.
-          </p>
-          <div style={{
-            display: "flex",
-            gap: "1.5rem",
-          }}>
-            <a href="#" style={{
-              color: "#6b7280",
-              fontSize: "0.875rem",
-              textDecoration: "none",
-            }}>Privacy Policy</a>
-            <a href="#" style={{
-              color: "#6b7280",
-              fontSize: "0.875rem",
-              textDecoration: "none",
-            }}>Terms of Service</a>
-            <a href="#" style={{
-              color: "#6b7280",
-              fontSize: "0.875rem",
-              textDecoration: "none",
-            }}>Contact</a>
-          </div>
-        </div>
-      </footer>
-    </div>
+            <MobileMenuToggle isOpen={menuOpen} onClick={toggleMenu}>
+              <span />
+              <span />
+              <span />
+            </MobileMenuToggle>
+          </NavContainer>
+        </Header>
+        
+        {/* Mobile Menu (conditionally rendered) */}
+        <MobileMenu isOpen={menuOpen}>
+          {navLinks.map(link => (
+             <StyledNavLink key={link.to} to={link.to} onClick={closeMenu} end>{link.label}</StyledNavLink>
+          ))}
+        </MobileMenu>
+
+        {/* Hero Section */}
+        <HeroSection>
+          <HeroContent>
+            <HeroTitle>
+              Your Ultimate <span>Cricket</span> Companion
+            </HeroTitle>
+            <HeroSubtitle>
+              Track every run, wicket, and match statistic with unparalleled ease. Welcome to the future of cricket analysis.
+            </HeroSubtitle>
+            <ButtonGroup>
+              <PrimaryButton to="/stats">View Statistics</PrimaryButton>
+              <SecondaryButton to="/add-runs">Add New Entry</SecondaryButton>
+            </ButtonGroup>
+          </HeroContent>
+        </HeroSection>
+
+        {/* Features Section */}
+        <FeaturesSection>
+          <FeaturesContainer>
+            <SectionTitle>Everything You Need, All in One Place</SectionTitle>
+            <FeaturesGrid>
+              <FeatureCard>
+                <FeatureIconWrapper>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10M18 20V4M6 20V16"/></svg>
+                </FeatureIconWrapper>
+                <FeatureTitle>Live Score Tracking</FeatureTitle>
+                <FeatureDescription>Record runs and wickets in real-time with an intuitive and fast interface.</FeatureDescription>
+              </FeatureCard>
+              <FeatureCard>
+                <FeatureIconWrapper>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                </FeatureIconWrapper>
+                <FeatureTitle>In-Depth Analysis</FeatureTitle>
+                <FeatureDescription>Visualize player performance, match trends, and historical data with powerful charts.</FeatureDescription>
+              </FeatureCard>
+              <FeatureCard>
+                <FeatureIconWrapper>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </FeatureIconWrapper>
+                <FeatureTitle>Player Management</FeatureTitle>
+                <FeatureDescription>Create player profiles, track career stats, and compare performances across your team.</FeatureDescription>
+              </FeatureCard>
+            </FeaturesGrid>
+          </FeaturesContainer>
+        </FeaturesSection>
+        
+        {/* Footer */}
+        <Footer>
+          <FooterContainer>
+            <LogoLink to="/" style={{ justifyContent: 'center', marginBottom: '1rem' }}>
+              <LogoText>FrontyardCricket</LogoText>
+            </LogoLink>
+            <FooterText>© {new Date().getFullYear()} FrontyardCricket. All rights reserved.</FooterText>
+          </FooterContainer>
+        </Footer>
+      </PageWrapper>
+    </>
   );
 };
 
-// Component for desktop navigation links
-const NavLink = ({ to, children }) => (
-  <Link to={to} style={{
-    color: "#4b5563",
-    textDecoration: "none",
-    fontWeight: 500,
-    fontSize: "1rem",
-    padding: "0.5rem",
-    borderRadius: "0.25rem",
-    transition: "color 0.2s ease",
-    '&:hover': {
-      color: "#4f46e5",
-    },
-  }}>
-    {children}
-  </Link>
-);
-
-// Component for mobile navigation links
-const MobileNavLink = ({ to, children, onClick }) => (
-    <Link to={to} onClick={onClick} style={{
-      color: "#4b5563",
-      textDecoration: "none",
-      fontWeight: 500,
-      fontSize: "1rem",
-      padding: "0.75rem 0.5rem",
-      borderRadius: "0.25rem",
-      transition: "color 0.2s ease",
-      '&:hover': {
-        color: "#4f46e5",
-      },
-    }}>
-      {children}
-    </Link>
-  );
-  
-  // Component for feature cards
-  const FeatureCard = ({ title, description, icon }) => (
-    <div style={{
-      backgroundColor: "#ffffff",
-      borderRadius: "0.5rem",
-      padding: "1.5rem",
-      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      textAlign: "center",
-    }}>
-      <div style={{
-        backgroundColor: "#f3f4f6",
-        borderRadius: "50%",
-        width: "64px",
-        height: "64px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: "1rem",
-      }}>
-        {icon}
-      </div>
-      <h3 style={{
-        fontSize: "1.25rem",
-        fontWeight: 600,
-        marginBottom: "0.75rem",
-      }}>
-        {title}
-      </h3>
-      <p style={{
-        color: "#6b7280",
-        fontSize: "0.875rem",
-      }}>
-        {description}
-      </p>
-    </div>
-  );
-  
-  export default Home;
+export default Home;
