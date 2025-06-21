@@ -320,6 +320,7 @@ const MobileMenu = styled.div`
   gap: 2rem;
   transform: ${({ isOpen }) => isOpen ? 'translateX(0)' : 'translateX(100%)'};
   transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 999; /* FIX: Added z-index to ensure menu appears over page content */
 
   ${StyledNavLink} {
     font-size: 1.5rem;
@@ -771,6 +772,19 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
+  // FIX: Lock body scroll when mobile menu is open for better UX
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    // Cleanup function to reset the style when the component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [menuOpen]);
+
   // Fetch club data on component mount
   useEffect(() => {
     const fetchClubData = async () => {
