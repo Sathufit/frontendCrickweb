@@ -123,6 +123,9 @@ const PlayerStats = () => {
     const strikeRate = calculateStrikeRate(player.totalRuns, player.totalInnings);
     const performancePercentage = Math.min((average / 60) * 100, 100);
     const consistencyPercentage = player.totalInnings > 0 ? Math.round(((player.totalInnings - player.totalOuts) / player.totalInnings) * 100) : 0;
+    const outPercentage = player.totalInnings > 0
+      ? Math.round((player.totalOuts / player.totalInnings) * 100)
+      : 0;
 
     return (
       <div
