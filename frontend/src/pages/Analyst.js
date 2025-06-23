@@ -41,7 +41,7 @@ const playerStats = {
     { name: "Achala Shashvika", centuries: "1", image: "/images/8.png" },
   ],
   mostFifties: [
-    { name: "Yamila Dilhar", fifties: "25", image: "/images/5.JPG" },
+    { name: "Yamila Dilhara", fifties: "25", image: "/images/5.JPG" },
     { name: "Sathush Nanayakkara", fifties: "16", image: "/images/2.png" },
     { name: "Achala Shashvika", fifties: "8", image: "/images/8.png" },
     { name: "Chanuka de Silva", fifties: "8", image: "/images/1.2.JPG" },
