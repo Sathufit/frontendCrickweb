@@ -1,6 +1,7 @@
 // src/pages/ScoreboardPage.js
 import React, { useState } from 'react';
-import Scoreboard from '../pages/Scoreboard';   // The component that shows a single match
+// THIS IS THE CORRECTED IMPORT PATH
+import Scoreboard from '../components/Scoreboard';   // The component that shows a single match
 import MatchList from '../components/MatchList';     // The component that shows past matches
 import styled from 'styled-components';
 
