@@ -159,11 +159,11 @@ const Header = styled.header`
   z-index: 1000;
   padding: 0 2rem;
   height: 80px;
-  background-color: ${({ scrolled }) => scrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent'};
-  backdrop-filter: ${({ scrolled }) => scrolled ? 'blur(10px)' : 'none'};
-  box-shadow: ${({ scrolled }) => scrolled ? theme.shadow : 'none'};
+  background-color: ${({ $scrolled }) => $scrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent'};
+  backdrop-filter: ${({ $scrolled }) => $scrolled ? 'blur(10px)' : 'none'};
+  box-shadow: ${({ $scrolled }) => $scrolled ? theme.shadow : 'none'};
   transition: all 0.3s ease-in-out;
-  border-bottom: ${({ scrolled }) => scrolled ? `1px solid ${theme.colors.border}` : 'none'};
+  border-bottom: ${({ $scrolled }) => $scrolled ? `1px solid ${theme.colors.border}` : 'none'};
 
   @media (max-width: 768px) {
     padding: 0 1rem;
@@ -318,13 +318,13 @@ const MobileMenu = styled.div`
   align-items: center;
   justify-content: center;
   gap: 2rem;
-  transform: ${({ isOpen }) => isOpen ? 'translateX(0)' : 'translateX(100%)'};
+  transform: ${({ $isOpen }) => $isOpen ? 'translateX(0)' : 'translateX(100%)'};
   transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   z-index: 999; /* FIX: Added z-index to ensure menu appears over page content */
 
   ${StyledNavLink} {
     font-size: 1.5rem;
-    animation: ${({ isOpen }) => isOpen ? fadeIn : 'none'} 0.6s ease-out;
+    animation: ${({ $isOpen }) => $isOpen ? fadeIn : 'none'} 0.6s ease-out;
     animation-delay: ${(_, index) => index * 0.1}s;
     animation-fill-mode: backwards;
   }
@@ -821,7 +821,8 @@ const Home = () => {
     { to: "/wicket-analysis", label: "Wicket Analysis" },
     { to: "/stats", label: "Batting Stats" },
     { to: "/analyst", label: "Analysis" },
-    { to: "/live-match", label: "Live Match" },
+    { to: "/live-match", label: "Start Match" },
+    { to: "/scoreboard", label: "Live Match" },
   ];
 
   return (
@@ -844,13 +845,13 @@ const Home = () => {
               ))}
             </DesktopNav>
 
-            <MobileMenuToggle isOpen={menuOpen} onClick={toggleMenu}>
+            <MobileMenuToggle $isOpen={menuOpen} onClick={toggleMenu}>
               <div /><div /><div />
             </MobileMenuToggle>
           </NavContainer>
         </Header>
         
-        <MobileMenu isOpen={menuOpen}>
+        <MobileMenu $isOpen={menuOpen}>
           {navLinks.map((link, index) => (
              <StyledNavLink 
                key={link.to} 

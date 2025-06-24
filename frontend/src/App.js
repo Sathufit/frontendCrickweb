@@ -1,5 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
+// Import all your pages
 import Home from "./pages/Home";
 import LiveMatch from "./pages/LiveMatch";
 import ViewRuns from "./pages/ViewRuns";
@@ -15,6 +17,9 @@ import ManageWickets from "./pages/ManageWickets";
 import WicketAnalysis from "./pages/WicketAnalysis";
 import DailyReport from "./pages/DailyReport";
 
+// --- IMPORT THE NEW SCOREBOARD "PAGE" ---
+import ScoreboardPage from "./pages/ScoreboardPage";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./styles.css";
@@ -25,6 +30,11 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
+        
+        {/* --- CORRECTED THE SCOREBOARD ROUTE --- */}
+        {/* This route now points to our new page which has the input field */}
+        <Route path="/scoreboard" element={<ScoreboardPage />} />
+        
         <Route path="/live-match" element={<LiveMatch />} />
         <Route path="/view-runs" element={<ViewRuns />} />
         <Route path="/view-wickets" element={<ViewWickets />} />
@@ -38,7 +48,7 @@ function App() {
           <Route path="add-runs" element={<AddRuns />} />
           <Route path="add-wickets" element={<AddWickets />} />
           <Route path="manage-runs" element={<ManageRuns />} />
-          <Route path="manage-wickets" element={<ManageWickets />} />
+          <Route path="manage-wickets" in element={<ManageWickets />} />
           <Route path="daily-report" element={<DailyReport />} />
         </Route>
       </Routes>

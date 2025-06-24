@@ -7,16 +7,32 @@
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="FriendSphere Cric - Cricket Stats and Updates" />
 
-    <!-- ✅ Development-friendly Content Security Policy -->
+    <!-- 
+      ================================================================
+      ✅ CORRECTED CONTENT SECURITY POLICY FOR FIREBASE
+      ================================================================
+    -->
     <meta http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
+        
         script-src 'self' 'unsafe-inline' 'unsafe-eval';
-        style-src 'self' 'unsafe-inline';
-        font-src 'self' data:;
-        connect-src 'self' http://localhost:5001 https://friendspherecricweb.onrender.com;
-        img-src 'self' data:;
-        frame-ancestors 'self';">
+        
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        
+        font-src 'self' data: https://fonts.gstatic.com;
+        
+        img-src 'self' data: https://images.unsplash.com;
+        
+        connect-src 
+          'self' 
+          http://localhost:5001 
+          https://friendspherecricweb.onrender.com
+          https://firestore.googleapis.com
+          wss://firestore.googleapis.com;
+
+        frame-ancestors 'self';
+      ">
 
     <link rel="apple-touch-icon" href="/images/1.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
