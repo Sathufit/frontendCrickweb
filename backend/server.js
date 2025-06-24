@@ -19,11 +19,16 @@ app.use(cors(corsOptions));
 // ✅ Middleware
 app.use(express.json());
 
-// ✅ Security Policy
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' http://localhost:5001 https://friendspherecricweb.onrender.com; img-src 'self' data:; frame-ancestors 'self';"
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' data: https://fonts.gstatic.com; " +
+    "connect-src 'self' http://localhost:5001 https://friendspherecricweb.onrender.com https://firestore.googleapis.com https://www.googleapis.com; " +
+    "img-src 'self' data: https://www.google.com; " +
+    "frame-ancestors 'self';"
   );
   next();
 });
