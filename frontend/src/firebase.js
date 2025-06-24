@@ -8,13 +8,13 @@ import { getFirestore } from "firebase/firestore"; // <-- Import Firestore
 // Your web app's Firebase configuration
 // IMPORTANT: For security, consider using environment variables for this in a real-world app
 const firebaseConfig = {
-  apiKey: "AIzaSyDUzdrogwogo4X5XyJV9rd0mBRkS_WMolk",
-  authDomain: "live-score-app-568b8.firebaseapp.com",
-  projectId: "live-score-app-568b8",
-  storageBucket: "live-score-app-568b8.appspot.com", // Corrected the domain
-  messagingSenderId: "505975251968",
-  appId: "1:505975251968:web:5c730414b88b611073a4e5",
-  measurementId: "G-L2WB3VQQ03"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
