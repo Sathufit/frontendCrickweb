@@ -1,11 +1,29 @@
 import React, { useState } from "react";
 import axios from "axios";
-
 import { useNavigate } from "react-router-dom";
+
 const API_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:5001"
     : "https://frontyardcricket.onrender.com";
+
+// ✅ List of bowler names extracted from your data
+const bowlerNames = [
+  "Ravindu Nanayakkara",
+  "Sathush Nanayakkara",
+  "Yamila Dilhara",
+  "Madhawa Aloka",
+  "Dihindu Nimsath",
+  "Dinal Chamith",
+  "Anjitha Kaveendra",
+  "Achala Shashvika",
+  "Nidula Hansaja",
+  "Dulshan Thanoj",
+  "Savindu Weerarathna",
+  "Chanuka de Silva",
+  "Siluna Sathmina",
+  "Farhan Navufal",
+];
 
 
 const AddWickets = () => {
@@ -22,6 +40,8 @@ const AddWickets = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  // Note: The snackbar state from your original code wasn't used in the JSX, 
+  // but I'm leaving it in case you want to add a Material-UI Snackbar later.
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -56,7 +76,7 @@ const AddWickets = () => {
         message: "✅ Wicket added successfully!",
         severity: "success"
       });
-
+      
       // Reset form after successful submission
       setFormData({ bowler_name: "", venue: "", wickets: "", innings: "", date: "" });
 
@@ -71,10 +91,6 @@ const AddWickets = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
   };
 
   // Shared styles as objects
@@ -133,6 +149,7 @@ const AddWickets = () => {
       fontSize: '1rem',
       transition: 'all 0.3s',
       outline: 'none',
+      backgroundColor: '#fff', // Ensure select background is white
     },
     inputFocus: {
       boxShadow: '0 0 0 3px rgba(79, 70, 229, 0.2)',
@@ -222,48 +239,48 @@ const AddWickets = () => {
 
   return (
     <div style={styles.pageContainer} className="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen py-8">
-      <div 
-        style={styles.formCard} 
+      <div
+        style={styles.formCard}
         className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden"
-        onMouseEnter={(e) => {e.currentTarget.style.transform = 'translateY(-5px)'}}
-        onMouseLeave={(e) => {e.currentTarget.style.transform = 'translateY(0)'}}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
       >
         <div style={styles.header} className="bg-indigo-600 py-4 px-6">
           <h1 style={styles.headerTitle} className="text-2xl font-bold text-white">Add Wickets</h1>
           <p style={styles.headerSubtitle} className="text-indigo-100 text-sm">Record bowling performance details</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} style={styles.formContainer} className="p-6 space-y-4">
           {success && (
             <div style={styles.successAlert} className="bg-green-100 text-green-700 p-3 rounded-md flex items-center">
               <svg style={styles.alertIcon} className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span style={{fontWeight: '500'}}>Wicket added successfully!</span>
+              <span style={{ fontWeight: '500' }}>Wicket added successfully!</span>
             </div>
           )}
-          
+
           {error && (
             <div style={styles.errorAlert} className="bg-red-100 text-red-700 p-3 rounded-md flex items-center">
               <svg style={styles.alertIcon} className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              <span style={{fontWeight: '500'}}>{error}</span>
+              <span style={{ fontWeight: '500' }}>{error}</span>
             </div>
           )}
-          
+
+          {/* 🔴 START: REPLACED TEXT INPUT WITH DROPDOWN 🔴 */}
           <div style={styles.formGroup}>
             <label htmlFor="bowler_name" style={styles.label} className="block text-sm font-medium text-gray-700 mb-1">
               Bowler Name
             </label>
-            <input
-              type="text"
+            <select
               id="bowler_name"
               name="bowler_name"
               value={formData.bowler_name}
               onChange={handleChange}
               style={styles.input}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
               onFocus={(e) => {
                 e.target.style.boxShadow = styles.inputFocus.boxShadow;
@@ -273,10 +290,17 @@ const AddWickets = () => {
                 e.target.style.boxShadow = "none";
                 e.target.style.borderColor = "#D1D5DB";
               }}
-              placeholder="Enter bowler's full name"
-            />
+            >
+              <option value="" disabled>Select a bowler</option>
+              {bowlerNames.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </div>
-          
+          {/* 🟢 END: REPLACEMENT 🟢 */}
+
           <div style={styles.formGroup}>
             <label htmlFor="venue" style={styles.label} className="block text-sm font-medium text-gray-700 mb-1">
               Venue
@@ -301,7 +325,7 @@ const AddWickets = () => {
               placeholder="Enter stadium or ground name"
             />
           </div>
-          
+
           <div style={styles.gridContainer} className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="wickets" style={styles.label} className="block text-sm font-medium text-gray-700 mb-1">
@@ -326,10 +350,10 @@ const AddWickets = () => {
                   e.target.style.boxShadow = "none";
                   e.target.style.borderColor = "#D1D5DB";
                 }}
-                placeholder="wickets"
+                placeholder="Wickets"
               />
             </div>
-            
+
             <div>
               <label htmlFor="innings" style={styles.label} className="block text-sm font-medium text-gray-700 mb-1">
                 Innings
@@ -353,11 +377,11 @@ const AddWickets = () => {
                   e.target.style.boxShadow = "none";
                   e.target.style.borderColor = "#D1D5DB";
                 }}
-                placeholder="innings"
+                placeholder="Innings"
               />
             </div>
           </div>
-          
+
           <div style={styles.formGroup}>
             <label htmlFor="date" style={styles.label} className="block text-sm font-medium text-gray-700 mb-1">
               Date
@@ -381,23 +405,22 @@ const AddWickets = () => {
               }}
             />
           </div>
-          
+
           <button
             type="submit"
             disabled={loading}
             style={styles.submitButton}
             onMouseOver={(e) => !loading && (e.target.style.backgroundColor = styles.submitButtonHover.backgroundColor)}
             onMouseOut={(e) => !loading && (e.target.style.backgroundColor = styles.submitButton.backgroundColor)}
-            className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-              loading 
-                ? "bg-indigo-400 cursor-not-allowed" 
+            className={`w-full py-2 px-4 rounded-md text-white font-medium ${loading
+                ? "bg-indigo-400 cursor-not-allowed"
                 : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            }`}
+              }`}
           >
             {loading ? (
               <span className="flex items-center justify-center">
                 <svg style={styles.loadingSpinner} className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 Processing...
@@ -407,7 +430,7 @@ const AddWickets = () => {
             )}
           </button>
         </form>
-        
+
         <div style={styles.buttonsContainer}>
           <button
             type="button"
@@ -420,7 +443,7 @@ const AddWickets = () => {
             Manage Wickets
           </button>
         </div>
-        
+
         <div style={styles.footer} className="bg-gray-50 py-3 px-6 border-t border-gray-200">
           <p style={styles.footerText} className="text-xs text-gray-500 text-center">
             All cricket statistics are stored securely and validated before submission.

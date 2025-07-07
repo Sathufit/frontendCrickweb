@@ -1,6 +1,4 @@
 import React from 'react';
-// We'll use a popular icon library for a professional look.
-// Make sure to run: npm install react-icons
 import {
   FaTrophy,
   FaRegChartBar,
@@ -32,7 +30,7 @@ const playerStats = {
   highestPartnership: {
     players: "Yamila Dilhara and Dulshan Thanoj",
     runs: "147",
-    image: "/images/partnership.jpg", // A generic image for partnership
+    image: "/images/partnership.jpg", 
   },
   mostCenturies: [
     { name: "Sathush Nanayakkara", centuries: "4", image: "/images/2.png" },
