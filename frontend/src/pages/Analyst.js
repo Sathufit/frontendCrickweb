@@ -12,10 +12,9 @@ import {
 // --- Data remains the same ---
 const playerStats = {
   topPerformance: {
-    name: "Dulshan Thanoj",
-    achievement: "Most dropped catches in a single match",
-    value: "6",
-    image: "/images/1.4.JPG",
+    name: "Yamila Dilhara, Sathush Nanayakkara, Achala Shashvika, Nidula Hansaja, Dihindu Nimsath, Siluna Sathmina",
+    achievement: "Highest Runs in a Single Inning",
+    value: "200*",
   },
   highestRuns: {
     name: "Chanuka de Silva",
