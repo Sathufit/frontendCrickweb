@@ -12,9 +12,9 @@ import {
 // --- Data remains the same ---
 const playerStats = {
   topPerformance: {
-    name: "Yamila Dilhara, Sathush Nanayakkara, Achala Shashvika, Nidula Hansaja, Dihindu Nimsath, Siluna Sathmina",
+    name: "Yamila Dilhara, Dinal Chamith, Dulshan Thanoj, Savindu Weerarathna, Ravindu Nanayakkara",
     achievement: "Highest Runs in a Single Inning",
-    value: "200*",
+    value: "237",
   },
   highestRuns: {
     name: "Chanuka de Silva",
@@ -28,12 +28,12 @@ const playerStats = {
   },
   highestPartnership: {
     players: "Yamila Dilhara and Dulshan Thanoj",
-    runs: "147",
+    runs: "149",
     image: "/images/partnership.jpg", 
   },
   mostCenturies: [
     { name: "Sathush Nanayakkara", centuries: "4", image: "/images/2.png" },
-    { name: "Yamila Dilhara", centuries: "3", image: "/images/5.JPG" },
+    { name: "Yamila Dilhara", centuries: "4", image: "/images/5.JPG" },
     { name: "Chanuka de Silva", centuries: "2", image: "/images/1.2.JPG" },
     { name: "Achala Shashvika", centuries: "1", image: "/images/8.png" },
   ],
@@ -42,8 +42,8 @@ const playerStats = {
     { name: "Sathush Nanayakkara", fifties: "17", image: "/images/2.png" },
     { name: "Chanuka de Silva", fifties: "11", image: "/images/1.2.JPG" },
     { name: "Achala Shashvika", fifties: "8", image: "/images/8.png" },
-    { name: "Shanaka", fifties: "4", image: "/images/12.jpeg" },
-    { name: "Dulshan Thanoj", fifties: "4", image: "/images/1.4.JPG" },
+    { name: "Dulshan Thanoj", fifties: "5", image: "/images/1.4.JPG" },
+    { name: "Shanaka", fifties: "5", image: "/images/12.jpeg" },
     { name: "Savindu Weerarathna", fifties: "4", image: "/images/3.jpeg" },
     { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg" },
     { name: "Dihindu Nimsath", fifties: "1", image: "/images/1.3.jpg" },
