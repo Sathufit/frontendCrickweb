@@ -32,7 +32,7 @@ const playerStats = {
     image: "/images/partnership.jpg", 
   },
   mostCenturies: [
-    { name: "Yamila Dilhara", centuries: "5", image: "/images/5.JPG" },
+    { name: "Yamila Dilhara", centuries: "6", image: "/images/5.JPG" },
     { name: "Sathush Nanayakkara", centuries: "4", image: "/images/2.png" },
     { name: "Chanuka de Silva", centuries: "2", image: "/images/1.2.JPG" },
     { name: "Achala Shashvika", centuries: "1", image: "/images/8.png" },
