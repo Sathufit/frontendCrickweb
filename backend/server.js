@@ -9,7 +9,7 @@ const app = express();
 
 // ✅ CORS setup
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://frontyardcricket.onrender.com"],
+  origin: ["http://localhost:3000", "https://frontyard.sathush.dev"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
