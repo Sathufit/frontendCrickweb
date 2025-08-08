@@ -821,7 +821,6 @@ const Home = () => {
     { to: "/wicket-analysis", label: "Wicket Analysis" },
     { to: "/stats", label: "Batting Stats" },
     { to: "/analyst", label: "Analysis" },
-    { to: "/live-match", label: "Start Match" },
     { to: "/scoreboard", label: "Live Match" },
   ];
 
@@ -870,7 +869,7 @@ const Home = () => {
           <HeroContent>
             <HeroTitle>FRONTYARD CRICKET CLUB</HeroTitle>
             <HeroSubtitle>Passion. Pride. Performance. Welcome to the home of your favorite club.</HeroSubtitle>
-            <HeroButton to="/live-match">View Live Match</HeroButton>
+            <HeroButton to="/scoreboard">View Live Match</HeroButton>
           </HeroContent>
         </HeroSection>
 
