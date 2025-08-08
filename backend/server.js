@@ -16,7 +16,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// ✅ Middleware
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -26,8 +25,8 @@ app.use((req, res, next) => {
     "script-src 'self' 'unsafe-inline'; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' data: https://fonts.gstatic.com; " +
-    "connect-src 'self' http://localhost:5001 https://friendspherecricweb.onrender.com https://frontyardcricket.onrender.com https://firestore.googleapis.com wss://firestore.googleapis.com; " +
-    "img-src 'self' data: https://www.google.com; " +
+    "connect-src 'self' http://localhost:5001 https://frontyard.sathush.dev https://firestore.googleapis.com wss://firestore.googleapis.com; " +
+    "img-src 'self' data: https://www.google.com https://images.unsplash.com; " +
     "frame-ancestors 'self';"
   );
   next();
