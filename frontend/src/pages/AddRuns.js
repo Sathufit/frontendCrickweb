@@ -31,7 +31,7 @@ import {
 const API_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:5001"
-    : "https://frontyardcricket.onrender.com";
+    : "https://frontyard.sathush.dev";
 
 // ✅ List of player names extracted from your data
 const playerNames = [

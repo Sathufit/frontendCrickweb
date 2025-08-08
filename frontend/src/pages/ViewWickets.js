@@ -160,7 +160,7 @@ const AppHeader = ({ activePage = "View Wickets" }) => {
 const API_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:5001"
-    : "https://frontyardcricket.onrender.com";
+    : "https://frontyard.sathush.dev";
 
 const ViewWickets = () => {
   const [wickets, setWickets] = useState([]);
