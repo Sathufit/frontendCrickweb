@@ -52,6 +52,7 @@ const playerNames = [
   "Dihindu Nimsath",
   "Shalom Dilsara",
   "Eesara Kovinda",
+  "Saveen Nanayakkara",
 ];
 
 
