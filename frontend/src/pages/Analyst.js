@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 
 // --- Data remains the same ---
-const playerStats = {
+export const playerStats = {
   topPerformance: {
     name: "Yamila Dilhara, Dinal Chamith, Dulshan Thanoj, Savindu Weerarathna, Ravindu Nanayakkara",
     achievement: "Highest Runs in a Single Inning",
