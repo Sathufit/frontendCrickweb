@@ -8,6 +8,29 @@ const PlayerStats = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'average', direction: 'descending' });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  // Hardcoded data from Analyst component
+  const playerMilestones = {
+    mostCenturies: [
+      { name: "Yamila Dilhara", centuries: "6" },
+      { name: "Sathush Nanayakkara", centuries: "4" },
+      { name: "Chanuka de Silva", centuries: "2" },
+      { name: "Achala Shashvika", centuries: "1" }
+    ],
+    mostFifties: [
+      { name: "Yamila Dilhara", fifties: "28" },
+      { name: "Sathush Nanayakkara", fifties: "18" },
+      { name: "Chanuka de Silva", fifties: "11" },
+      { name: "Achala Shashvika", fifties: "8" },
+      { name: "Dulshan Thanoj", fifties: "8" },
+      { name: "Shanaka", fifties: "6" },
+      { name: "Savindu Weerarathna", fifties: "4" },
+      { name: "Nidula Lokuge", fifties: "2" },
+      { name: "Farhan Navufal", fifties: "1" },
+      { name: "Dihindu Nimsath", fifties: "1" },
+      { name: "Ravindu Nanayakkara", fifties: "1" }
+    ]
+  };
+
   // --- UI Theme and Styles (Unchanged) ---
   const palette = {
     primaryRed: '#D32F2F',
@@ -78,7 +101,7 @@ const PlayerStats = () => {
     },
     listHeader: {
         display: 'grid',
-        gridTemplateColumns: '50px 3fr repeat(4, 1fr)',
+        gridTemplateColumns: '50px 3fr repeat(6, 1fr)', // Updated to include 50s and 100s
         alignItems: 'center',
         padding: '0.75rem 1.5rem',
         color: palette.lightText,
@@ -94,7 +117,7 @@ const PlayerStats = () => {
     },
     playerRow: (index) => ({
         display: 'grid',
-        gridTemplateColumns: '50px 3fr repeat(4, 1fr)',
+        gridTemplateColumns: '50px 3fr repeat(6, 1fr)', // Updated to include 50s and 100s
         alignItems: 'center',
         backgroundColor: palette.primaryWhite,
         padding: '1rem 1.5rem',
@@ -202,6 +225,18 @@ const PlayerStats = () => {
     statLabelHighlight: {
         color: 'rgba(255, 255, 255, 0.8)',
     },
+    playerMilestone: {
+      fontSize: '1.1rem',
+      fontWeight: 500,
+      color: palette.darkText,
+      textAlign: 'center',
+      backgroundColor: palette.borderColor,
+      borderRadius: '50%',
+      width: '30px',
+      height: '30px',
+      lineHeight: '30px',
+      margin: '0 auto',
+    },
   };
 
   // --- Hooks and Logic ---
@@ -231,18 +266,22 @@ const PlayerStats = () => {
       setLoading(true);
       try {
         const data = await fetchPlayerStats();
-        // --- KEY CHANGE: Process data to calculate the average ---
+        // Process data to calculate the average
         const processedData = (Array.isArray(data) ? data : []).map(player => {
-            // Calculate the average. If outs are 0, the average is technically infinite.
-            // We use Infinity for correct sorting (higher is better).
-            // If player has 0 runs and 0 outs, average is 0.
+            // Calculate the average
             const calculatedAverage = player.totalOuts > 0
                 ? (player.totalRuns / player.totalOuts)
                 : (player.totalRuns > 0 ? Infinity : 0);
 
+            // Add centuries and fifties data from our hardcoded data
+            const centuriesData = playerMilestones.mostCenturies.find(p => p.name === player.name);
+            const fiftiesData = playerMilestones.mostFifties.find(p => p.name === player.name);
+
             return {
                 ...player,
-                average: calculatedAverage // Overwrite the average property with our calculation
+                average: calculatedAverage,
+                centuries: centuriesData ? centuriesData.centuries : "0",
+                fifties: fiftiesData ? fiftiesData.fifties : "0"
             };
         });
         
@@ -305,9 +344,14 @@ const PlayerStats = () => {
             <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('average')}>
                 Avg {getSortIcon('average')}
             </div>
+            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('fifties')}>
+                50s {getSortIcon('fifties')}
+            </div>
+            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('centuries')}>
+                100s {getSortIcon('centuries')}
+            </div>
         </div>
         {statsData.map((player, index) => {
-            // --- KEY CHANGE: Format the average for display ---
             const displayAverage = player.average === Infinity ? 'N/A' : Number(player.average).toFixed(1);
             return (
                 <div
@@ -325,6 +369,24 @@ const PlayerStats = () => {
                     <div style={styles.playerStat}>{player.totalInnings}</div>
                     <div style={styles.playerStat}>{player.totalOuts}</div>
                     <div style={{...styles.playerStat, ...styles.playerAverage}}>{displayAverage}</div>
+                    <div style={styles.playerStat}>
+                        <div style={{
+                            ...styles.playerMilestone,
+                            backgroundColor: parseInt(player.fifties) > 0 ? palette.primaryRed : palette.borderColor,
+                            color: parseInt(player.fifties) > 0 ? palette.primaryWhite : palette.lightText
+                        }}>
+                            {player.fifties}
+                        </div>
+                    </div>
+                    <div style={styles.playerStat}>
+                        <div style={{
+                            ...styles.playerMilestone,
+                            backgroundColor: parseInt(player.centuries) > 0 ? palette.primaryRed : palette.borderColor,
+                            color: parseInt(player.centuries) > 0 ? palette.primaryWhite : palette.lightText
+                        }}>
+                            {player.centuries}
+                        </div>
+                    </div>
                 </div>
             )
         })}
@@ -334,7 +396,6 @@ const PlayerStats = () => {
   const renderMobileCards = () => (
     <div style={styles.cardsContainer}>
         {statsData.map((player, index) => {
-            // --- KEY CHANGE: Format the average for display ---
             const displayAverage = player.average === Infinity ? 'N/A' : Number(player.average).toFixed(1);
             return (
                 <div
@@ -361,6 +422,47 @@ const PlayerStats = () => {
                             <div style={{...styles.statPill, ...styles.statPillHighlight}}>
                                 <span style={{...styles.statValue, ...styles.statValueHighlight}}>{displayAverage}</span>
                                 <span style={{...styles.statLabel, ...styles.statLabelHighlight}}>Average</span>
+                            </div>
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            marginTop: '12px',
+                            padding: '8px',
+                            backgroundColor: palette.background,
+                            borderRadius: '10px'
+                        }}>
+                            <div style={{
+                                textAlign: 'center',
+                                flex: 1
+                            }}>
+                                <span style={{
+                                    fontSize: '0.7rem',
+                                    color: palette.lightText,
+                                    display: 'block',
+                                    marginBottom: '4px'
+                                }}>FIFTIES</span>
+                                <span style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '700',
+                                    color: parseInt(player.fifties) > 0 ? palette.primaryRed : palette.darkText
+                                }}>{player.fifties}</span>
+                            </div>
+                            <div style={{
+                                textAlign: 'center',
+                                flex: 1
+                            }}>
+                                <span style={{
+                                    fontSize: '0.7rem',
+                                    color: palette.lightText,
+                                    display: 'block',
+                                    marginBottom: '4px'
+                                }}>CENTURIES</span>
+                                <span style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '700',
+                                    color: parseInt(player.centuries) > 0 ? palette.primaryRed : palette.darkText
+                                }}>{player.centuries}</span>
                             </div>
                         </div>
                     </div>

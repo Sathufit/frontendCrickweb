@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+// Import the player stats data from Analyst component
+import { playerStats } from "./Analyst";
+
 const API_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:5001"
@@ -11,6 +14,52 @@ const WicketAnalysis = () => {
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: 'rate', direction: 'descending' });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  // Get the centuries and fifties data
+  const [battingMilestones, setBattingMilestones] = useState([]);
+
+  useEffect(() => {
+    // Process the centuries and fifties data from Analyst
+    const processMilestones = () => {
+      const milestoneData = [];
+      
+      // Process centuries data
+      if (playerStats && playerStats.mostCenturies) {
+        playerStats.mostCenturies.forEach(player => {
+          const existingPlayer = milestoneData.find(p => p.name === player.name);
+          if (existingPlayer) {
+            existingPlayer.centuries = player.centuries;
+          } else {
+            milestoneData.push({
+              name: player.name,
+              centuries: player.centuries,
+              fifties: "0"
+            });
+          }
+        });
+      }
+      
+      // Process fifties data
+      if (playerStats && playerStats.mostFifties) {
+        playerStats.mostFifties.forEach(player => {
+          const existingPlayer = milestoneData.find(p => p.name === player.name);
+          if (existingPlayer) {
+            existingPlayer.fifties = player.fifties;
+          } else {
+            milestoneData.push({
+              name: player.name,
+              centuries: "0",
+              fifties: player.fifties
+            });
+          }
+        });
+      }
+      
+      setBattingMilestones(milestoneData);
+    };
+    
+    processMilestones();
+  }, []);
 
   // --- Data Fetching and Sorting Logic (Unchanged) ---
   useEffect(() => {
