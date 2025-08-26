@@ -45,10 +45,10 @@ const playerStats = {
     { name: "Dulshan Thanoj", fifties: "8", image: "/images/1.4.JPG" },
     { name: "Shanaka", fifties: "6", image: "/images/12.jpeg" },
     { name: "Savindu Weerarathna", fifties: "4", image: "/images/3.jpeg" },
+    { name: "Nidula Lokuge", fifties: "2", image: "/images/" },
     { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg" },
     { name: "Dihindu Nimsath", fifties: "1", image: "/images/1.3.jpg" },
     { name: "Ravindu Nanayakkara", fifties: "1", image: "/images/" },
-    { name: "Nidula Lokuge", fifties: "1", image: "/images/" },
   ]
 };
 
