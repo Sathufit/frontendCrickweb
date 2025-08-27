@@ -17,8 +17,8 @@ const PlayerStats = () => {
       { name: "Achala Shashvika", centuries: "1" }
     ],
     mostFifties: [
-      { name: "Yamila Dilhara", fifties: "28" },
-      { name: "Sathush Nanayakkara", fifties: "18" },
+      { name: "Yamila Dilhara", fifties: "29" },
+      { name: "Sathush Nanayakkara", fifties: "19" },
       { name: "Chanuka de Silva", fifties: "11" },
       { name: "Achala Shashvika", fifties: "8" },
       { name: "Dulshan Thanoj", fifties: "8" },
