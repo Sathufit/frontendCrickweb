@@ -39,11 +39,11 @@ export const playerStats = {
   ],
   mostFifties: [
     { name: "Yamila Dilhara", fifties: "29", image: "/images/5.JPG" },
-    { name: "Sathush Nanayakkara", fifties: "19", image: "/images/2.png" },
+    { name: "Sathush Nanayakkara", fifties: "20", image: "/images/2.png" },
     { name: "Chanuka de Silva", fifties: "11", image: "/images/1.2.JPG" },
     { name: "Achala Shashvika", fifties: "8", image: "/images/8.png" },
     { name: "Dulshan Thanoj", fifties: "8", image: "/images/1.4.JPG" },
-    { name: "Shanaka", fifties: "6", image: "/images/12.jpeg" },
+    { name: "Shanaka", fifties: "7", image: "/images/12.jpeg" },
     { name: "Savindu Weerarathna", fifties: "4", image: "/images/3.jpeg" },
     { name: "Nidula Lokuge", fifties: "2", image: "/images/" },
     { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg" },
