@@ -18,7 +18,7 @@ const PlayerStats = () => {
     ],
     mostFifties: [
       { name: "Yamila Dilhara", fifties: "29" },
-      { name: "Sathush Nanayakkara", fifties: "20" },
+      { name: "Sathush Nanayakkara", fifties: "21" },
       { name: "Chanuka de Silva", fifties: "11" },
       { name: "Achala Shashvika", fifties: "8" },
       { name: "Dulshan Thanoj", fifties: "8" },
@@ -27,7 +27,8 @@ const PlayerStats = () => {
       { name: "Nidula Hansaja", fifties: "2" },
       { name: "Farhan Navufal", fifties: "1" },
       { name: "Dihindu Nimsath", fifties: "1" },
-      { name: "Ravindu Nanayakkara", fifties: "1" }
+      { name: "Ravindu Nanayakkara", fifties: "1" },
+      { name: "Reshan Kavinga", fifties: "1" }
     ]
   };
 

@@ -53,6 +53,11 @@ const playerNames = [
   "Shalom Dilsara",
   "Eesara Kovinda",
   "Saveen Nanayakkara",
+  "Reshan Kavinga",
+  "Ovindu",
+  "Diyatha",
+  "Adithya",
+  
 ];
 
 

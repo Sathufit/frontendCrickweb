@@ -24,6 +24,10 @@ const bowlerNames = [
   "Siluna Sathmina",
   "Farhan Navufal",
   "Saveen Nanayakkara",
+  "Reshan Kavinga",
+  "Ovindu",
+  "Diyatha",
+  "Adithya",
 ];
 
 
