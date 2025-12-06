@@ -635,6 +635,25 @@
 }
 
 /* === RESPONSIVE === */
+
+/* Hide mobile sidebar elements on desktop */
+.mobile-sidebar-overlay,
+.mobile-sidebar,
+.mobile-sidebar-header,
+.mobile-sidebar-logo,
+.mobile-sidebar-close,
+.mobile-sidebar-nav,
+.mobile-nav-link,
+.mobile-nav-icon,
+.mobile-nav-text,
+.mobile-nav-arrow,
+.mobile-sidebar-footer,
+.mobile-sidebar-divider,
+.mobile-sidebar-info,
+.mobile-sidebar-year {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .hero-title {
     font-size: var(--text-5xl);
@@ -670,6 +689,20 @@
 
   .navbar-toggle.open span:nth-child(3) {
     transform: rotate(-45deg) translate(7px, -6px);
+  }
+
+  /* Show mobile sidebar elements only on mobile */
+  .mobile-sidebar-overlay,
+  .mobile-sidebar,
+  .mobile-sidebar-header,
+  .mobile-sidebar-logo,
+  .mobile-sidebar-close,
+  .mobile-sidebar-nav,
+  .mobile-nav-link,
+  .mobile-nav-icon,
+  .mobile-nav-text,
+  .mobile-nav-arrow {
+    display: block;
   }
 
   /* Mobile Sidebar Overlay */
@@ -826,8 +859,7 @@
 
   /* Sidebar Footer */
   .mobile-sidebar-footer {
-    padding: var(--space-lg);
-    text-align: center;
+    display: none;
   }
 
   .mobile-sidebar-divider {
