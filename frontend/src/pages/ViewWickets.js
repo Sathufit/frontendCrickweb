@@ -22,15 +22,32 @@ const ViewWickets = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/api/wickets`);
-      setWickets(response.data);
+      console.log("Wickets API response:", response.data);
+      
+      // Ensure we always set an array
+      if (Array.isArray(response.data)) {
+        setWickets(response.data);
+      } else if (response.data && Array.isArray(response.data.wickets)) {
+        setWickets(response.data.wickets);
+      } else {
+        console.error("Invalid wickets data format:", response.data);
+        setWickets([]);
+      }
     } catch (error) {
       console.error("Error fetching wickets:", error);
+      setWickets([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
   const sortedWickets = React.useMemo(() => {
+    // Ensure wickets is always an array
+    if (!Array.isArray(wickets)) {
+      console.warn("wickets is not an array:", wickets);
+      return [];
+    }
+    
     let sortableWickets = [...wickets];
     
     if (filterVenue !== 'all') {
@@ -63,7 +80,7 @@ const ViewWickets = () => {
     setSortConfig({ key, direction });
   };
 
-  const venues = [...new Set(wickets.map(w => w.venue))];
+  const venues = Array.isArray(wickets) ? [...new Set(wickets.map(w => w.venue))] : [];
   const totalWickets = sortedWickets.reduce((sum, w) => sum + (w.wickets || 0), 0);
   const bestFigures = sortedWickets.length > 0 ? Math.max(...sortedWickets.map(w => w.wickets || 0)) : 0;
   const fiveWickets = sortedWickets.filter(w => w.wickets >= 5).length;

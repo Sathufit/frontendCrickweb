@@ -18,15 +18,32 @@ const ViewRuns = () => {
     setLoading(true);
     try {
       const data = await fetchRuns();
-      setRuns(data);
+      console.log("Runs API response:", data);
+      
+      // Ensure we always set an array
+      if (Array.isArray(data)) {
+        setRuns(data);
+      } else if (data && Array.isArray(data.runs)) {
+        setRuns(data.runs);
+      } else {
+        console.error("Invalid runs data format:", data);
+        setRuns([]);
+      }
     } catch (error) {
       console.error("Error fetching runs:", error);
+      setRuns([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
   const sortedRuns = React.useMemo(() => {
+    // Ensure runs is always an array
+    if (!Array.isArray(runs)) {
+      console.warn("runs is not an array:", runs);
+      return [];
+    }
+    
     let sortableRuns = [...runs];
     
     // Apply filters
@@ -61,7 +78,7 @@ const ViewRuns = () => {
     setSortConfig({ key, direction });
   };
 
-  const venues = [...new Set(runs.map(run => run.venue))];
+  const venues = Array.isArray(runs) ? [...new Set(runs.map(run => run.venue))] : [];
   const totalRuns = sortedRuns.reduce((sum, run) => sum + (run.runs || 0), 0);
   const highestScore = sortedRuns.length > 0 ? Math.max(...sortedRuns.map(r => r.runs || 0)) : 0;
   const centuries = sortedRuns.filter(run => run.runs >= 100).length;
