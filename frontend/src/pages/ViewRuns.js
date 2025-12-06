@@ -6,9 +6,6 @@ import "../styles/AnalyticsImproved.css";
 const ViewRuns = () => {
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortConfig, setSortConfig] = useState({ key: 'runs', direction: 'descending' });
-  const [filterVenue, setFilterVenue] = useState('all');
-  const [filterInnings, setFilterInnings] = useState('all');
 
   useEffect(() => {
     loadRuns();
@@ -44,39 +41,16 @@ const ViewRuns = () => {
       return [];
     }
     
+    // Sort by date descending (newest first)
     let sortableRuns = [...runs];
-    
-    // Apply filters
-    if (filterVenue !== 'all') {
-      sortableRuns = sortableRuns.filter(run => run.venue === filterVenue);
-    }
-    if (filterInnings !== 'all') {
-      sortableRuns = sortableRuns.filter(run => run.innings === filterInnings);
-    }
-
-    // Apply sorting
-    if (sortConfig.key) {
-      sortableRuns.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
+    sortableRuns.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateB - dateA; // Newest first
+    });
     
     return sortableRuns;
-  }, [runs, sortConfig, filterVenue, filterInnings]);
-
-  const requestSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
+  }, [runs]);
 
   const venues = Array.isArray(runs) ? [...new Set(runs.map(run => run.venue))] : [];
   const totalRuns = sortedRuns.reduce((sum, run) => sum + (run.runs || 0), 0);
@@ -153,36 +127,6 @@ const ViewRuns = () => {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="filters-bar">
-          <div className="filter-group">
-            <label className="filter-label">Venue</label>
-            <select 
-              className="filter-select" 
-              value={filterVenue} 
-              onChange={(e) => setFilterVenue(e.target.value)}
-            >
-              <option value="all">All Venues</option>
-              {venues.map(venue => (
-                <option key={venue} value={venue}>{venue}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">Innings</label>
-            <select 
-              className="filter-select" 
-              value={filterInnings} 
-              onChange={(e) => setFilterInnings(e.target.value)}
-            >
-              <option value="all">All Innings</option>
-              <option value="1st">1st Innings</option>
-              <option value="2nd">2nd Innings</option>
-            </select>
-          </div>
-        </div>
-
         {/* Data Table */}
         {loading ? (
           <div className="loading-container">
@@ -200,26 +144,17 @@ const ViewRuns = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th className={`sortable ${sortConfig.key === 'batter_name' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('batter_name')}>
-                    Batsman
-                  </th>
-                  <th className={`sortable ${sortConfig.key === 'runs' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('runs')}>
-                    Runs
-                  </th>
-                  <th className={`sortable ${sortConfig.key === 'venue' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('venue')}>
-                    Venue
-                  </th>
-                  <th className={`sortable ${sortConfig.key === 'innings' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('innings')}>
-                    Innings
-                  </th>
-                  <th className={`sortable ${sortConfig.key === 'date' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('date')}>
-                    Date
-                  </th>
+                  <th>Date</th>
+                  <th>Batsman</th>
+                  <th>Runs</th>
+                  <th>Venue</th>
+                  <th>Innings</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedRuns.map((run, index) => (
                   <tr key={index}>
+                    <td>{new Date(run.date).toLocaleDateString()}</td>
                     <td>{run.batter_name}</td>
                     <td>
                       {run.runs >= 100 ? (
@@ -232,7 +167,6 @@ const ViewRuns = () => {
                     </td>
                     <td>{run.venue}</td>
                     <td>{run.innings}</td>
-                    <td>{new Date(run.date).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>

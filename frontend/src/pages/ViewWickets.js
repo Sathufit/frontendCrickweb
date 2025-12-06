@@ -10,9 +10,6 @@ const API_URL = process.env.NODE_ENV === "development"
 const ViewWickets = () => {
   const [wickets, setWickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortConfig, setSortConfig] = useState({ key: 'wickets', direction: 'descending' });
-  const [filterVenue, setFilterVenue] = useState('all');
-  const [filterInnings, setFilterInnings] = useState('all');
 
   useEffect(() => {
     loadWickets();
@@ -48,37 +45,16 @@ const ViewWickets = () => {
       return [];
     }
     
+    // Sort by date descending (newest first)
     let sortableWickets = [...wickets];
-    
-    if (filterVenue !== 'all') {
-      sortableWickets = sortableWickets.filter(w => w.venue === filterVenue);
-    }
-    if (filterInnings !== 'all') {
-      sortableWickets = sortableWickets.filter(w => w.innings === filterInnings);
-    }
-
-    if (sortConfig.key) {
-      sortableWickets.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
+    sortableWickets.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateB - dateA; // Newest first
+    });
     
     return sortableWickets;
-  }, [wickets, sortConfig, filterVenue, filterInnings]);
-
-  const requestSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
+  }, [wickets]);
 
   const venues = Array.isArray(wickets) ? [...new Set(wickets.map(w => w.venue))] : [];
   const totalWickets = sortedWickets.reduce((sum, w) => sum + (w.wickets || 0), 0);
@@ -153,35 +129,6 @@ const ViewWickets = () => {
           </div>
         </div>
 
-        <div className="filters-bar">
-          <div className="filter-group">
-            <label className="filter-label">Venue</label>
-            <select 
-              className="filter-select" 
-              value={filterVenue} 
-              onChange={(e) => setFilterVenue(e.target.value)}
-            >
-              <option value="all">All Venues</option>
-              {venues.map(venue => (
-                <option key={venue} value={venue}>{venue}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">Innings</label>
-            <select 
-              className="filter-select" 
-              value={filterInnings} 
-              onChange={(e) => setFilterInnings(e.target.value)}
-            >
-              <option value="all">All Innings</option>
-              <option value="1st">1st Innings</option>
-              <option value="2nd">2nd Innings</option>
-            </select>
-          </div>
-        </div>
-
         {loading ? (
           <div className="loading-analytics">
             <div className="loading-spinner-large"></div>
@@ -202,26 +149,27 @@ const ViewWickets = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.1)' }}>
-                    <th onClick={() => requestSort('bowler_name')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Bowler {sortConfig.key === 'bowler_name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    <th style={{ padding: '16px', textAlign: 'left', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Date
                     </th>
-                    <th onClick={() => requestSort('wickets')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Wickets {sortConfig.key === 'wickets' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    <th style={{ padding: '16px', textAlign: 'left', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Bowler
                     </th>
-                    <th onClick={() => requestSort('venue')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Venue {sortConfig.key === 'venue' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Wickets
                     </th>
-                    <th onClick={() => requestSort('innings')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Innings {sortConfig.key === 'innings' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    <th style={{ padding: '16px', textAlign: 'left', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Venue
                     </th>
-                    <th onClick={() => requestSort('date')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Date {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Innings
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedWickets.map((wicket, index) => (
                     <tr key={index} style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.05)', transition: 'background 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 255, 58, 0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                      <td style={{ padding: '16px', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>{new Date(wicket.date).toLocaleDateString()}</td>
                       <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{wicket.bowler_name}</td>
                       <td style={{ padding: '16px', textAlign: 'center' }}>
                         <span style={{ 
@@ -239,7 +187,6 @@ const ViewWickets = () => {
                       </td>
                       <td style={{ padding: '16px', color: 'var(--color-text-secondary)' }}>{wicket.venue}</td>
                       <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{wicket.innings}</td>
-                      <td style={{ padding: '16px', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>{new Date(wicket.date).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
