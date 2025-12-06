@@ -200,7 +200,7 @@ const ViewRuns = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th className={`sortable ${sortConfig.key === 'name' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('name')}>
+                  <th className={`sortable ${sortConfig.key === 'batter_name' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('batter_name')}>
                     Batsman
                   </th>
                   <th className={`sortable ${sortConfig.key === 'runs' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('runs')}>
@@ -220,7 +220,7 @@ const ViewRuns = () => {
               <tbody>
                 {sortedRuns.map((run, index) => (
                   <tr key={index}>
-                    <td>{run.name}</td>
+                    <td>{run.batter_name}</td>
                     <td>
                       {run.runs >= 100 ? (
                         <span className="highlight-badge">{run.runs}*</span>

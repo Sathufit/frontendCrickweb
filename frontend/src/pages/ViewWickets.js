@@ -202,8 +202,8 @@ const ViewWickets = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.1)' }}>
-                    <th onClick={() => requestSort('bowlerName')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Bowler {sortConfig.key === 'bowlerName' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    <th onClick={() => requestSort('bowler_name')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Bowler {sortConfig.key === 'bowler_name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                     </th>
                     <th onClick={() => requestSort('wickets')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Wickets {sortConfig.key === 'wickets' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
@@ -222,7 +222,7 @@ const ViewWickets = () => {
                 <tbody>
                   {sortedWickets.map((wicket, index) => (
                     <tr key={index} style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.05)', transition: 'background 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 255, 58, 0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                      <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{wicket.bowlerName}</td>
+                      <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{wicket.bowler_name}</td>
                       <td style={{ padding: '16px', textAlign: 'center' }}>
                         <span style={{ 
                           display: 'inline-block',
