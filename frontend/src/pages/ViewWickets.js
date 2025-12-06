@@ -21,7 +21,7 @@ const ViewWickets = () => {
   const loadWickets = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/api/wickets`);
+      const response = await axios.get(`${API_URL}/wickets`);
       console.log("Wickets API response:", response.data);
       
       // Ensure we always set an array

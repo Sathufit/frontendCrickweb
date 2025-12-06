@@ -185,12 +185,6 @@ const Home = () => {
             </NavLink>
           </div>
         </div>
-        
-        {/* Scroll Indicator */}
-        <div className="scroll-indicator">
-          <div className="scroll-line"></div>
-          <span>Scroll</span>
-        </div>
       </section>
 
       {/* Club Statistics Section */}
