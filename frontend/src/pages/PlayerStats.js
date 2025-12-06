@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-// This uses your actual API function.
+import Navbar from "../components/Navbar";
 import { fetchPlayerStats } from "../api";
+import "../styles/AnalyticsImproved.css";
 
 const PlayerStats = () => {
   const [statsData, setStatsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: 'average', direction: 'descending' });
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Hardcoded data from Analyst component
   const playerMilestones = {
     mostCenturies: [
       { name: "Yamila Dilhara", centuries: "6" },
@@ -32,263 +31,30 @@ const PlayerStats = () => {
     ]
   };
 
-  // --- UI Theme and Styles (Unchanged) ---
-  const palette = {
-    primaryRed: '#D32F2F',
-    primaryWhite: '#FFFFFF',
-    background: '#F8F9FA',
-    darkText: '#1a1a1a',
-    lightText: '#6c757d',
-    borderColor: '#e9ecef',
-    shadow: 'rgba(211, 47, 47, 0.15)',
-    hoverShadow: 'rgba(211, 47, 47, 0.25)',
-  };
-
-  const styles = {
-    container: {
-      backgroundColor: palette.background,
-      minHeight: '100vh',
-      padding: isMobile ? '1.5rem 1rem' : '3rem 2rem',
-      fontFamily: "'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
-    },
-    main: {
-        maxWidth: '1000px',
-        margin: '0 auto',
-    },
-    header: {
-      textAlign: 'center',
-      marginBottom: '3rem',
-    },
-    headerTitle: {
-      fontSize: isMobile ? '2.5rem' : '3.5rem',
-      fontWeight: 800,
-      color: palette.darkText,
-      letterSpacing: '-2px',
-    },
-    headerTitleSpan: {
-      color: palette.primaryRed,
-    },
-    headerSubtitle: {
-      color: palette.lightText,
-      fontSize: isMobile ? '1rem' : '1.15rem',
-      marginTop: '0.5rem',
-      maxWidth: '500px',
-      margin: '0.5rem auto 0',
-    },
-    loadingContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        gap: '1rem',
-    },
-    loader: {
-        width: '50px',
-        height: '50px',
-        border: `5px solid ${palette.borderColor}`,
-        borderTopColor: palette.primaryRed,
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-    },
-    loadingText: {
-        color: palette.lightText,
-        fontWeight: 500,
-    },
-    listContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-    },
-    listHeader: {
-        display: 'grid',
-        gridTemplateColumns: '50px 3fr repeat(6, 1fr)', // Updated to include 50s and 100s
-        alignItems: 'center',
-        padding: '0.75rem 1.5rem',
-        color: palette.lightText,
-        fontWeight: 600,
-        fontSize: '0.8rem',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-    },
-    headerCell: {
-        cursor: 'pointer',
-        userSelect: 'none',
-        transition: 'color 0.2s ease',
-    },
-    playerRow: (index) => ({
-        display: 'grid',
-        gridTemplateColumns: '50px 3fr repeat(6, 1fr)', // Updated to include 50s and 100s
-        alignItems: 'center',
-        backgroundColor: palette.primaryWhite,
-        padding: '1rem 1.5rem',
-        borderRadius: '12px',
-        boxShadow: `0 4px 15px ${palette.shadow}`,
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        animation: 'fadeInUp 0.5s ease-out forwards',
-        opacity: 0,
-        animationDelay: `${index * 0.05}s`,
-    }),
-    playerRowHover: {
-        transform: 'translateY(-4px) scale(1.02)',
-        boxShadow: `0 8px 25px ${palette.hoverShadow}`,
-    },
-    rank: {
-        fontSize: '1rem',
-        fontWeight: 700,
-        color: palette.lightText,
-    },
-    playerName: {
-        fontSize: '1.1rem',
-        fontWeight: 600,
-        color: palette.darkText,
-    },
-    playerStat: {
-        fontSize: '1.1rem',
-        fontWeight: 500,
-        color: palette.darkText,
-        textAlign: 'center',
-    },
-    playerAverage: {
-        fontWeight: 700,
-        color: palette.primaryRed,
-    },
-    cardsContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-    },
-    card: (index) => ({
-        display: 'flex',
-        backgroundColor: palette.primaryWhite,
-        borderRadius: '12px',
-        boxShadow: `0 4px 15px ${palette.shadow}`,
-        overflow: 'hidden',
-        animation: 'fadeInUp 0.5s ease-out forwards',
-        opacity: 0,
-        animationDelay: `${index * 0.08}s`,
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-    }),
-    cardRank: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        width: '60px',
-        backgroundColor: palette.primaryRed,
-        color: palette.primaryWhite,
-        fontSize: '1.5rem',
-        fontWeight: 700,
-    },
-    cardContent: {
-        padding: '1rem',
-        width: '100%',
-    },
-    cardName: {
-        fontSize: '1.2rem',
-        fontWeight: 700,
-        color: palette.darkText,
-        marginBottom: '1rem',
-    },
-    cardStats: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '0.5rem',
-    },
-    statPill: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0.5rem 0.75rem',
-        borderRadius: '20px',
-        backgroundColor: palette.borderColor,
-        flex: 1,
-    },
-    statPillHighlight: {
-        backgroundColor: palette.primaryRed,
-    },
-    statValue: {
-        fontSize: '1.1rem',
-        fontWeight: 700,
-        color: palette.darkText,
-    },
-    statValueHighlight: {
-        color: palette.primaryWhite,
-    },
-    statLabel: {
-        fontSize: '0.7rem',
-        fontWeight: 500,
-        color: palette.lightText,
-        textTransform: 'uppercase',
-    },
-    statLabelHighlight: {
-        color: 'rgba(255, 255, 255, 0.8)',
-    },
-    playerMilestone: {
-      fontSize: '1.1rem',
-      fontWeight: 500,
-      color: palette.darkText,
-      textAlign: 'center',
-      backgroundColor: palette.borderColor,
-      borderRadius: '50%',
-      width: '30px',
-      height: '30px',
-      lineHeight: '30px',
-      margin: '0 auto',
-    },
-  };
-
-  // --- Hooks and Logic ---
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    const styleTag = document.createElement('style');
-    styleTag.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-    `;
-    document.head.appendChild(styleTag);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      document.head.removeChild(styleTag);
-    }
-  }, []);
-
   useEffect(() => {
     const loadPlayerStats = async () => {
       setLoading(true);
       try {
         const data = await fetchPlayerStats();
-        // Process data to calculate the average
         const processedData = (Array.isArray(data) ? data : []).map(player => {
-            // Calculate the average
-            const calculatedAverage = player.totalOuts > 0
-                ? (player.totalRuns / player.totalOuts)
-                : (player.totalRuns > 0 ? Infinity : 0);
+          const calculatedAverage = player.totalOuts > 0
+            ? (player.totalRuns / player.totalOuts)
+            : (player.totalRuns > 0 ? Infinity : 0);
 
-            // Add centuries and fifties data from our hardcoded data
-            const centuriesData = playerMilestones.mostCenturies.find(p => p.name === player.name);
-            const fiftiesData = playerMilestones.mostFifties.find(p => p.name === player.name);
+          const centuriesData = playerMilestones.mostCenturies.find(p => p.name === player.name);
+          const fiftiesData = playerMilestones.mostFifties.find(p => p.name === player.name);
 
-            return {
-                ...player,
-                average: calculatedAverage,
-                centuries: centuriesData ? centuriesData.centuries : "0",
-                fifties: fiftiesData ? fiftiesData.fifties : "0"
-            };
+          return {
+            ...player,
+            average: calculatedAverage,
+            centuries: centuriesData ? centuriesData.centuries : "0",
+            fifties: fiftiesData ? fiftiesData.fifties : "0"
+          };
         });
         
         sortAndSetData(processedData, sortConfig.key, sortConfig.direction);
       } catch (error) {
-        console.error("❌ Error fetching player stats:", error);
+        console.error("Error fetching player stats:", error);
         setStatsData([]);
       } finally {
         setLoading(false);
@@ -303,7 +69,6 @@ const PlayerStats = () => {
       if (key === 'name') {
         return direction === 'ascending' ? a[key].localeCompare(b[key]) : b[key].localeCompare(a[key]);
       }
-      // This logic correctly handles numbers and Infinity for sorting
       const valA = a[key];
       const valB = b[key];
       if (valA < valB) return direction === 'ascending' ? -1 : 1;
@@ -320,182 +85,201 @@ const PlayerStats = () => {
   };
 
   const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return " ";
-    return sortConfig.direction === 'ascending' ? "▲" : "▼";
+    if (sortConfig.key !== key) return "";
+    return sortConfig.direction === 'ascending' ? " ↑" : " ↓";
   };
 
-  // --- Render Functions for Desktop and Mobile ---
-
-  const renderDesktopList = () => (
-    <div style={styles.listContainer}>
-        <div style={styles.listHeader}>
-            <div style={{...styles.headerCell, textAlign: 'center'}}>#</div>
-            <div style={styles.headerCell} onClick={() => requestSort('name')}>
-                Player {getSortIcon('name')}
-            </div>
-            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('totalRuns')}>
-                Runs {getSortIcon('totalRuns')}
-            </div>
-            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('totalInnings')}>
-                Inns {getSortIcon('totalInnings')}
-            </div>
-            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('totalOuts')}>
-                Outs {getSortIcon('totalOuts')}
-            </div>
-            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('average')}>
-                Avg {getSortIcon('average')}
-            </div>
-            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('fifties')}>
-                50s {getSortIcon('fifties')}
-            </div>
-            <div style={{...styles.headerCell, textAlign: 'center'}} onClick={() => requestSort('centuries')}>
-                100s {getSortIcon('centuries')}
-            </div>
-        </div>
-        {statsData.map((player, index) => {
-            const displayAverage = player.average === Infinity ? 'N/A' : Number(player.average).toFixed(1);
-            return (
-                <div
-                    key={player._id || index}
-                    style={styles.playerRow(index)}
-                    onMouseOver={e => Object.assign(e.currentTarget.style, styles.playerRowHover)}
-                    onMouseOut={e => {
-                        e.currentTarget.style.transform = '';
-                        e.currentTarget.style.boxShadow = `0 4px 15px ${palette.shadow}`;
-                    }}
-                >
-                    <div style={{...styles.rank, textAlign: 'center'}}>{index + 1}</div>
-                    <div style={styles.playerName}>{player.name}</div>
-                    <div style={styles.playerStat}>{player.totalRuns}</div>
-                    <div style={styles.playerStat}>{player.totalInnings}</div>
-                    <div style={styles.playerStat}>{player.totalOuts}</div>
-                    <div style={{...styles.playerStat, ...styles.playerAverage}}>{displayAverage}</div>
-                    <div style={styles.playerStat}>
-                        <div style={{
-                            ...styles.playerMilestone,
-                            backgroundColor: parseInt(player.fifties) > 0 ? palette.primaryRed : palette.borderColor,
-                            color: parseInt(player.fifties) > 0 ? palette.primaryWhite : palette.lightText
-                        }}>
-                            {player.fifties}
-                        </div>
-                    </div>
-                    <div style={styles.playerStat}>
-                        <div style={{
-                            ...styles.playerMilestone,
-                            backgroundColor: parseInt(player.centuries) > 0 ? palette.primaryRed : palette.borderColor,
-                            color: parseInt(player.centuries) > 0 ? palette.primaryWhite : palette.lightText
-                        }}>
-                            {player.centuries}
-                        </div>
-                    </div>
-                </div>
-            )
-        })}
-    </div>
-  );
-
-  const renderMobileCards = () => (
-    <div style={styles.cardsContainer}>
-        {statsData.map((player, index) => {
-            const displayAverage = player.average === Infinity ? 'N/A' : Number(player.average).toFixed(1);
-            return (
-                <div
-                    key={player._id || index}
-                    style={styles.card(index)}
-                    onMouseOver={e => Object.assign(e.currentTarget.style, styles.cardHover)}
-                    onMouseOut={e => {
-                        e.currentTarget.style.transform = '';
-                        e.currentTarget.style.boxShadow = `0 4px 15px ${palette.shadow}`;
-                    }}
-                >
-                    <div style={styles.cardRank}>{index + 1}</div>
-                    <div style={styles.cardContent}>
-                        <div style={styles.cardName}>{player.name}</div>
-                        <div style={styles.cardStats}>
-                            <div style={styles.statPill}>
-                                <span style={styles.statValue}>{player.totalRuns}</span>
-                                <span style={styles.statLabel}>Runs</span>
-                            </div>
-                            <div style={styles.statPill}>
-                                <span style={styles.statValue}>{player.totalInnings}</span>
-                                <span style={styles.statLabel}>Inns</span>
-                            </div>
-                            <div style={{...styles.statPill, ...styles.statPillHighlight}}>
-                                <span style={{...styles.statValue, ...styles.statValueHighlight}}>{displayAverage}</span>
-                                <span style={{...styles.statLabel, ...styles.statLabelHighlight}}>Average</span>
-                            </div>
-                        </div>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            marginTop: '12px',
-                            padding: '8px',
-                            backgroundColor: palette.background,
-                            borderRadius: '10px'
-                        }}>
-                            <div style={{
-                                textAlign: 'center',
-                                flex: 1
-                            }}>
-                                <span style={{
-                                    fontSize: '0.7rem',
-                                    color: palette.lightText,
-                                    display: 'block',
-                                    marginBottom: '4px'
-                                }}>FIFTIES</span>
-                                <span style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: '700',
-                                    color: parseInt(player.fifties) > 0 ? palette.primaryRed : palette.darkText
-                                }}>{player.fifties}</span>
-                            </div>
-                            <div style={{
-                                textAlign: 'center',
-                                flex: 1
-                            }}>
-                                <span style={{
-                                    fontSize: '0.7rem',
-                                    color: palette.lightText,
-                                    display: 'block',
-                                    marginBottom: '4px'
-                                }}>CENTURIES</span>
-                                <span style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: '700',
-                                    color: parseInt(player.centuries) > 0 ? palette.primaryRed : palette.darkText
-                                }}>{player.centuries}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        })}
-    </div>
-  );
-
-  // --- Main Component Return ---
+  const topBatsman = statsData[0];
+  const totalRuns = statsData.reduce((sum, p) => sum + (p.totalRuns || 0), 0);
+  const totalCenturies = statsData.reduce((sum, p) => sum + (parseInt(p.centuries) || 0), 0);
+  const totalFifties = statsData.reduce((sum, p) => sum + (parseInt(p.fifties) || 0), 0);
 
   return (
-    <div style={styles.container}>
-        <main style={styles.main}>
-            <header style={styles.header}>
-                <h1 style={styles.headerTitle}>
-                    Batting<span style={styles.headerTitleSpan}>Leaders</span>
-                </h1>
-                <p style={styles.headerSubtitle}>
-                    An interactive leaderboard of player batting performance, ranked by average.
-                </p>
-            </header>
+    <div className="analytics-page">
+      <Navbar />
 
-            {loading ? (
-                <div style={styles.loadingContainer}>
-                    <div style={styles.loader}></div>
-                    <p style={styles.loadingText}>Calculating Averages...</p>
+      <div className="analytics-container">
+        <div className="analytics-header">
+          <h1 className="analytics-title">
+            Player <span className="highlight">Statistics</span>
+          </h1>
+          <p className="analytics-subtitle">
+            Interactive leaderboard of player batting performance
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="loading-analytics">
+            <div className="loading-spinner-large"></div>
+            <p className="loading-text">Loading player statistics...</p>
+          </div>
+        ) : (
+          <>
+            <div className="stats-overview">
+              <div className="stat-card-analytics">
+                <div className="stat-card-header">
+                  <div className="stat-card-icon">👑</div>
                 </div>
-            ) : (
-                isMobile ? renderMobileCards() : renderDesktopList()
-            )}
-        </main>
+                <div className="stat-card-value">{topBatsman ? topBatsman.name.split(' ')[0] : '-'}</div>
+                <div className="stat-card-label">Top Batsman</div>
+              </div>
+
+              <div className="stat-card-analytics">
+                <div className="stat-card-header">
+                  <div className="stat-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 3v18h18"/>
+                      <path d="M18 17V9"/>
+                      <path d="M13 17V5"/>
+                      <path d="M8 17v-3"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="stat-card-value">{totalRuns}</div>
+                <div className="stat-card-label">Total Runs</div>
+              </div>
+
+              <div className="stat-card-analytics">
+                <div className="stat-card-header">
+                  <div className="stat-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                      <path d="M4 22h16"/>
+                      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                      <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="stat-card-value">{totalCenturies}</div>
+                <div className="stat-card-label">Centuries</div>
+              </div>
+
+              <div className="stat-card-analytics">
+                <div className="stat-card-header">
+                  <div className="stat-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <circle cx="12" cy="12" r="6"/>
+                      <circle cx="12" cy="12" r="2"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="stat-card-value">{totalFifties}</div>
+                <div className="stat-card-label">Half Centuries</div>
+              </div>
+            </div>
+
+            <div className="leaderboard-section">
+              <div className="leaderboard-header">
+                <h2 className="leaderboard-title">Batting Leaders</h2>
+                <div className="leaderboard-tabs">
+                  <button className="tab-button active">All Players</button>
+                </div>
+              </div>
+
+              <div className="chart-card">
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.1)' }}>
+                        <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', width: '60px' }}>#</th>
+                        <th onClick={() => requestSort('name')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Player{getSortIcon('name')}
+                        </th>
+                        <th onClick={() => requestSort('totalRuns')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Runs{getSortIcon('totalRuns')}
+                        </th>
+                        <th onClick={() => requestSort('totalInnings')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Inns{getSortIcon('totalInnings')}
+                        </th>
+                        <th onClick={() => requestSort('totalOuts')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Outs{getSortIcon('totalOuts')}
+                        </th>
+                        <th onClick={() => requestSort('average')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Avg{getSortIcon('average')}
+                        </th>
+                        <th onClick={() => requestSort('fifties')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          50s{getSortIcon('fifties')}
+                        </th>
+                        <th onClick={() => requestSort('centuries')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          100s{getSortIcon('centuries')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {statsData.map((player, index) => {
+                        const displayAverage = player.average === Infinity ? 'N/A' : Number(player.average).toFixed(1);
+                        return (
+                          <tr 
+                            key={player._id || index} 
+                            style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.05)', transition: 'background 0.2s ease' }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 255, 58, 0.05)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontWeight: 700 }}>{index + 1}</td>
+                            <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{player.name}</td>
+                            <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-primary)', fontWeight: 600 }}>{player.totalRuns}</td>
+                            <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{player.totalInnings}</td>
+                            <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{player.totalOuts}</td>
+                            <td style={{ padding: '16px', textAlign: 'center' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '4px 12px',
+                                background: 'rgba(200, 255, 58, 0.1)',
+                                border: '1px solid var(--color-accent-primary)',
+                                borderRadius: '6px',
+                                color: 'var(--color-accent-primary)',
+                                fontWeight: 700,
+                                fontSize: '0.875rem'
+                              }}>
+                                {displayAverage}
+                              </span>
+                            </td>
+                            <td style={{ padding: '16px', textAlign: 'center' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                width: '32px',
+                                height: '32px',
+                                lineHeight: '32px',
+                                borderRadius: '50%',
+                                background: parseInt(player.fifties) > 0 ? 'rgba(200, 255, 58, 0.1)' : 'rgba(160, 160, 160, 0.1)',
+                                border: `1px solid ${parseInt(player.fifties) > 0 ? 'var(--color-accent-primary)' : 'rgba(160, 160, 160, 0.3)'}`,
+                                color: parseInt(player.fifties) > 0 ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                                fontWeight: 700,
+                                fontSize: '0.875rem'
+                              }}>
+                                {player.fifties}
+                              </span>
+                            </td>
+                            <td style={{ padding: '16px', textAlign: 'center' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                width: '32px',
+                                height: '32px',
+                                lineHeight: '32px',
+                                borderRadius: '50%',
+                                background: parseInt(player.centuries) > 0 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(160, 160, 160, 0.1)',
+                                border: `1px solid ${parseInt(player.centuries) > 0 ? '#22c55e' : 'rgba(160, 160, 160, 0.3)'}`,
+                                color: parseInt(player.centuries) > 0 ? '#22c55e' : 'var(--color-text-secondary)',
+                                fontWeight: 700,
+                                fontSize: '0.875rem'
+                              }}>
+                                {player.centuries}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

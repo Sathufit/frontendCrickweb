@@ -1,310 +1,238 @@
 import React, { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
 import axios from "axios";
-import { 
-  Table, 
-  TableHead, 
-  TableRow, 
-  TableCell, 
-  TableBody, 
-  Container, 
-  Typography, 
-  AppBar, 
-  Toolbar, 
-  Button, 
-  Box, 
-  Paper, 
-  IconButton, 
-  useMediaQuery, 
-  Menu,
-  MenuItem,
-  CircularProgress,
-  Card,
-  CardContent,
-  Grid,
-  Alert,
-  AlertTitle,
-  Chip,
-  ThemeProvider,
-  createTheme,
-  CssBaseline
-} from "@mui/material";
-import { Menu as MenuIcon, SportsCricket as CricketIcon, InfoOutlined as InfoIcon } from '@mui/icons-material';
+import "../styles/AnalyticsImproved.css";
 
-// ====================================================================
-// 1. THEME DEFINITION (Red & White Palette)
-// ====================================================================
-// Defining the theme here makes colors and styles consistent and easy to change.
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#c62828', // A strong, accessible material red
-      contrastText: '#ffffff',
-    },
-    secondary: {
-      main: '#ffebee', // A very light red for backgrounds/hovers
-    },
-    background: {
-      default: '#fafafa', // Soft gray background is easier on the eyes than pure white
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#212121', // Dark gray for readability
-      secondary: '#757575',
-    },
-    success: {
-      main: '#2e7d32', // Green for highlighting achievements (e.g., 5-wicket hauls)
-    },
-    error: {
-      main: '#d32f2f',
-    }
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h4: { fontWeight: 700 },
-    h5: { fontWeight: 600 },
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: { borderRadius: 12 }, // Softer, more modern corners
-      },
-    },
-    MuiCard: {
-        styleOverrides: {
-            root: { borderRadius: 12 },
-        }
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: { textTransform: 'none', borderRadius: 8 },
-      },
-    },
-  },
-});
-
-// ====================================================================
-// 2. REUSABLE HEADER COMPONENT (Defined in the same file)
-// ====================================================================
-const navItems = [
-    { name: "Home", path: "/" },
-    { name: "Add Wicket", path: "/add-wicket" },
-    { name: "View Wickets", path: "/view-wickets" },
-    { name: "Statistics", path: "/statistics" },
-];
-
-const AppHeader = ({ activePage = "View Wickets" }) => {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-    const handleMenuClick = (event) => setAnchorEl(event.currentTarget);
-    const handleMenuClose = () => setAnchorEl(null);
-
-    const activeStyles = {
-        // Highlight the active page link
-        fontWeight: 'bold',
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    };
-    
-    return (
-        <AppBar position="static" color="primary" elevation={2}>
-            <Toolbar>
-                <CricketIcon sx={{ mr: 1.5 }} />
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-                    Cricket Stats
-                </Typography>
-                
-                {isMobile ? (
-                    <>
-                        <IconButton size="large" edge="end" color="inherit" onClick={handleMenuClick}>
-                            <MenuIcon />
-                        </IconButton>
-                        <Menu
-                            anchorEl={anchorEl}
-                            open={Boolean(anchorEl)}
-                            onClose={handleMenuClose}
-                            PaperProps={{ sx: { width: '200px', mt: 1 } }}
-                        >
-                            {navItems.map((item) => (
-                                <MenuItem 
-                                    key={item.name} 
-                                    onClick={handleMenuClose}
-                                    selected={item.name === activePage}
-                                >
-                                    {item.name}
-                                </MenuItem>
-                            ))}
-                        </Menu>
-                    </>
-                ) : (
-                    <Box>
-                        {navItems.map((item) => (
-                            <Button 
-                                key={item.name} 
-                                color="inherit" 
-                                sx={{ mx: 0.5, ...(item.name === activePage && activeStyles) }}
-                            >
-                                {item.name}
-                            </Button>
-                        ))}
-                    </Box>
-                )}
-            </Toolbar>
-        </AppBar>
-    );
-};
-
-
-// ====================================================================
-// 3. MAIN PAGE COMPONENT
-// ====================================================================
-const API_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:5001"
-    : "https://frontyard.sathush.dev";
+const API_URL = process.env.NODE_ENV === "development"
+  ? "http://localhost:5001"
+  : "https://frontyard.sathush.dev";
 
 const ViewWickets = () => {
   const [wickets, setWickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [sortConfig, setSortConfig] = useState({ key: 'wickets', direction: 'descending' });
+  const [filterVenue, setFilterVenue] = useState('all');
+  const [filterInnings, setFilterInnings] = useState('all');
 
   useEffect(() => {
-    const fetchWickets = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get(`${API_URL}/wickets`);
-        const sortedData = response.data.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setWickets(sortedData);
-      } catch (err) {
-        console.error("❌ Error fetching wickets:", err);
-        setError("Failed to load wickets data. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchWickets();
+    loadWickets();
   }, []);
 
-  const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric'
-  });
-
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress color="primary" size={60} />
-          <Typography sx={{ ml: 2, alignSelf: 'center' }}>Loading Wickets...</Typography>
-        </Box>
-      );
+  const loadWickets = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/api/wickets`);
+      setWickets(response.data);
+    } catch (error) {
+      console.error("Error fetching wickets:", error);
+    } finally {
+      setLoading(false);
     }
-
-    if (error) {
-      return (
-        <Alert severity="error" sx={{ mt: 3 }}>
-          <AlertTitle>Request Failed</AlertTitle>
-          {error}
-        </Alert>
-      );
-    }
-
-    if (wickets.length === 0) {
-      return (
-        <Paper variant="outlined" sx={{ textAlign: 'center', p: 4, mt: 3, bgcolor: 'background.paper', borderColor: '#e0e0e0' }}>
-            <InfoIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6">No Wickets Logged</Typography>
-            <Typography color="text.secondary">Get started by using the "Add Wicket" page.</Typography>
-        </Paper>
-      );
-    }
-    
-    // DESKTOP VIEW
-    if (!isMobile) {
-      return (
-        <Paper elevation={3} sx={{ overflow: 'hidden' }}>
-          <Table>
-            <TableHead sx={{ bgcolor: 'secondary.main' }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Bowler</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Venue</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Wickets</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Innings</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {wickets.map((w) => (
-                <TableRow key={w._id} sx={{ '&:hover': { bgcolor: '#fafafa' } }}>
-                  <TableCell component="th" scope="row">{w.bowler_name}</TableCell>
-                  <TableCell>{w.venue}</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>
-                    {w.wickets >= 5 ? (
-                      <Chip label={w.wickets} color="success" variant="filled" size="small" />
-                    ) : (
-                      w.wickets
-                    )}
-                  </TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>{w.innings}</TableCell>
-                  <TableCell>{formatDate(w.date)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Paper>
-      );
-    }
-
-    // MOBILE VIEW
-    return (
-      <Grid container spacing={2}>
-        {wickets.map((w) => (
-          <Grid item xs={12} key={w._id}>
-            <Card variant="outlined" sx={{ borderLeft: 5, borderColor: w.wickets >= 5 ? 'success.main' : 'transparent' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="h6" color="primary.main">{w.bowler_name}</Typography>
-                  <Chip label={`${w.wickets} Wickets`} color={w.wickets >= 5 ? "success" : "default"} />
-                </Box>
-                <Grid container spacing={0.5}>
-                  <Grid item xs={4}><Typography variant="body2" color="text.secondary">Venue:</Typography></Grid>
-                  <Grid item xs={8}><Typography variant="body2">{w.venue}</Typography></Grid>
-                  <Grid item xs={4}><Typography variant="body2" color="text.secondary">Innings:</Typography></Grid>
-                  <Grid item xs={8}><Typography variant="body2">{w.innings}</Typography></Grid>
-                  <Grid item xs={4}><Typography variant="body2" color="text.secondary">Date:</Typography></Grid>
-                  <Grid item xs={8}><Typography variant="body2">{formatDate(w.date)}</Typography></Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    );
   };
 
+  const sortedWickets = React.useMemo(() => {
+    let sortableWickets = [...wickets];
+    
+    if (filterVenue !== 'all') {
+      sortableWickets = sortableWickets.filter(w => w.venue === filterVenue);
+    }
+    if (filterInnings !== 'all') {
+      sortableWickets = sortableWickets.filter(w => w.innings === filterInnings);
+    }
+
+    if (sortConfig.key) {
+      sortableWickets.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableWickets;
+  }, [wickets, sortConfig, filterVenue, filterInnings]);
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const venues = [...new Set(wickets.map(w => w.venue))];
+  const totalWickets = sortedWickets.reduce((sum, w) => sum + (w.wickets || 0), 0);
+  const bestFigures = sortedWickets.length > 0 ? Math.max(...sortedWickets.map(w => w.wickets || 0)) : 0;
+  const fiveWickets = sortedWickets.filter(w => w.wickets >= 5).length;
+  const threeWickets = sortedWickets.filter(w => w.wickets >= 3 && w.wickets < 5).length;
+
   return (
-    <Box>
-      <AppHeader activePage="View Wickets" />
-      <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
-        <Typography variant={isMobile ? "h5" : "h4"} component="h1" sx={{ mb: 4 }}>
-          Wickets List
-        </Typography>
-        {renderContent()}
-      </Container>
-    </Box>
+    <div className="analytics-page">
+      <Navbar />
+
+      <div className="analytics-container">
+        <div className="analytics-header">
+          <h1 className="analytics-title">
+            Bowling <span className="highlight">Records</span>
+          </h1>
+          <p className="analytics-subtitle">
+            Complete bowling statistics and wicket records
+          </p>
+        </div>
+
+        <div className="stats-overview">
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M8 12h8M12 8v8"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{totalWickets}</div>
+            <div className="stat-card-label">Total Wickets</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{bestFigures}</div>
+            <div className="stat-card-label">Best Figures</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="6"/>
+                  <circle cx="12" cy="12" r="2"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{fiveWickets}</div>
+            <div className="stat-card-label">5 Wicket Hauls</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{threeWickets}</div>
+            <div className="stat-card-label">3+ Wickets</div>
+          </div>
+        </div>
+
+        <div className="filters-bar">
+          <div className="filter-group">
+            <label className="filter-label">Venue</label>
+            <select 
+              className="filter-select" 
+              value={filterVenue} 
+              onChange={(e) => setFilterVenue(e.target.value)}
+            >
+              <option value="all">All Venues</option>
+              {venues.map(venue => (
+                <option key={venue} value={venue}>{venue}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">Innings</label>
+            <select 
+              className="filter-select" 
+              value={filterInnings} 
+              onChange={(e) => setFilterInnings(e.target.value)}
+            >
+              <option value="all">All Innings</option>
+              <option value="1st">1st Innings</option>
+              <option value="2nd">2nd Innings</option>
+            </select>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="loading-analytics">
+            <div className="loading-spinner-large"></div>
+            <p className="loading-text">Loading bowling records...</p>
+          </div>
+        ) : sortedWickets.length === 0 ? (
+          <div className="loading-analytics">
+            <p className="loading-text">No records found</p>
+          </div>
+        ) : (
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3 className="chart-title">All Bowling Records</h3>
+              <p className="chart-subtitle">{sortedWickets.length} performances</p>
+            </div>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.1)' }}>
+                    <th onClick={() => requestSort('bowlerName')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Bowler {sortConfig.key === 'bowlerName' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => requestSort('wickets')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Wickets {sortConfig.key === 'wickets' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => requestSort('venue')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Venue {sortConfig.key === 'venue' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => requestSort('innings')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Innings {sortConfig.key === 'innings' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => requestSort('date')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Date {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedWickets.map((wicket, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.05)', transition: 'background 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 255, 58, 0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                      <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{wicket.bowlerName}</td>
+                      <td style={{ padding: '16px', textAlign: 'center' }}>
+                        <span style={{ 
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          background: wicket.wickets >= 5 ? 'rgba(34, 197, 94, 0.1)' : wicket.wickets >= 3 ? 'rgba(200, 255, 58, 0.1)' : 'rgba(160, 160, 160, 0.1)',
+                          border: `1px solid ${wicket.wickets >= 5 ? '#22c55e' : wicket.wickets >= 3 ? 'var(--color-accent-primary)' : 'rgba(160, 160, 160, 0.3)'}`,
+                          borderRadius: '6px',
+                          color: wicket.wickets >= 5 ? '#22c55e' : wicket.wickets >= 3 ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                          fontWeight: 700,
+                          fontSize: '0.875rem'
+                        }}>
+                          {wicket.wickets}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', color: 'var(--color-text-secondary)' }}>{wicket.venue}</td>
+                      <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{wicket.innings}</td>
+                      <td style={{ padding: '16px', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>{new Date(wicket.date).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
-
-// ====================================================================
-// 4. WRAPPER COMPONENT TO PROVIDE THE THEME
-// ====================================================================
-// This is the component you should export. It provides the theme to the ViewWickets component.
-const ViewWicketsPage = () => (
-  <ThemeProvider theme={theme}>
-    <CssBaseline /> {/* Applies baseline styles and background color */}
-    <ViewWickets />
-  </ThemeProvider>
-);
-
-export default ViewWicketsPage;
+export default ViewWickets;

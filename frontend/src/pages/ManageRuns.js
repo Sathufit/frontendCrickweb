@@ -1,595 +1,378 @@
 import React, { useEffect, useState } from "react";
 import { fetchRuns, deleteRun, updateRun } from "../api";
-import { 
-  Table, TableHead, TableRow, TableCell, TableBody, Button, TextField, 
-  Dialog, DialogActions, DialogContent, DialogTitle, Paper, Typography,
-  Container, Box, IconButton, Tooltip, CircularProgress, useMediaQuery,
-  useTheme, Card, CardContent, Chip, Grid, Divider
-} from "@mui/material";
-import { 
-  Edit as EditIcon, Delete as DeleteIcon, Refresh as RefreshIcon,
-  ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon
-} from "@mui/icons-material";
+import "../styles/DataEntryImproved.css";
 
 const ManageRuns = () => {
-    const [runs, setRuns] = useState([]);
-    const [editRun, setEditRun] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [deleteConfirm, setDeleteConfirm] = useState(null);
-    const [expandedCard, setExpandedCard] = useState(null);
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [runs, setRuns] = useState([]);
+  const [editRun, setEditRun] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            const data = await fetchRuns();
-            console.log("📌 Fetched Runs Data:", data);
-            setRuns(data);
-        } catch (error) {
-            console.error("Error fetching runs:", error);
-        } finally {
-            setLoading(false);
-        }
+  const loadData = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await fetchRuns();
+      console.log("📌 Fetched Runs Data:", data);
+      setRuns(data);
+    } catch (error) {
+      console.error("Error fetching runs:", error);
+      setError("Failed to load runs data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleDelete = async (id) => {
+    setDeleteConfirm(null);
+    setError("");
+    setSuccess("");
+    try {
+      await deleteRun(id);
+      setRuns(runs.filter((run) => run._id !== id));
+      setSuccess("Run deleted successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error("Error deleting run:", error);
+      setError("Failed to delete run");
+      setTimeout(() => setError(""), 5000);
+    }
+  };
+
+  const handleEdit = (run) => {
+    const formattedRun = {
+      ...run,
+      date: run.date ? new Date(run.date).toISOString().split("T")[0] : "",
     };
+    setEditRun(formattedRun);
+  };
 
-    useEffect(() => {
-        loadData();
-    }, []);
+  const handleChange = (e) => {
+    setEditRun({ ...editRun, [e.target.name]: e.target.value });
+  };
 
-    const handleDelete = async (id) => {
-        setDeleteConfirm(null);
-        try {
-            await deleteRun(id);
-            setRuns(runs.filter((run) => run._id !== id));
-        } catch (error) {
-            console.error("Error deleting run:", error);
-        }
-    };
+  const handleSubmit = async () => {
+    setError("");
+    setSuccess("");
+    try {
+      await updateRun(editRun._id, editRun);
+      setRuns(runs.map((run) => (run._id === editRun._id ? editRun : run)));
+      setEditRun(null);
+      setSuccess("Run updated successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error("Error updating run:", error);
+      setError("Failed to update run");
+      setTimeout(() => setError(""), 5000);
+    }
+  };
 
-    const handleEdit = (run) => {
-        // Create a copy of the run with date formatted for the date input
-        const formattedRun = {
-            ...run,
-            date: run.date ? new Date(run.date).toISOString().split('T')[0] : ''
-        };
-        setEditRun(formattedRun);
-    };
+  // Filter runs based on search
+  const filteredRuns = runs.filter((run) =>
+    run.batter_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    run.venue?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    const handleChange = (e) => {
-        setEditRun({ ...editRun, [e.target.name]: e.target.value });
-    };
+  return (
+    <div className="main-content">
+      <div className="data-entry-container">
+        <div className="data-entry-header">
+          <div className="header-content">
+            <h1 className="data-entry-title">
+              Manage <span className="highlight">Batting Records</span>
+            </h1>
+            <p className="data-entry-subtitle">
+              View, edit, and delete batting statistics
+            </p>
+          </div>
+          <button className="btn-refresh" onClick={loadData} disabled={loading}>
+            {loading ? "Loading..." : "↻ Refresh"}
+          </button>
+        </div>
 
-    const handleSubmit = async () => {
-        try {
-            await updateRun(editRun._id, editRun);
-            setRuns(runs.map((run) => (run._id === editRun._id ? editRun : run)));
-            setEditRun(null);
-        } catch (error) {
-            console.error("Error updating run:", error);
-        }
-    };
+        {success && (
+          <div className="message-box success">
+            <span>✅ {success}</span>
+          </div>
+        )}
 
-    const handleExpandCard = (id) => {
-        setExpandedCard(expandedCard === id ? null : id);
-    };
+        {error && (
+          <div className="message-box error">
+            <span>{error}</span>
+          </div>
+        )}
 
-    // Custom styles
-    const styles = {
-        container: {
-            padding: isMobile ? "16px" : "24px",
-            maxWidth: "1200px",
-            margin: "0 auto",
-        },
-        headerContainer: {
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            justifyContent: "space-between",
-            alignItems: isMobile ? "flex-start" : "center",
-            marginBottom: "24px",
-            gap: isMobile ? "16px" : "0",
-        },
-        header: {
-            fontWeight: 600,
-            color: "#1976d2",
-            marginBottom: isMobile ? "8px" : "0",
-            fontSize: isMobile ? "1.5rem" : "2rem",
-        },
-        paper: {
-            borderRadius: "12px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-            overflow: "hidden",
-        },
-        tableContainer: {
-            overflowX: "auto",
-            display: isMobile ? "none" : "block", // Hide table on mobile
-        },
-        cardsContainer: {
-            display: isMobile ? "flex" : "none", // Show cards only on mobile
-            flexDirection: "column",
-            gap: "16px",
-        },
-        card: {
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            overflow: "hidden",
-        },
-        cardHeader: {
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "12px 16px",
-            backgroundColor: "#f5f5f5",
-        },
-        cardContent: {
-            padding: "16px",
-        },
-        cardRow: {
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "8px",
-        },
-        cardLabel: {
-            fontWeight: 500,
-            color: "#666",
-            fontSize: "0.875rem",
-        },
-        cardValue: {
-            fontWeight: 400,
-            color: "#333",
-        },
-        cardActions: {
-            display: "flex",
-            justifyContent: "flex-end",
-            padding: "8px 16px",
-            backgroundColor: "#fafafa",
-        },
-        table: {
-            minWidth: "650px",
-        },
-        tableHeader: {
-            backgroundColor: "#f5f5f5",
-        },
-        tableHeaderCell: {
-            fontWeight: 600,
-            color: "#555",
-            fontSize: "0.875rem",
-        },
-        tableRow: {
-            "&:nth-of-type(odd)": {
-                backgroundColor: "#fafafa",
-            },
-            "&:hover": {
-                backgroundColor: "#f1f8ff",
-            },
-            transition: "background-color 0.2s",
-        },
-        refreshButton: {
-            backgroundColor: "#2196f3",
-            color: "white",
-            "&:hover": {
-                backgroundColor: "#1565c0",
-            },
-            width: isMobile ? "100%" : "auto",
-        },
-        noData: {
-            padding: "24px",
-            textAlign: "center",
-            color: "#666",
-        },
-        emptyRow: {
-            height: "112px",
-        },
-        dialogContent: {
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            paddingTop: "16px !important",
-            minWidth: isMobile ? "auto" : "400px",
-        },
-        backdrop: {
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-        },
-        loadingContainer: {
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "200px",
-        },
-        confirmDialogContent: {
-            padding: "24px",
-            textAlign: "center",
-        },
-        chip: {
-            margin: "0 4px",
-        },
-        mobileDialogActions: {
-            flexDirection: "column",
-            padding: "16px",
-        },
-        mobileDialogButton: {
-            width: "100%",
-            marginLeft: "0 !important",
-            marginTop: "8px",
-        },
-        expandButton: {
-            padding: "4px",
-        },
-    };
+        <div className="form-card">
+          <div className="search-bar">
+            <input
+              type="text"
+              className="form-input"
+              placeholder="🔍 Search by batter name or venue..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-    // Mobile card view for each run
-    const RunCard = ({ run }) => (
-        <Card sx={styles.card}>
-            <Box sx={styles.cardHeader}>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                    {run.name}
-                </Typography>
-                <IconButton 
-                    size="small" 
-                    onClick={() => handleExpandCard(run._id)}
-                    sx={styles.expandButton}
-                >
-                    {expandedCard === run._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                </IconButton>
-            </Box>
-            
-            <CardContent sx={styles.cardContent}>
-                <Box sx={styles.cardRow}>
-                    <Typography sx={styles.cardLabel}>Venue:</Typography>
-                    <Typography sx={styles.cardValue}>{run.venue}</Typography>
-                </Box>
-                
-                <Box sx={styles.cardRow}>
-                    <Typography sx={styles.cardLabel}>Date:</Typography>
-                    <Typography sx={styles.cardValue}>{new Date(run.date).toLocaleDateString()}</Typography>
-                </Box>
-                
-                <Box sx={{ display: "flex", justifyContent: "space-between", marginY: "8px" }}>
-                    <Chip 
-                        label={`Runs: ${run.runs}`} 
-                        sx={{ ...styles.chip, backgroundColor: "#e3f2fd" }} 
-                    />
-                    <Chip 
-                        label={`Innings: ${run.innings}`} 
-                        sx={{ ...styles.chip, backgroundColor: "#e8f5e9" }} 
-                    />
-                    <Chip 
-                        label={`Outs: ${run.outs}`} 
-                        sx={{ ...styles.chip, backgroundColor: "#fff3e0" }} 
-                    />
-                </Box>
-                
-                {expandedCard === run._id && (
-                    <>
-                        <Divider sx={{ marginY: "12px" }} />
-                        <Typography sx={{ ...styles.cardLabel, marginBottom: "8px" }}>
-                            Stats:
-                        </Typography>
-                        <Box sx={{ ...styles.cardRow, marginBottom: "4px" }}>
-                            <Typography sx={styles.cardLabel}>Average:</Typography>
-                            <Typography sx={styles.cardValue}>
-                                {run.outs > 0 ? (run.runs / run.outs).toFixed(2) : "N/A"}
-                            </Typography>
-                        </Box>
-                        <Box sx={styles.cardRow}>
-                            <Typography sx={styles.cardLabel}>Runs per Innings:</Typography>
-                            <Typography sx={styles.cardValue}>
-                                {run.innings > 0 ? (run.runs / run.innings).toFixed(2) : "N/A"}
-                            </Typography>
-                        </Box>
-                    </>
-                )}
-            </CardContent>
-            
-            <Box sx={styles.cardActions}>
-                <Button 
-                    startIcon={<EditIcon />}
-                    onClick={() => handleEdit(run)}
-                    sx={{ marginRight: "8px", color: "#4caf50" }}
-                >
-                    Edit
-                </Button>
-                <Button 
-                    startIcon={<DeleteIcon />}
-                    onClick={() => setDeleteConfirm(run)}
-                    sx={{ color: "#f44336" }}
-                >
-                    Delete
-                </Button>
-            </Box>
-        </Card>
-    );
+          {loading ? (
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <p>Loading batting records...</p>
+            </div>
+          ) : filteredRuns.length === 0 ? (
+            <div className="empty-state">
+              <p>
+                {searchTerm
+                  ? "No records match your search"
+                  : "No batting records found"}
+              </p>
+            </div>
+          ) : (
+            <div className="data-table-wrapper">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Batter Name</th>
+                    <th>Venue</th>
+                    <th>Runs</th>
+                    <th>Balls</th>
+                    <th>Fours</th>
+                    <th>Sixes</th>
+                    <th>Strike Rate</th>
+                    <th>Innings</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRuns.map((run) => (
+                    <tr key={run._id}>
+                      <td data-label="Batter">{run.batter_name}</td>
+                      <td data-label="Venue">{run.venue}</td>
+                      <td data-label="Runs">{run.runs}</td>
+                      <td data-label="Balls">{run.balls}</td>
+                      <td data-label="Fours">{run.fours}</td>
+                      <td data-label="Sixes">{run.sixes}</td>
+                      <td data-label="Strike Rate">{run.strike_rate?.toFixed(2)}</td>
+                      <td data-label="Innings">{run.innings}</td>
+                      <td data-label="Date">
+                        {run.date
+                          ? new Date(run.date).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td data-label="Actions">
+                        <div className="action-buttons">
+                          <button
+                            className="btn-edit"
+                            onClick={() => handleEdit(run)}
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className="btn-delete"
+                            onClick={() => setDeleteConfirm(run._id)}
+                            title="Delete"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
 
-    return (
-        <Container sx={styles.container} disableGutters={isMobile}>
-            <Box sx={styles.headerContainer}>
-                <Typography variant={isMobile ? "h5" : "h4"} component="h2" sx={styles.header}>
-                    Manage Cricket Runs
-                </Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<RefreshIcon />}
-                    onClick={loadData}
-                    sx={styles.refreshButton}
-                    fullWidth={isMobile}
-                >
-                    Refresh Data
-                </Button>
-            </Box>
+      {/* Edit Modal */}
+      {editRun && (
+        <div className="modal-overlay" onClick={() => setEditRun(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Batting Record</h2>
+              <button
+                className="modal-close"
+                onClick={() => setEditRun(null)}
+              >
+                ✕
+              </button>
+            </div>
 
-            {loading ? (
-                <Box sx={styles.loadingContainer}>
-                    <CircularProgress />
-                </Box>
-            ) : (
-                <>
-                    {/* Desktop Table View */}
-                    <Paper sx={styles.paper}>
-                        <Box sx={styles.tableContainer}>
-                            <Table sx={styles.table}>
-                                <TableHead sx={styles.tableHeader}>
-                                    <TableRow>
-                                        <TableCell sx={styles.tableHeaderCell}>Batsman Name</TableCell>
-                                        <TableCell sx={styles.tableHeaderCell}>Venue</TableCell>
-                                        <TableCell sx={styles.tableHeaderCell} align="right">Runs</TableCell>
-                                        <TableCell sx={styles.tableHeaderCell} align="right">Innings</TableCell>
-                                        <TableCell sx={styles.tableHeaderCell} align="right">Outs</TableCell>
-                                        <TableCell sx={styles.tableHeaderCell}>Date</TableCell>
-                                        <TableCell sx={styles.tableHeaderCell} align="center">Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {runs.length > 0 ? (
-                                        runs.map((run) => (
-                                            <TableRow key={run._id} sx={styles.tableRow}>
-                                                <TableCell sx={{ fontWeight: 500 }}>{run.name}</TableCell>
-                                                <TableCell>{run.venue}</TableCell>
-                                                <TableCell align="right">{run.runs}</TableCell>
-                                                <TableCell align="right">{run.innings}</TableCell>
-                                                <TableCell align="right">{run.outs}</TableCell>
-                                                <TableCell>{new Date(run.date).toLocaleDateString()}</TableCell>
-                                                <TableCell align="center">
-                                                    <Box sx={{ display: "flex", justifyContent: "center" }}>
-                                                        <Tooltip title="Edit">
-                                                            <IconButton 
-                                                                onClick={() => handleEdit(run)}
-                                                                sx={{
-                                                                    color: "#4caf50",
-                                                                    "&:hover": { backgroundColor: "rgba(76, 175, 80, 0.1)" }
-                                                                }}
-                                                            >
-                                                                <EditIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip title="Delete">
-                                                            <IconButton 
-                                                                onClick={() => setDeleteConfirm(run)}
-                                                                sx={{
-                                                                    color: "#f44336",
-                                                                    "&:hover": { backgroundColor: "rgba(244, 67, 54, 0.1)" }
-                                                                }}
-                                                            >
-                                                                <DeleteIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </Box>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow sx={styles.emptyRow}>
-                                            <TableCell colSpan={7}>
-                                                <Typography variant="body1" sx={styles.noData}>
-                                                    No runs data available. Add some runs to get started.
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </Box>
-                    </Paper>
+            <div className="modal-body">
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Batter Name</label>
+                  <input
+                    type="text"
+                    name="batter_name"
+                    className="form-input"
+                    value={editRun.batter_name}
+                    onChange={handleChange}
+                  />
+                </div>
 
-                    {/* Mobile Card View */}
-                    <Box sx={styles.cardsContainer}>
-                        {runs.length > 0 ? (
-                            runs.map((run) => (
-                                <RunCard key={run._id} run={run} />
-                            ))
-                        ) : (
-                            <Card sx={styles.card}>
-                                <CardContent>
-                                    <Typography variant="body1" sx={styles.noData}>
-                                        No runs data available. Add some runs to get started.
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </Box>
-                </>
-            )}
+                <div className="form-group">
+                  <label className="form-label">Venue</label>
+                  <input
+                    type="text"
+                    name="venue"
+                    className="form-input"
+                    value={editRun.venue}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
 
-            {/* Edit Dialog */}
-            {editRun && (
-                <Dialog 
-                    open={true} 
-                    onClose={() => setEditRun(null)}
-                    fullScreen={isMobile}
-                    PaperProps={{
-                        sx: { borderRadius: isMobile ? "0" : "12px" }
-                    }}
-                    BackdropProps={{
-                        sx: styles.backdrop
-                    }}
-                >
-                    <DialogTitle sx={{ 
-                        backgroundColor: "#1976d2", 
-                        color: "white",
-                        padding: "16px 24px",
-                    }}>
-                        Edit Cricket Run Record
-                    </DialogTitle>
-                    <DialogContent sx={styles.dialogContent}>
-                        <TextField 
-                            label="Batsman Name" 
-                            name="name" 
-                            value={editRun.name} 
-                            onChange={handleChange} 
-                            fullWidth 
-                            required 
-                            variant="outlined"
-                            sx={{ marginTop: "8px" }}
-                        />
-                        <TextField 
-                            label="Venue" 
-                            name="venue" 
-                            value={editRun.venue} 
-                            onChange={handleChange} 
-                            fullWidth 
-                            required 
-                            variant="outlined"
-                        />
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={4}>
-                                <TextField 
-                                    label="Runs" 
-                                    name="runs" 
-                                    type="number" 
-                                    value={editRun.runs} 
-                                    onChange={handleChange} 
-                                    fullWidth 
-                                    required 
-                                    variant="outlined"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <TextField 
-                                    label="Innings" 
-                                    name="innings" 
-                                    type="number" 
-                                    value={editRun.innings} 
-                                    onChange={handleChange} 
-                                    fullWidth 
-                                    required 
-                                    variant="outlined"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <TextField 
-                                    label="Outs" 
-                                    name="outs" 
-                                    type="number" 
-                                    value={editRun.outs} 
-                                    onChange={handleChange} 
-                                    fullWidth 
-                                    required 
-                                    variant="outlined"
-                                />
-                            </Grid>
-                        </Grid>
-                        <TextField 
-                            label="Date" 
-                            name="date" 
-                            type="date" 
-                            value={editRun.date} 
-                            onChange={handleChange} 
-                            fullWidth 
-                            required 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        />
-                    </DialogContent>
-                    <DialogActions sx={isMobile ? styles.mobileDialogActions : { padding: "16px 24px" }}>
-                        <Button 
-                            onClick={() => setEditRun(null)} 
-                            sx={{ 
-                                color: "#666",
-                                "&:hover": {
-                                    backgroundColor: "rgba(0,0,0,0.04)"
-                                },
-                                ...(isMobile && styles.mobileDialogButton)
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button 
-                            onClick={handleSubmit} 
-                            variant="contained" 
-                            sx={{
-                                backgroundColor: "#1976d2",
-                                "&:hover": {
-                                    backgroundColor: "#1565c0"
-                                },
-                                ...(isMobile && styles.mobileDialogButton)
-                            }}
-                        >
-                            Save Changes
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Runs</label>
+                  <input
+                    type="number"
+                    name="runs"
+                    className="form-input"
+                    value={editRun.runs}
+                    onChange={handleChange}
+                  />
+                </div>
 
-            {/* Delete Confirmation Dialog */}
-            {deleteConfirm && (
-                <Dialog 
-                    open={true} 
-                    onClose={() => setDeleteConfirm(null)}
-                    fullScreen={isMobile}
-                    PaperProps={{
-                        sx: { borderRadius: isMobile ? "0" : "12px" }
-                    }}
-                    BackdropProps={{
-                        sx: styles.backdrop
-                    }}
-                >
-                    <DialogTitle sx={{ 
-                        backgroundColor: "#f44336", 
-                        color: "white",
-                        padding: "16px 24px",
-                    }}>
-                        Confirm Deletion
-                    </DialogTitle>
-                    <DialogContent sx={styles.confirmDialogContent}>
-                        <Typography variant="body1">
-                            Are you sure you want to delete the record for{" "}
-                            <strong>{deleteConfirm.name}</strong> at{" "}
-                            <strong>{deleteConfirm.venue}</strong>?
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#666", marginTop: "8px" }}>
-                            This action cannot be undone.
-                        </Typography>
-                    </DialogContent>
-                    <DialogActions sx={isMobile ? styles.mobileDialogActions : { padding: "16px 24px" }}>
-                        <Button 
-                            onClick={() => setDeleteConfirm(null)} 
-                            sx={{ 
-                                color: "#666",
-                                "&:hover": {
-                                    backgroundColor: "rgba(0,0,0,0.04)"
-                                },
-                                ...(isMobile && styles.mobileDialogButton)
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button 
-                            onClick={() => handleDelete(deleteConfirm._id)} 
-                            variant="contained" 
-                            sx={{
-                                backgroundColor: "#f44336",
-                                "&:hover": {
-                                    backgroundColor: "#d32f2f"
-                                },
-                                ...(isMobile && styles.mobileDialogButton)
-                            }}
-                        >
-                            Delete
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
-        </Container>
-    );
+                <div className="form-group">
+                  <label className="form-label">Balls</label>
+                  <input
+                    type="number"
+                    name="balls"
+                    className="form-input"
+                    value={editRun.balls}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Fours</label>
+                  <input
+                    type="number"
+                    name="fours"
+                    className="form-input"
+                    value={editRun.fours}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Sixes</label>
+                  <input
+                    type="number"
+                    name="sixes"
+                    className="form-input"
+                    value={editRun.sixes}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Strike Rate</label>
+                  <input
+                    type="number"
+                    name="strike_rate"
+                    className="form-input"
+                    value={editRun.strike_rate}
+                    onChange={handleChange}
+                    step="0.01"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Innings</label>
+                  <input
+                    type="number"
+                    name="innings"
+                    className="form-input"
+                    value={editRun.innings}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Date</label>
+                <input
+                  type="date"
+                  name="date"
+                  className="form-input"
+                  value={editRun.date}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-reset" onClick={() => setEditRun(null)}>
+                Cancel
+              </button>
+              <button className="btn-submit" onClick={handleSubmit}>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div
+          className="modal-overlay"
+          onClick={() => setDeleteConfirm(null)}
+        >
+          <div
+            className="modal-content modal-small"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>Confirm Delete</h2>
+              <button
+                className="modal-close"
+                onClick={() => setDeleteConfirm(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p>Are you sure you want to delete this batting record?</p>
+              <p className="warning-text">This action cannot be undone.</p>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="btn-reset"
+                onClick={() => setDeleteConfirm(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-delete"
+                onClick={() => handleDelete(deleteConfirm)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ManageRuns;

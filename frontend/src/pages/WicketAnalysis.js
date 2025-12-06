@@ -1,29 +1,24 @@
 import React, { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
 import axios from "axios";
-
-// Import the player stats data from Analyst component
+import "../styles/AnalyticsImproved.css";
 import { playerStats } from "./Analyst";
 
-const API_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:5001"
-    : "https://frontyard.sathush.dev";
+const API_URL = process.env.NODE_ENV === "development"
+  ? "http://localhost:5001"
+  : "https://frontyard.sathush.dev";
 
 const WicketAnalysis = () => {
   const [wicketsData, setWicketsData] = useState([]);
+  const [battingMilestones, setBattingMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: 'rate', direction: 'descending' });
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  
-  // Get the centuries and fifties data
-  const [battingMilestones, setBattingMilestones] = useState([]);
 
   useEffect(() => {
-    // Process the centuries and fifties data from Analyst
+    // Process batting milestones
     const processMilestones = () => {
       const milestoneData = [];
       
-      // Process centuries data
       if (playerStats && playerStats.mostCenturies) {
         playerStats.mostCenturies.forEach(player => {
           const existingPlayer = milestoneData.find(p => p.name === player.name);
@@ -39,7 +34,6 @@ const WicketAnalysis = () => {
         });
       }
       
-      // Process fifties data
       if (playerStats && playerStats.mostFifties) {
         playerStats.mostFifties.forEach(player => {
           const existingPlayer = milestoneData.find(p => p.name === player.name);
@@ -61,396 +55,254 @@ const WicketAnalysis = () => {
     processMilestones();
   }, []);
 
-  // --- Data Fetching and Sorting Logic (Unchanged) ---
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   useEffect(() => {
     const fetchWickets = async () => {
       try {
-        const response = await axios.get(`${API_URL}/wickets`);
+        const response = await axios.get(`${API_URL}/api/wickets`);
         const data = response.data;
         const analysisMap = {};
+        
         data.forEach(w => {
-          const key = w.bowler_name;
+          const key = w.bowlerName;
           if (!analysisMap[key]) {
             analysisMap[key] = { wickets: 0, innings: 0 };
           }
-          analysisMap[key].wickets += Number(w.wickets);
-          analysisMap[key].innings += Number(w.innings);
+          analysisMap[key].wickets += Number(w.wickets || 0);
+          analysisMap[key].innings += 1;
         });
+        
         const analysisArray = Object.entries(analysisMap).map(([name, stats]) => ({
           bowler_name: name,
           total_wickets: stats.wickets,
           total_innings: stats.innings,
           rate: stats.innings === 0 ? 0 : (stats.wickets / stats.innings).toFixed(2),
         }));
-        sortAndSetData(analysisArray, 'rate', 'descending');
+        
+        setWicketsData(analysisArray);
       } catch (err) {
-        console.error("❌ Error fetching wicket analysis:", err);
+        console.error("Error fetching wicket analysis:", err);
       } finally {
         setLoading(false);
       }
     };
+    
     fetchWickets();
   }, []);
 
-  const sortAndSetData = (data, key, direction) => {
-    const sortedData = [...data].sort((a, b) => {
-      if (key === 'bowler_name') {
-        return direction === 'ascending' ? a[key].localeCompare(b[key]) : b[key].localeCompare(a[key]);
-      }
-      return direction === 'ascending' ? parseFloat(a[key]) - parseFloat(b[key]) : parseFloat(b[key]) - parseFloat(a[key]);
-    });
-    setWicketsData(sortedData);
-  };
+  const sortedWickets = React.useMemo(() => {
+    let sortable = [...wicketsData];
+    if (sortConfig.key) {
+      sortable.sort((a, b) => {
+        const aVal = Number(a[sortConfig.key]) || 0;
+        const bVal = Number(b[sortConfig.key]) || 0;
+        if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortable;
+  }, [wicketsData, sortConfig]);
 
   const requestSort = (key) => {
-    const newDirection = sortConfig.key === key && sortConfig.direction === 'descending' ? 'ascending' : 'descending';
-    setSortConfig({ key, direction: newDirection });
-    sortAndSetData(wicketsData, key, newDirection);
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
   };
 
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return " ";
-    return sortConfig.direction === 'ascending' ? "▲" : "▼";
-  };
-
-  // --- New UI Styles ---
-  const palette = {
-    primaryRed: '#D32F2F',
-    primaryWhite: '#FFFFFF',
-    background: '#F8F9FA',
-    darkText: '#1a1a1a',
-    lightText: '#6c757d',
-    borderColor: '#e9ecef',
-    shadow: 'rgba(211, 47, 47, 0.15)',
-    hoverShadow: 'rgba(211, 47, 47, 0.25)',
-  };
-
-  const styles = {
-    container: {
-      backgroundColor: palette.background,
-      minHeight: '100vh',
-      padding: isMobile ? '1.5rem 1rem' : '3rem 2rem',
-      fontFamily: "'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
-    },
-    main: {
-        maxWidth: '1000px',
-        margin: '0 auto',
-    },
-    header: {
-      textAlign: 'center',
-      marginBottom: '3rem',
-    },
-    headerTitle: {
-      fontSize: isMobile ? '2.5rem' : '3.5rem',
-      fontWeight: 800,
-      color: palette.darkText,
-      letterSpacing: '-2px',
-    },
-    headerTitleSpan: {
-      color: palette.primaryRed,
-    },
-    headerSubtitle: {
-      color: palette.lightText,
-      fontSize: isMobile ? '1rem' : '1.15rem',
-      marginTop: '0.5rem',
-      maxWidth: '500px',
-      margin: '0.5rem auto 0',
-    },
-    loadingContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        gap: '1rem',
-    },
-    loader: {
-        width: '50px',
-        height: '50px',
-        border: `5px solid ${palette.borderColor}`,
-        borderTopColor: palette.primaryRed,
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-    },
-    loadingText: {
-        color: palette.lightText,
-        fontWeight: 500,
-    },
-    // Desktop List View Styles
-    listContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-    },
-    listHeader: {
-        display: 'grid',
-        gridTemplateColumns: '50px 3fr 1fr 1fr 1fr',
-        alignItems: 'center',
-        padding: '0.75rem 1.5rem',
-        color: palette.lightText,
-        fontWeight: 600,
-        fontSize: '0.8rem',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-    },
-    headerCell: {
-        cursor: 'pointer',
-        userSelect: 'none',
-        transition: 'color 0.2s ease',
-    },
-    headerCellHover: {
-        color: palette.darkText,
-    },
-    playerRow: (index) => ({
-        display: 'grid',
-        gridTemplateColumns: '50px 3fr 1fr 1fr 1fr',
-        alignItems: 'center',
-        backgroundColor: palette.primaryWhite,
-        padding: '1rem 1.5rem',
-        borderRadius: '12px',
-        boxShadow: `0 4px 15px ${palette.shadow}`,
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        animation: 'fadeInUp 0.5s ease-out forwards',
-        opacity: 0,
-        animationDelay: `${index * 0.05}s`,
-    }),
-    playerRowHover: {
-        transform: 'translateY(-4px) scale(1.02)',
-        boxShadow: `0 8px 25px ${palette.hoverShadow}`,
-    },
-    rank: {
-        fontSize: '1rem',
-        fontWeight: 700,
-        color: palette.lightText,
-    },
-    playerName: {
-        fontSize: '1.1rem',
-        fontWeight: 600,
-        color: palette.darkText,
-    },
-    playerStat: {
-        fontSize: '1.1rem',
-        fontWeight: 500,
-        color: palette.darkText,
-        textAlign: 'center',
-    },
-    playerRate: {
-        fontWeight: 700,
-        color: palette.primaryRed,
-    },
-    // Mobile Card View Styles
-    cardsContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-    },
-    card: (index) => ({
-        display: 'flex',
-        backgroundColor: palette.primaryWhite,
-        borderRadius: '12px',
-        boxShadow: `0 4px 15px ${palette.shadow}`,
-        overflow: 'hidden',
-        animation: 'fadeInUp 0.5s ease-out forwards',
-        opacity: 0,
-        animationDelay: `${index * 0.08}s`,
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-    }),
-    cardHover: {
-        transform: 'translateY(-5px)',
-        boxShadow: `0 8px 25px ${palette.hoverShadow}`,
-    },
-    cardRank: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        width: '60px',
-        backgroundColor: palette.primaryRed,
-        color: palette.primaryWhite,
-        fontSize: '1.5rem',
-        fontWeight: 700,
-    },
-    cardContent: {
-        padding: '1rem',
-        width: '100%',
-    },
-    cardName: {
-        fontSize: '1.2rem',
-        fontWeight: 700,
-        color: palette.darkText,
-        marginBottom: '1rem',
-    },
-    cardStats: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '0.5rem',
-    },
-    statPill: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0.5rem 0.75rem',
-        borderRadius: '20px',
-        backgroundColor: palette.borderColor,
-        flex: 1,
-    },
-    statPillHighlight: {
-        backgroundColor: palette.primaryRed,
-    },
-    statValue: {
-        fontSize: '1.1rem',
-        fontWeight: 700,
-        color: palette.darkText,
-    },
-    statValueHighlight: {
-        color: palette.primaryWhite,
-    },
-    statLabel: {
-        fontSize: '0.7rem',
-        fontWeight: 500,
-        color: palette.lightText,
-        textTransform: 'uppercase',
-    },
-    statLabelHighlight: {
-        color: 'rgba(255, 255, 255, 0.8)',
-    },
-  };
-
-  useEffect(() => {
-    const styleTag = document.createElement('style');
-    styleTag.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-    `;
-    document.head.appendChild(styleTag);
-    return () => document.head.removeChild(styleTag);
-  }, []);
-
-  const renderDesktopList = () => (
-    <div style={styles.listContainer}>
-        <div style={styles.listHeader}>
-            <div style={{...styles.headerCell, textAlign: 'center'}}>#</div>
-            <div 
-                style={styles.headerCell} 
-                onClick={() => requestSort('bowler_name')} 
-                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
-                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
-            >
-                Bowler {getSortIcon('bowler_name')}
-            </div>
-            <div 
-                style={{...styles.headerCell, textAlign: 'center'}} 
-                onClick={() => requestSort('total_wickets')}
-                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
-                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
-            >
-                Wickets {getSortIcon('total_wickets')}
-            </div>
-            <div 
-                style={{...styles.headerCell, textAlign: 'center'}} 
-                onClick={() => requestSort('total_innings')}
-                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
-                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
-            >
-                Innings {getSortIcon('total_innings')}
-            </div>
-            <div 
-                style={{...styles.headerCell, textAlign: 'center'}} 
-                onClick={() => requestSort('rate')}
-                onMouseOver={e => e.currentTarget.style.color = palette.darkText}
-                onMouseOut={e => e.currentTarget.style.color = palette.lightText}
-            >
-                Rate {getSortIcon('rate')}
-            </div>
-        </div>
-        {wicketsData.map((bowler, index) => (
-            <div 
-                key={index} 
-                style={styles.playerRow(index)}
-                onMouseOver={e => Object.assign(e.currentTarget.style, styles.playerRowHover)}
-                onMouseOut={e => {
-                    e.currentTarget.style.transform = '';
-                    e.currentTarget.style.boxShadow = `0 4px 15px ${palette.shadow}`;
-                }}
-            >
-                <div style={{...styles.rank, textAlign: 'center'}}>{index + 1}</div>
-                <div style={styles.playerName}>{bowler.bowler_name}</div>
-                <div style={styles.playerStat}>{bowler.total_wickets}</div>
-                <div style={styles.playerStat}>{bowler.total_innings}</div>
-                <div style={{...styles.playerStat, ...styles.playerRate}}>{bowler.rate}</div>
-            </div>
-        ))}
-    </div>
-  );
-
-  const renderMobileCards = () => (
-    <div style={styles.cardsContainer}>
-        {wicketsData.map((bowler, index) => (
-            <div 
-                key={index}
-                style={styles.card(index)}
-                onMouseOver={e => Object.assign(e.currentTarget.style, styles.cardHover)}
-                onMouseOut={e => {
-                    e.currentTarget.style.transform = '';
-                    e.currentTarget.style.boxShadow = `0 4px 15px ${palette.shadow}`;
-                }}
-            >
-                <div style={styles.cardRank}>{index + 1}</div>
-                <div style={styles.cardContent}>
-                    <div style={styles.cardName}>{bowler.bowler_name}</div>
-                    <div style={styles.cardStats}>
-                        <div style={styles.statPill}>
-                            <span style={styles.statValue}>{bowler.total_wickets}</span>
-                            <span style={styles.statLabel}>Wkts</span>
-                        </div>
-                        <div style={styles.statPill}>
-                            <span style={styles.statValue}>{bowler.total_innings}</span>
-                            <span style={styles.statLabel}>Inns</span>
-                        </div>
-                        <div style={{...styles.statPill, ...styles.statPillHighlight}}>
-                            <span style={{...styles.statValue, ...styles.statValueHighlight}}>{bowler.rate}</span>
-                            <span style={{...styles.statLabel, ...styles.statLabelHighlight}}>Rate</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        ))}
-    </div>
-  );
+  const totalWickets = wicketsData.reduce((sum, w) => sum + (w.total_wickets || 0), 0);
+  const totalBowlers = wicketsData.length;
+  const avgWicketsPerInnings = wicketsData.length > 0 
+    ? (totalWickets / wicketsData.reduce((sum, w) => sum + w.total_innings, 0)).toFixed(2) 
+    : 0;
 
   return (
-    <div style={styles.container}>
-        <main style={styles.main}>
-            <header style={styles.header}>
-                <h1 style={styles.headerTitle}>
-                    Wicket<span style={styles.headerTitleSpan}>Leaders</span>
-                </h1>
-                <p style={styles.headerSubtitle}>
-                    An interactive leaderboard of bowler performance, ranked by wicket-taking rate.
-                </p>
-            </header>
+    <div className="analytics-page">
+      <Navbar />
 
-            {loading ? (
-                <div style={styles.loadingContainer}>
-                    <div style={styles.loader}></div>
-                    <p style={styles.loadingText}>Calculating Rates...</p>
-                </div>
-            ) : (
-                isMobile ? renderMobileCards() : renderDesktopList()
-            )}
-        </main>
+      <div className="analytics-container">
+        <div className="analytics-header">
+          <h1 className="analytics-title">
+            Wicket <span className="highlight">Analysis</span>
+          </h1>
+          <p className="analytics-subtitle">
+            Comprehensive bowling statistics and performance metrics
+          </p>
+        </div>
+
+        {/* Summary Stats */}
+        <div className="stats-overview">
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="6"/>
+                  <circle cx="12" cy="12" r="2"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{totalWickets}</div>
+            <div className="stat-card-label">Total Wickets</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{totalBowlers}</div>
+            <div className="stat-card-label">Bowlers</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 3v18h18"/>
+                  <path d="M18 17V9"/>
+                  <path d="M13 17V5"/>
+                  <path d="M8 17v-3"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{avgWicketsPerInnings}</div>
+            <div className="stat-card-label">Avg per Innings</div>
+          </div>
+        </div>
+
+        {/* Bowling Statistics Table */}
+        {loading ? (
+          <div className="loading-analytics">
+            <div className="loading-spinner-large"></div>
+            <p className="loading-text">Loading bowling analysis...</p>
+          </div>
+        ) : sortedWickets.length === 0 ? (
+          <div className="loading-analytics">
+            <p className="loading-text">No bowling data found</p>
+          </div>
+        ) : (
+          <div className="chart-card" style={{ marginTop: '2rem' }}>
+            <div className="chart-header">
+              <h3 className="chart-title">Bowler Performance</h3>
+              <p className="chart-subtitle">{sortedWickets.length} bowlers analyzed</p>
+            </div>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.1)' }}>
+                    <th onClick={() => requestSort('bowler_name')} style={{ padding: '16px', textAlign: 'left', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Bowler {sortConfig.key === 'bowler_name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => requestSort('total_wickets')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Wickets {sortConfig.key === 'total_wickets' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => requestSort('total_innings')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Innings {sortConfig.key === 'total_innings' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => requestSort('rate')} style={{ padding: '16px', textAlign: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Strike Rate {sortConfig.key === 'rate' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedWickets.map((bowler, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.05)', transition: 'background 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 255, 58, 0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                      <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{bowler.bowler_name}</td>
+                      <td style={{ padding: '16px', textAlign: 'center' }}>
+                        <span style={{ 
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          background: bowler.total_wickets >= 20 ? 'rgba(34, 197, 94, 0.1)' : bowler.total_wickets >= 10 ? 'rgba(200, 255, 58, 0.1)' : 'rgba(160, 160, 160, 0.1)',
+                          border: `1px solid ${bowler.total_wickets >= 20 ? '#22c55e' : bowler.total_wickets >= 10 ? 'var(--color-accent-primary)' : 'rgba(160, 160, 160, 0.3)'}`,
+                          borderRadius: '6px',
+                          color: bowler.total_wickets >= 20 ? '#22c55e' : bowler.total_wickets >= 10 ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                          fontWeight: 700,
+                          fontSize: '0.875rem'
+                        }}>
+                          {bowler.total_wickets}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{bowler.total_innings}</td>
+                      <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-primary)', fontWeight: 600 }}>{bowler.rate}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Batting Milestones Section */}
+        <div className="leaderboard-section" style={{ marginTop: '3rem' }}>
+          <div className="chart-header">
+            <h3 className="chart-title">Batting Milestones</h3>
+            <p className="chart-subtitle">Centuries and fifties tracker</p>
+          </div>
+          
+          <div style={{ overflowX: 'auto', marginTop: '1.5rem' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.1)' }}>
+                  <th style={{ padding: '16px', textAlign: 'left', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Player</th>
+                  <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Centuries</th>
+                  <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fifties</th>
+                  <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {battingMilestones.map((player, index) => {
+                  const total = Number(player.centuries || 0) + Number(player.fifties || 0);
+                  return (
+                    <tr key={index} style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.05)', transition: 'background 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 255, 58, 0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                      <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{player.name}</td>
+                      <td style={{ padding: '16px', textAlign: 'center' }}>
+                        <span style={{ 
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          background: Number(player.centuries) > 0 ? 'rgba(200, 255, 58, 0.1)' : 'rgba(160, 160, 160, 0.1)',
+                          border: `1px solid ${Number(player.centuries) > 0 ? 'var(--color-accent-primary)' : 'rgba(160, 160, 160, 0.3)'}`,
+                          borderRadius: '6px',
+                          color: Number(player.centuries) > 0 ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                          fontWeight: 700,
+                          fontSize: '0.875rem'
+                        }}>
+                          {player.centuries}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', textAlign: 'center' }}>
+                        <span style={{ 
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          background: Number(player.fifties) > 0 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(160, 160, 160, 0.1)',
+                          border: `1px solid ${Number(player.fifties) > 0 ? '#22c55e' : 'rgba(160, 160, 160, 0.3)'}`,
+                          borderRadius: '6px',
+                          color: Number(player.fifties) > 0 ? '#22c55e' : 'var(--color-text-secondary)',
+                          fontWeight: 700,
+                          fontSize: '0.875rem'
+                        }}>
+                          {player.fifties}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '1rem' }}>
+                        {total}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

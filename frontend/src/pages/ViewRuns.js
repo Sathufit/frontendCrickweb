@@ -1,233 +1,229 @@
 import React, { useEffect, useState } from "react";
-import { fetchRuns } from "../api"; // Assuming this API call is set up
-import {
-  Table, TableHead, TableRow, TableCell, TableBody,
-  Container, Typography, Paper, Box, CircularProgress, Chip,
-  useMediaQuery, useTheme
-} from "@mui/material";
-import ScoreboardOutlinedIcon from '@mui/icons-material/ScoreboardOutlined';
-import SentimentDissatisfiedOutlinedIcon from '@mui/icons-material/SentimentDissatisfiedOutlined';
-
-// --- Centralized Theme Colors for Easy Management ---
-const THEME_COLORS = {
-  primary: '#D32F2F',      // A strong, modern red
-  primaryLight: '#FFCDD2', // A light red for accents/backgrounds
-  background: '#f8f9fa',   // A very light grey for the main page background
-  paper: '#ffffff',       // Pure white for cards and tables
-  headerText: '#ffffff',  // White text for dark/red backgrounds
-  textPrimary: '#212121',  // Dark grey for primary text
-  textSecondary: '#757575',// Medium grey for secondary text
-  hover: '#f5f5f5'         // A subtle grey for hover effects
-};
-
-// --- Reusable UI Components ---
-
-/**
- * A visually appealing loading spinner.
- */
-const LoadingSpinner = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 10 }}>
-    <CircularProgress sx={{ color: THEME_COLORS.primary }} size={50} />
-  </Box>
-);
-
-/**
- * A clean and user-friendly message for when no data is available.
- */
-const EmptyState = () => (
-  <Paper
-    elevation={0}
-    sx={{
-      textAlign: 'center',
-      p: 4,
-      mt: 2,
-      backgroundColor: THEME_COLORS.background,
-      border: `1px dashed ${THEME_COLORS.textSecondary}`
-    }}
-  >
-    <SentimentDissatisfiedOutlinedIcon sx={{ fontSize: 50, color: THEME_COLORS.textSecondary, mb: 1 }} />
-    <Typography variant="h6" color={THEME_COLORS.textPrimary} gutterBottom>
-      No Records Found
-    </Typography>
-    <Typography variant="body1" color={THEME_COLORS.textSecondary}>
-      There is no batting data to display at the moment.
-    </Typography>
-  </Paper>
-);
-
-/**
- * A modern, responsive card for displaying a single run entry on mobile.
- */
-const MobileRunCard = ({ run }) => {
-  const isHighScorer = run.runs >= 50;
-  return (
-    <Paper
-      elevation={2}
-      sx={{
-        mb: 2,
-        p: 2,
-        borderRadius: '8px',
-        backgroundColor: THEME_COLORS.paper,
-        borderLeft: `4px solid ${THEME_COLORS.primary}`, // Accent border
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 8px 20px rgba(0,0,0,0.12)'
-        }
-      }}
-    >
-      {/* Card Header: Name and Score */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: THEME_COLORS.textPrimary }}>
-          {run.name || "Unknown Batsman"}
-        </Typography>
-        <Chip
-          label={`${run.runs} Runs`}
-          size="small"
-          sx={{
-            fontWeight: 'bold',
-            color: isHighScorer ? THEME_COLORS.headerText : THEME_COLORS.primary,
-            backgroundColor: isHighScorer ? THEME_COLORS.primary : THEME_COLORS.primaryLight,
-          }}
-        />
-      </Box>
-
-      {/* Card Body: Details */}
-      <Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-          <Typography variant="body2" color={THEME_COLORS.textSecondary}>Venue:</Typography>
-          <Typography variant="body2" color={THEME_COLORS.textPrimary}>{run.venue}</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-          <Typography variant="body2" color={THEME_COLORS.textSecondary}>Date:</Typography>
-          <Typography variant="body2" color={THEME_COLORS.textPrimary}>
-            {new Date(run.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="body2" color={THEME_COLORS.textSecondary}>Innings/Outs:</Typography>
-          <Typography variant="body2" color={THEME_COLORS.textPrimary}>{run.innings} / {run.outs}</Typography>
-        </Box>
-      </Box>
-    </Paper>
-  );
-};
-
-
-// --- Main Component ---
+import Navbar from "../components/Navbar";
+import { fetchRuns } from "../api";
+import "../styles/AnalyticsImproved.css";
 
 const ViewRuns = () => {
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [sortConfig, setSortConfig] = useState({ key: 'runs', direction: 'descending' });
+  const [filterVenue, setFilterVenue] = useState('all');
+  const [filterInnings, setFilterInnings] = useState('all');
 
   useEffect(() => {
-    setLoading(true);
-    fetchRuns()
-      .then((data) => {
-        // Sort data by date, most recent first, for better UX
-        const sortedData = data.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setRuns(sortedData);
-      })
-      .catch((error) => {
-        console.error("❌ Error fetching runs:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    loadRuns();
   }, []);
-  
-  const renderContent = () => {
-    if (runs.length === 0) {
-      return <EmptyState />;
-    }
 
-    // Mobile View: Card Layout
-    if (isMobile) {
-      return (
-        <Box sx={{ mt: 2 }}>
-          {runs.map((run, index) => <MobileRunCard key={index} run={run} />)}
-        </Box>
-      );
+  const loadRuns = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchRuns();
+      setRuns(data);
+    } catch (error) {
+      console.error("Error fetching runs:", error);
+    } finally {
+      setLoading(false);
     }
-    
-    // Desktop View: Table Layout
-    return (
-      <Paper elevation={3} sx={{ borderRadius: '8px', overflow: 'hidden', mt: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <Table sx={{ minWidth: 650 }}>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: THEME_COLORS.primary }}>
-              {['Batsman', 'Venue', 'Runs', 'Innings', 'Outs', 'Date'].map(headCell => (
-                <TableCell key={headCell} sx={{ fontWeight: 'bold', color: THEME_COLORS.headerText, borderBottom: 'none' }}>
-                  {headCell}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {runs.map((run, index) => (
-              <TableRow
-                key={index}
-                sx={{
-                  '&:nth-of-type(odd)': { backgroundColor: THEME_COLORS.background },
-                  '&:hover': { backgroundColor: THEME_COLORS.hover },
-                  '& > td': { borderBottom: '1px solid #e0e0e0' }
-                }}
-              >
-                <TableCell sx={{ fontWeight: 500, color: THEME_COLORS.textPrimary }}>
-                  {run.name || "Unknown"}
-                </TableCell>
-                <TableCell>{run.venue}</TableCell>
-                <TableCell>
-                  <Typography
-                    sx={{
-                      fontWeight: run.runs >= 50 ? 'bold' : 'regular',
-                      color: run.runs >= 50 ? THEME_COLORS.primary : 'inherit'
-                    }}
-                  >
-                    {run.runs}
-                  </Typography>
-                </TableCell>
-                <TableCell>{run.innings}</TableCell>
-                <TableCell>{run.outs}</TableCell>
-                <TableCell>
-                  {new Date(run.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
-    );
   };
 
-  return (
-    <Box sx={{ bgcolor: THEME_COLORS.background, minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: 4, px: isMobile ? 2 : 3 }}>
-        {/* Page Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <ScoreboardOutlinedIcon sx={{ color: THEME_COLORS.primary, fontSize: isMobile ? 32 : 40 }}/>
-            <Typography variant={isMobile ? "h5" : "h4"} sx={{ fontWeight: 'bold', color: THEME_COLORS.textPrimary }}>
-              Batting Records
-            </Typography>
-          </Box>
-          <Chip
-            label={`${runs.length} Records`}
-            sx={{
-              fontWeight: 'bold',
-              color: THEME_COLORS.headerText,
-              backgroundColor: THEME_COLORS.primary,
-            }}
-          />
-        </Box>
+  const sortedRuns = React.useMemo(() => {
+    let sortableRuns = [...runs];
+    
+    // Apply filters
+    if (filterVenue !== 'all') {
+      sortableRuns = sortableRuns.filter(run => run.venue === filterVenue);
+    }
+    if (filterInnings !== 'all') {
+      sortableRuns = sortableRuns.filter(run => run.innings === filterInnings);
+    }
 
-        {/* Content Area */}
-        {loading ? <LoadingSpinner /> : renderContent()}
-        
-      </Container>
-    </Box>
+    // Apply sorting
+    if (sortConfig.key) {
+      sortableRuns.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableRuns;
+  }, [runs, sortConfig, filterVenue, filterInnings]);
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const venues = [...new Set(runs.map(run => run.venue))];
+  const totalRuns = sortedRuns.reduce((sum, run) => sum + (run.runs || 0), 0);
+  const highestScore = sortedRuns.length > 0 ? Math.max(...sortedRuns.map(r => r.runs || 0)) : 0;
+  const centuries = sortedRuns.filter(run => run.runs >= 100).length;
+  const fifties = sortedRuns.filter(run => run.runs >= 50 && run.runs < 100).length;
+
+  return (
+    <div className="analytics-page">
+      <Navbar />
+
+      <div className="analytics-container">
+        {/* Header */}
+        <div className="analytics-header">
+          <h1 className="analytics-title">
+            Batting <span className="highlight">Records</span>
+          </h1>
+          <p className="analytics-subtitle">
+            Complete batting statistics and performance records
+          </p>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="stats-overview">
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{totalRuns}</div>
+            <div className="stat-card-label">Total Runs</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{highestScore}</div>
+            <div className="stat-card-label">Highest Score</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polygon points="10 8 16 12 10 16 10 8"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{centuries}</div>
+            <div className="stat-card-label">Centuries</div>
+          </div>
+
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="16"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{fifties}</div>
+            <div className="stat-card-label">Half Centuries</div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="filters-bar">
+          <div className="filter-group">
+            <label className="filter-label">Venue</label>
+            <select 
+              className="filter-select" 
+              value={filterVenue} 
+              onChange={(e) => setFilterVenue(e.target.value)}
+            >
+              <option value="all">All Venues</option>
+              {venues.map(venue => (
+                <option key={venue} value={venue}>{venue}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">Innings</label>
+            <select 
+              className="filter-select" 
+              value={filterInnings} 
+              onChange={(e) => setFilterInnings(e.target.value)}
+            >
+              <option value="all">All Innings</option>
+              <option value="1st">1st Innings</option>
+              <option value="2nd">2nd Innings</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading batting records...</p>
+          </div>
+        ) : sortedRuns.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">📊</div>
+            <h3 className="empty-state-title">No Records Found</h3>
+            <p className="empty-state-text">No batting records match your current filters</p>
+          </div>
+        ) : (
+          <div className="data-table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className={`sortable ${sortConfig.key === 'name' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('name')}>
+                    Batsman
+                  </th>
+                  <th className={`sortable ${sortConfig.key === 'runs' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('runs')}>
+                    Runs
+                  </th>
+                  <th className={`sortable ${sortConfig.key === 'venue' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('venue')}>
+                    Venue
+                  </th>
+                  <th className={`sortable ${sortConfig.key === 'innings' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('innings')}>
+                    Innings
+                  </th>
+                  <th className={`sortable ${sortConfig.key === 'date' ? `sorted-${sortConfig.direction === 'ascending' ? 'asc' : 'desc'}` : ''}`} onClick={() => requestSort('date')}>
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedRuns.map((run, index) => (
+                  <tr key={index}>
+                    <td>{run.name}</td>
+                    <td>
+                      {run.runs >= 100 ? (
+                        <span className="highlight-badge">{run.runs}*</span>
+                      ) : run.runs >= 50 ? (
+                        <span className="highlight-badge" style={{background: 'rgba(200, 255, 58, 0.1)', borderColor: 'rgba(200, 255, 58, 0.2)'}}>{run.runs}</span>
+                      ) : (
+                        <span style={{fontWeight: 600}}>{run.runs}</span>
+                      )}
+                    </td>
+                    <td>{run.venue}</td>
+                    <td>{run.innings}</td>
+                    <td>{new Date(run.date).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

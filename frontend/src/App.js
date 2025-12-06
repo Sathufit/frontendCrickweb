@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // Import all your pages
 import Home from "./pages/Home";
-import LiveMatch from "./pages/LiveMatch";
 import ViewRuns from "./pages/ViewRuns";
 import ViewWickets from "./pages/ViewWickets";
 import PlayerStats from "./pages/PlayerStats";
@@ -17,9 +16,6 @@ import ManageWickets from "./pages/ManageWickets";
 import WicketAnalysis from "./pages/WicketAnalysis";
 import DailyReport from "./pages/DailyReport";
 
-// --- IMPORT THE NEW SCOREBOARD "PAGE" ---
-import ScoreboardPage from "./pages/ScoreboardPage";
-
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./styles.css";
@@ -30,12 +26,6 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        
-        {/* --- CORRECTED THE SCOREBOARD ROUTE --- */}
-        {/* This route now points to our new page which has the input field */}
-        <Route path="/scoreboard" element={<ScoreboardPage />} />
-        
-        <Route path="/live-match" element={<LiveMatch />} />
         <Route path="/view-runs" element={<ViewRuns />} />
         <Route path="/view-wickets" element={<ViewWickets />} />
         <Route path="/stats" element={<PlayerStats />} />

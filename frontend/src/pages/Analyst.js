@@ -1,15 +1,8 @@
 import React from 'react';
-import {
-  FaTrophy,
-  FaRegChartBar,
-  FaUserFriends,
-  FaPlaneDeparture,
-  FaStar,
-  FaListOl,
-  FaDownload
-} from 'react-icons/fa';
+import Navbar from '../components/Navbar';
+import '../styles/AnalyticsImproved.css';
 
-// --- Data remains the same ---
+// Player statistics data
 export const playerStats = {
   topPerformance: {
     name: "Yamila Dilhara, Dinal Chamith, Dulshan Thanoj, Savindu Weerarathna, Ravindu Nanayakkara",
@@ -53,337 +46,203 @@ export const playerStats = {
   ]
 };
 
-// --- Reusable UI Components ---
-
-// A clean, modern card for highlighting a key statistic.
-const StatCard = ({ icon, title, value, footerText, playerImage }) => (
-  <div className="stat-card">
-    <div className="stat-card-header">
-      <div className="stat-card-icon">{icon}</div>
-      <div className="stat-card-title">{title}</div>
-    </div>
-    <div className="stat-card-value">{value}</div>
-    <div className="stat-card-footer">
-      <img src={playerImage} alt={footerText} className="stat-card-player-img" />
-      <span>{footerText}</span>
-    </div>
-  </div>
-);
-
-// A compact list item for player rankings.
-const PlayerListItem = ({ rank, image, name, statValue, statLabel }) => (
-  <div className="player-list-item">
-    <div className="player-info">
-      <span className="player-rank">{rank}</span>
-      <img src={image} alt={name} className="player-img" />
-      <span className="player-name">{name}</span>
-    </div>
-    <div className="player-stat">
-      {statValue} <span className="stat-label">{statLabel}</span>
-    </div>
-  </div>
-);
-
-// A simple, clean section container.
-const Section = ({ title, icon, children, gridColumn }) => (
-  <div className="section" style={{ gridColumn }}>
-    <h2 className="section-title">
-      {icon}
-      <span>{title}</span>
-    </h2>
-    <div className="section-content">
-      {children}
-    </div>
-  </div>
-);
-
-
-// --- Main Analyst Component ---
-
 const Analyst = () => {
-  const primaryRed = '#D92121';
-
   return (
-    <>
-      <style>{`
-        :root {
-          --primary-red: ${primaryRed};
-          --soft-red: #FFEBEB;
-          --white: #FFFFFF;
-          --background-gray: #F9FAFB;
-          --text-dark: #1A1A1A;
-          --text-light: #666666;
-          --border-color: #EAEAEA;
-        }
+    <div className="analytics-page">
+      <Navbar />
 
-        .analyst-dashboard {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-          background-color: var(--background-gray);
-          color: var(--text-dark);
-          padding: 24px;
-        }
+      <div className="analytics-container">
+        <div className="analytics-header">
+          <h1 className="analytics-title">
+            Player <span className="highlight">Analysis</span>
+          </h1>
+          <p className="analytics-subtitle">
+            Comprehensive statistics and milestone achievements
+          </p>
+        </div>
 
-        /* --- Header --- */
-        .dashboard-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0 8px 24px 8px;
-          margin-bottom: 24px;
-          border-bottom: 1px solid var(--border-color);
-        }
-        .dashboard-title {
-          font-size: 28px;
-          font-weight: 700;
-        }
-        .export-button {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background-color: var(--primary-red);
-          color: var(--white);
-          border: none;
-          padding: 10px 20px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background-color 0.2s ease, transform 0.2s ease;
-        }
-        .export-button:hover {
-          background-color: #b81c1c;
-          transform: translateY(-2px);
-        }
+        {/* Top Performance Card */}
+        <div className="chart-card" style={{ marginBottom: '2rem' }}>
+          <div className="chart-header">
+            <h3 className="chart-title">Top Performance</h3>
+            <p className="chart-subtitle">{playerStats.topPerformance.achievement}</p>
+          </div>
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '4rem', fontWeight: 800, color: 'var(--color-accent-primary)', marginBottom: '1rem' }}>
+              {playerStats.topPerformance.value}
+            </div>
+            <div style={{ fontSize: '1.125rem', color: 'var(--color-text-secondary)' }}>
+              {playerStats.topPerformance.name}
+            </div>
+          </div>
+        </div>
 
-        /* --- Main Grid Layout --- */
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: 24px;
-        }
-
-        /* --- Section Styling --- */
-        .section {
-          background-color: var(--white);
-          border-radius: 16px;
-          padding: 24px;
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
-        }
-        .section-title {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 20px;
-          font-weight: 600;
-          margin: 0 0 20px 0;
-          padding-bottom: 16px;
-          border-bottom: 1px solid var(--border-color);
-        }
-        .section-title svg {
-          color: var(--primary-red);
-        }
-
-        /* --- Stat Card Styling --- */
-        .stat-card {
-          background-color: var(--white);
-          border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .stat-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
-        }
-        .stat-card-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .stat-card-icon {
-          display: grid;
-          place-items: center;
-          width: 40px;
-          height: 40px;
-          background-color: var(--soft-red);
-          color: var(--primary-red);
-          border-radius: 8px;
-          font-size: 18px;
-        }
-        .stat-card-title {
-          font-size: 16px;
-          font-weight: 500;
-          color: var(--text-light);
-        }
-        .stat-card-value {
-          font-size: 48px;
-          font-weight: 700;
-          color: var(--primary-red);
-          line-height: 1;
-        }
-        .stat-card-footer {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--text-dark);
-          margin-top: auto;
-        }
-        .stat-card-player-img {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid var(--border-color);
-        }
-        
-        /* --- Player List Item Styling --- */
-        .player-list-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 12px 0;
-          transition: background-color 0.2s ease;
-          border-radius: 8px;
-        }
-        .player-list-item:not(:last-child) {
-          border-bottom: 1px solid var(--border-color);
-        }
-        .player-list-item:hover {
-          background-color: var(--background-gray);
-        }
-        .player-info {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .player-rank {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--text-light);
-          width: 20px;
-          text-align: center;
-        }
-        .player-img {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          object-fit: cover;
-        }
-        .player-name {
-          font-weight: 600;
-        }
-        .player-stat {
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--primary-red);
-          background-color: var(--soft-red);
-          padding: 6px 12px;
-          border-radius: 20px;
-        }
-        .player-stat .stat-label {
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--primary-red);
-          margin-left: 4px;
-        }
-
-        /* --- Responsive Design for Mobile --- */
-        @media (max-width: 768px) {
-          .analyst-dashboard {
-            padding: 16px;
-          }
-          .dashboard-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
-          }
-          .dashboard-title {
-            font-size: 24px;
-          }
-          .dashboard-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-          }
-          .section {
-            padding: 16px;
-          }
-        }
-      `}</style>
-      
-      <div className="analyst-dashboard">
-        <header className="dashboard-header">
-          <h1 className="dashboard-title">Cricket Team Analytics</h1>
-          <button className="export-button">
-            <FaDownload />
-            Export Report
-          </button>
-        </header>
-
-        <main className="dashboard-grid">
-          {/* Highlighted Single Stat Cards */}
-          <StatCard
-            icon={<FaTrophy />}
-            title={playerStats.topPerformance.achievement}
-            value={playerStats.topPerformance.value}
-            footerText={playerStats.topPerformance.name}
-            playerImage={playerStats.topPerformance.image}
-          />
-          <StatCard
-            icon={<FaRegChartBar />}
-            title="Highest Individual Score"
-            value={playerStats.highestRuns.runs}
-            footerText={playerStats.highestRuns.name}
-            playerImage={playerStats.highestRuns.image}
-          />
-          <StatCard
-            icon={<FaUserFriends />}
-            title="Highest Partnership Runs"
-            value={playerStats.highestPartnership.runs}
-            footerText={playerStats.highestPartnership.players}
-            playerImage={playerStats.highestPartnership.image}
-          />
-          <StatCard
-            icon={<FaPlaneDeparture />}
-            title="Most Fifties (Away)"
-            value={playerStats.awayPerformance.fifties}
-            footerText={playerStats.awayPerformance.name}
-            playerImage={playerStats.awayPerformance.image}
-          />
-
-          {/* List-based Sections */}
-          <Section title="Most Centuries" icon={<FaStar />}>
-            {playerStats.mostCenturies.map((player, index) => (
-              <PlayerListItem
-                key={`century-${index}`}
-                rank={index + 1}
-                image={player.image}
-                name={player.name}
-                statValue={player.centuries}
-                statLabel="100s"
+        {/* Stats Grid */}
+        <div className="stats-overview" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+          {/* Highest Runs */}
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+            </div>
+            {playerStats.highestRuns.image && (
+              <img 
+                src={playerStats.highestRuns.image} 
+                alt={playerStats.highestRuns.name}
+                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '1rem auto', display: 'block', border: '3px solid var(--color-accent-primary)' }}
               />
-            ))}
-          </Section>
+            )}
+            <div className="stat-card-value">{playerStats.highestRuns.runs}</div>
+            <div className="stat-card-label">Highest Individual Score</div>
+            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              {playerStats.highestRuns.name}
+            </div>
+          </div>
+
+          {/* Away Performance */}
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+              </div>
+            </div>
+            {playerStats.awayPerformance.image && (
+              <img 
+                src={playerStats.awayPerformance.image} 
+                alt={playerStats.awayPerformance.name}
+                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '1rem auto', display: 'block', border: '3px solid var(--color-accent-primary)' }}
+              />
+            )}
+            <div className="stat-card-value">{playerStats.awayPerformance.fifties}</div>
+            <div className="stat-card-label">Away Fifties</div>
+            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              {playerStats.awayPerformance.name}
+            </div>
+          </div>
+
+          {/* Partnership */}
+          <div className="stat-card-analytics">
+            <div className="stat-card-header">
+              <div className="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>
+                </svg>
+              </div>
+            </div>
+            <div className="stat-card-value">{playerStats.highestPartnership.runs}</div>
+            <div className="stat-card-label">Highest Partnership</div>
+            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              {playerStats.highestPartnership.players}
+            </div>
+          </div>
+        </div>
+
+        {/* Centuries Leaderboard */}
+        <div className="leaderboard-section" style={{ marginTop: '3rem' }}>
+          <div className="chart-header">
+            <h3 className="chart-title">Most Centuries</h3>
+            <p className="chart-subtitle">{playerStats.mostCenturies.length} players</p>
+          </div>
           
-          <Section title="Most Fifties" icon={<FaListOl />} gridColumn="1 / -1">
-            {playerStats.mostFifties.map((player, index) => (
-              <PlayerListItem
-                key={`fifty-${index}`}
-                rank={index + 1}
-                image={player.image}
-                name={player.name}
-                statValue={player.fifties}
-                statLabel="50s"
-              />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
+            {playerStats.mostCenturies.map((player, index) => (
+              <div key={index} className="leaderboard-item">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '32px', 
+                    borderRadius: '50%', 
+                    background: index === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'rgba(200, 255, 58, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: '0.875rem'
+                  }}>
+                    {index + 1}
+                  </div>
+                  {player.image && (
+                    <img 
+                      src={player.image} 
+                      alt={player.name}
+                      style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(200, 255, 58, 0.3)' }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{player.name}</div>
+                  </div>
+                  <div style={{ 
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(200, 255, 58, 0.1)',
+                    border: '1px solid var(--color-accent-primary)',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    color: 'var(--color-accent-primary)'
+                  }}>
+                    {player.centuries}
+                  </div>
+                </div>
+              </div>
             ))}
-          </Section>
-        </main>
+          </div>
+        </div>
+
+        {/* Fifties Leaderboard */}
+        <div className="leaderboard-section" style={{ marginTop: '3rem' }}>
+          <div className="chart-header">
+            <h3 className="chart-title">Most Fifties</h3>
+            <p className="chart-subtitle">{playerStats.mostFifties.length} players</p>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
+            {playerStats.mostFifties.map((player, index) => (
+              <div key={index} className="leaderboard-item">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '32px', 
+                    borderRadius: '50%', 
+                    background: index === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'rgba(200, 255, 58, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: '0.875rem'
+                  }}>
+                    {index + 1}
+                  </div>
+                  {player.image && (
+                    <img 
+                      src={player.image} 
+                      alt={player.name}
+                      style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(200, 255, 58, 0.3)' }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{player.name}</div>
+                  </div>
+                  <div style={{ 
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(34, 197, 94, 0.1)',
+                    border: '1px solid #22c55e',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    color: '#22c55e'
+                  }}>
+                    {player.fifties}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
