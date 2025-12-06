@@ -25,6 +25,7 @@ const bowlerNames = [
   "Farhan Navufal",
   "Saveen Nanayakkara",
   "Reshan Kavinga",
+  "Shalom Dilsara",
   "Ovindu",
   "Diyatha",
   "Adithya",
