@@ -15,7 +15,7 @@ const WicketAnalysis = () => {
   useEffect(() => {
     const fetchWickets = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/wickets`);
+        const response = await axios.get(`${API_URL}/wickets`);
         const data = response.data;
         const analysisMap = {};
         
