@@ -156,12 +156,12 @@ const AddWickets = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label required">Innings</label>
+                <label className="form-label required">Innings Bowled</label>
                 <input
                   type="number"
                   name="innings"
                   className="form-input"
-                  placeholder="Enter innings"
+                  placeholder="Number of innings"
                   value={formData.innings}
                   onChange={handleChange}
                   min="1"

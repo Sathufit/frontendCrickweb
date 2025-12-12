@@ -164,18 +164,18 @@ const AddRuns = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label required">Innings</label>
-                <select
+                <label className="form-label required">Innings Played</label>
+                <input
+                  type="number"
                   name="innings"
-                  className="form-select"
+                  className="form-input"
+                  placeholder="Number of innings"
                   value={formData.innings}
                   onChange={handleChange}
+                  min="1"
+                  max="2"
                   required
-                >
-                  <option value="">Select Innings</option>
-                  <option value="1st">1st Innings</option>
-                  <option value="2nd">2nd Innings</option>
-                </select>
+                />
               </div>
             </div>
 
