@@ -52,7 +52,6 @@ const ViewRuns = () => {
     return sortableRuns;
   }, [runs]);
 
-  const venues = Array.isArray(runs) ? [...new Set(runs.map(run => run.venue))] : [];
   const totalRuns = sortedRuns.reduce((sum, run) => sum + (run.runs || 0), 0);
   const highestScore = sortedRuns.length > 0 ? Math.max(...sortedRuns.map(r => r.runs || 0)) : 0;
   const centuries = sortedRuns.filter(run => run.runs >= 100).length;
@@ -155,7 +154,7 @@ const ViewRuns = () => {
                 {sortedRuns.map((run, index) => (
                   <tr key={index}>
                     <td>{new Date(run.date).toLocaleDateString()}</td>
-                    <td>{run.batter_name}</td>
+                    <td>{run.name}</td>
                     <td>
                       {run.runs >= 100 ? (
                         <span className="highlight-badge">{run.runs}*</span>

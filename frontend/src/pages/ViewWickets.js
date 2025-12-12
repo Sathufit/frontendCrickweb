@@ -56,7 +56,6 @@ const ViewWickets = () => {
     return sortableWickets;
   }, [wickets]);
 
-  const venues = Array.isArray(wickets) ? [...new Set(wickets.map(w => w.venue))] : [];
   const totalWickets = sortedWickets.reduce((sum, w) => sum + (w.wickets || 0), 0);
   const bestFigures = sortedWickets.length > 0 ? Math.max(...sortedWickets.map(w => w.wickets || 0)) : 0;
   const fiveWickets = sortedWickets.filter(w => w.wickets >= 5).length;

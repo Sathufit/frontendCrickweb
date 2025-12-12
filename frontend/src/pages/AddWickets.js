@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import "../styles/DataEntryImproved.css";
 
 const API_URL =
@@ -34,8 +33,6 @@ const bowlerNames = [
 
 
 const AddWickets = () => {
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     bowler_name: "",
     venue: "",

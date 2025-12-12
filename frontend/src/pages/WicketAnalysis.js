@@ -20,7 +20,7 @@ const WicketAnalysis = () => {
         const analysisMap = {};
         
         data.forEach(w => {
-          const key = w.bowlerName;
+          const key = w.bowler_name;
           if (!analysisMap[key]) {
             analysisMap[key] = { wickets: 0, innings: 0 };
           }
