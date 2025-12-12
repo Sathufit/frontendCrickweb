@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import "../styles/AnalyticsImproved.css";
-import { playerStats } from "./Analyst";
 
 const API_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:5001"
@@ -10,50 +9,8 @@ const API_URL = process.env.NODE_ENV === "development"
 
 const WicketAnalysis = () => {
   const [wicketsData, setWicketsData] = useState([]);
-  const [battingMilestones, setBattingMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: 'rate', direction: 'descending' });
-
-  useEffect(() => {
-    // Process batting milestones
-    const processMilestones = () => {
-      const milestoneData = [];
-      
-      if (playerStats && playerStats.mostCenturies) {
-        playerStats.mostCenturies.forEach(player => {
-          const existingPlayer = milestoneData.find(p => p.name === player.name);
-          if (existingPlayer) {
-            existingPlayer.centuries = player.centuries;
-          } else {
-            milestoneData.push({
-              name: player.name,
-              centuries: player.centuries,
-              fifties: "0"
-            });
-          }
-        });
-      }
-      
-      if (playerStats && playerStats.mostFifties) {
-        playerStats.mostFifties.forEach(player => {
-          const existingPlayer = milestoneData.find(p => p.name === player.name);
-          if (existingPlayer) {
-            existingPlayer.fifties = player.fifties;
-          } else {
-            milestoneData.push({
-              name: player.name,
-              centuries: "0",
-              fifties: player.fifties
-            });
-          }
-        });
-      }
-      
-      setBattingMilestones(milestoneData);
-    };
-    
-    processMilestones();
-  }, []);
 
   useEffect(() => {
     const fetchWickets = async () => {
@@ -240,68 +197,6 @@ const WicketAnalysis = () => {
             </div>
           </div>
         )}
-
-        {/* Batting Milestones Section */}
-        <div className="leaderboard-section" style={{ marginTop: '3rem' }}>
-          <div className="chart-header">
-            <h3 className="chart-title">Batting Milestones</h3>
-            <p className="chart-subtitle">Centuries and fifties tracker</p>
-          </div>
-          
-          <div style={{ overflowX: 'auto', marginTop: '1.5rem' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.1)' }}>
-                  <th style={{ padding: '16px', textAlign: 'left', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Player</th>
-                  <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Centuries</th>
-                  <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fifties</th>
-                  <th style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {battingMilestones.map((player, index) => {
-                  const total = Number(player.centuries || 0) + Number(player.fifties || 0);
-                  return (
-                    <tr key={index} style={{ borderBottom: '1px solid rgba(242, 242, 242, 0.05)', transition: 'background 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(200, 255, 58, 0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                      <td style={{ padding: '16px', color: 'var(--color-text-primary)', fontWeight: 600 }}>{player.name}</td>
-                      <td style={{ padding: '16px', textAlign: 'center' }}>
-                        <span style={{ 
-                          display: 'inline-block',
-                          padding: '4px 12px',
-                          background: Number(player.centuries) > 0 ? 'rgba(200, 255, 58, 0.1)' : 'rgba(160, 160, 160, 0.1)',
-                          border: `1px solid ${Number(player.centuries) > 0 ? 'var(--color-accent-primary)' : 'rgba(160, 160, 160, 0.3)'}`,
-                          borderRadius: '6px',
-                          color: Number(player.centuries) > 0 ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
-                          fontWeight: 700,
-                          fontSize: '0.875rem'
-                        }}>
-                          {player.centuries}
-                        </span>
-                      </td>
-                      <td style={{ padding: '16px', textAlign: 'center' }}>
-                        <span style={{ 
-                          display: 'inline-block',
-                          padding: '4px 12px',
-                          background: Number(player.fifties) > 0 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(160, 160, 160, 0.1)',
-                          border: `1px solid ${Number(player.fifties) > 0 ? '#22c55e' : 'rgba(160, 160, 160, 0.3)'}`,
-                          borderRadius: '6px',
-                          color: Number(player.fifties) > 0 ? '#22c55e' : 'var(--color-text-secondary)',
-                          fontWeight: 700,
-                          fontSize: '0.875rem'
-                        }}>
-                          {player.fifties}
-                        </span>
-                      </td>
-                      <td style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '1rem' }}>
-                        {total}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
     </div>
   );

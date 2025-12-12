@@ -90,7 +90,8 @@ const Home = () => {
 
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/stats", label: "Stats" },
+    { to: "/stats", label: "Batting Stats" },
+    { to: "/wicket-analysis", label: "Wicket Stats" },
     { to: "/analyst", label: "Analysis" },
     { to: "/view-runs", label: "Runs" },
     { to: "/view-wickets", label: "Wickets" },
