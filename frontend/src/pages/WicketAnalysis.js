@@ -25,7 +25,7 @@ const WicketAnalysis = () => {
             analysisMap[key] = { wickets: 0, innings: 0 };
           }
           analysisMap[key].wickets += Number(w.wickets || 0);
-          analysisMap[key].innings += 1;
+          analysisMap[key].innings += Number(w.innings || 0);
         });
         
         const analysisArray = Object.entries(analysisMap).map(([name, stats]) => ({
