@@ -190,7 +190,6 @@ const AddRuns = () => {
                   value={formData.outs}
                   onChange={handleChange}
                   min="0"
-                  max="1"
                   required
                 />
               </div>

@@ -76,7 +76,7 @@ const ManageRuns = () => {
 
   // Filter runs based on search
   const filteredRuns = runs.filter((run) =>
-    run.batter_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    run.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     run.venue?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -138,14 +138,11 @@ const ManageRuns = () => {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Batter Name</th>
+                    <th>Batter</th>
                     <th>Venue</th>
                     <th>Runs</th>
-                    <th>Balls</th>
-                    <th>Fours</th>
-                    <th>Sixes</th>
-                    <th>Strike Rate</th>
                     <th>Innings</th>
+                    <th>Outs</th>
                     <th>Date</th>
                     <th>Actions</th>
                   </tr>
@@ -153,14 +150,11 @@ const ManageRuns = () => {
                 <tbody>
                   {filteredRuns.map((run) => (
                     <tr key={run._id}>
-                      <td data-label="Batter">{run.batter_name}</td>
+                      <td data-label="Batter">{run.name}</td>
                       <td data-label="Venue">{run.venue}</td>
                       <td data-label="Runs">{run.runs}</td>
-                      <td data-label="Balls">{run.balls}</td>
-                      <td data-label="Fours">{run.fours}</td>
-                      <td data-label="Sixes">{run.sixes}</td>
-                      <td data-label="Strike Rate">{run.strike_rate?.toFixed(2)}</td>
                       <td data-label="Innings">{run.innings}</td>
+                      <td data-label="Outs">{run.outs}</td>
                       <td data-label="Date">
                         {run.date
                           ? new Date(run.date).toLocaleDateString()
@@ -171,16 +165,14 @@ const ManageRuns = () => {
                           <button
                             className="btn-edit"
                             onClick={() => handleEdit(run)}
-                            title="Edit"
                           >
-                            ✏️
+                            Edit
                           </button>
                           <button
                             className="btn-delete"
                             onClick={() => setDeleteConfirm(run._id)}
-                            title="Delete"
                           >
-                            🗑️
+                            Delete
                           </button>
                         </div>
                       </td>
@@ -213,9 +205,9 @@ const ManageRuns = () => {
                   <label className="form-label">Batter Name</label>
                   <input
                     type="text"
-                    name="batter_name"
+                    name="name"
                     className="form-input"
-                    value={editRun.batter_name}
+                    value={editRun.name}
                     onChange={handleChange}
                   />
                 </div>
@@ -241,55 +233,7 @@ const ManageRuns = () => {
                     className="form-input"
                     value={editRun.runs}
                     onChange={handleChange}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Balls</label>
-                  <input
-                    type="number"
-                    name="balls"
-                    className="form-input"
-                    value={editRun.balls}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Fours</label>
-                  <input
-                    type="number"
-                    name="fours"
-                    className="form-input"
-                    value={editRun.fours}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Sixes</label>
-                  <input
-                    type="number"
-                    name="sixes"
-                    className="form-input"
-                    value={editRun.sixes}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Strike Rate</label>
-                  <input
-                    type="number"
-                    name="strike_rate"
-                    className="form-input"
-                    value={editRun.strike_rate}
-                    onChange={handleChange}
-                    step="0.01"
+                    min="0"
                   />
                 </div>
 
@@ -301,19 +245,34 @@ const ManageRuns = () => {
                     className="form-input"
                     value={editRun.innings}
                     onChange={handleChange}
+                    min="1"
                   />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Date</label>
-                <input
-                  type="date"
-                  name="date"
-                  className="form-input"
-                  value={editRun.date}
-                  onChange={handleChange}
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Outs</label>
+                  <input
+                    type="number"
+                    name="outs"
+                    className="form-input"
+                    value={editRun.outs}
+                    onChange={handleChange}
+                    min="0"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Date</label>
+                  <input
+                    type="date"
+                    name="date"
+                    className="form-input"
+                    value={editRun.date}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 

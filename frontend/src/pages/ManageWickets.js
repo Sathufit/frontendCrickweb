@@ -168,16 +168,14 @@ const ManageWickets = () => {
                           <button
                             className="btn-edit"
                             onClick={() => handleEdit(wicket)}
-                            title="Edit"
                           >
-                            ✏️
+                            Edit
                           </button>
                           <button
                             className="btn-delete"
                             onClick={() => setDeleteConfirm(wicket._id)}
-                            title="Delete"
                           >
-                            🗑️
+                            Delete
                           </button>
                         </div>
                       </td>
