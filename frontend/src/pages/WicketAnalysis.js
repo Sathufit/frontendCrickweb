@@ -81,7 +81,7 @@ const WicketAnalysis = () => {
       <div className="analytics-container">
         <div className="analytics-header">
           <h1 className="analytics-title">
-            Wicket <span className="highlight">Analysis</span>
+            Bowler <span className="highlight">Statistics</span>
           </h1>
           <p className="analytics-subtitle">
             Comprehensive bowling statistics and performance metrics
