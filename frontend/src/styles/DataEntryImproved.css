@@ -206,9 +206,11 @@
   backdrop-filter: blur(20px);
   border: 1px solid rgba(200, 255, 58, 0.15);
   border-radius: 20px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   animation: fadeInUp 0.8s ease-out 0.4s backwards;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-header {
@@ -230,7 +232,8 @@
   color: var(--color-text-secondary);
 }
 
-.table-container {
+.table-container,
+.data-table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin: 0 -0.5rem;
@@ -592,49 +595,6 @@
   justify-content: flex-end;
   padding: 1.5rem 2rem;
   border-top: 1px solid rgba(200, 255, 58, 0.15);
-}
-
-/* === ACTION BUTTONS === */
-.action-buttons {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.btn-edit,
-.btn-delete {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-}
-
-.btn-edit {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.btn-edit:hover {
-  background: rgba(59, 130, 246, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-delete {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.btn-delete:hover {
-  background: rgba(239, 68, 68, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-refresh {
