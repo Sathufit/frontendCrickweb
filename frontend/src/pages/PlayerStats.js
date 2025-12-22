@@ -10,7 +10,7 @@ const PlayerStats = () => {
 
   const playerMilestones = {
     mostCenturies: [
-      { name: "Yamila Dilhara", centuries: "6" },
+      { name: "Yamila Dilhara", centuries: "7" },
       { name: "Sathush Nanayakkara", centuries: "4" },
       { name: "Chanuka de Silva", centuries: "2" },
       { name: "Achala Shashvika", centuries: "1" }
