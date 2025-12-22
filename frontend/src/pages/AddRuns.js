@@ -24,12 +24,14 @@ const playerNames = [
   "Anjitha Kaveendra",
   "Dihindu Nimsath",
   "Shalom Dilsara",
+  "Ayesh Jeewantha",
   "Eesara Kovinda",
   "Saveen Nanayakkara",
   "Reshan Kavinga",
   "Ovindu",
   "Diyatha",
   "Adithya",
+
 ];
 
 const AddRuns = () => {
