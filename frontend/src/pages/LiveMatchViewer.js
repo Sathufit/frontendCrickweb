@@ -1,9 +1,336 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ref, onValue } from "firebase/database";
-import { database } from "../firebase";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
 import Navbar from "../components/Navbar";
-import "../styles/LiveMatchViewer.css";
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    backgroundColor: '#0C0C0C',
+    paddingBottom: '80px',
+  },
+  container: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '120px 16px 60px',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '80px 20px',
+  },
+  spinner: {
+    width: '48px',
+    height: '48px',
+    border: '4px solid rgba(200, 255, 58, 0.2)',
+    borderTopColor: '#C8FF3A',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '20px',
+  },
+  errorContainer: {
+    textAlign: 'center',
+    padding: '80px 20px',
+  },
+  btnBack: {
+    marginTop: '20px',
+    padding: '12px 28px',
+    background: 'linear-gradient(135deg, #C8FF3A 0%, #B4FF00 100%)',
+    color: '#0C0C0C',
+    border: 'none',
+    borderRadius: '50px',
+    fontSize: '15px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '28px',
+    padding: 'clamp(16px, 3vw, 24px)',
+    background: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    gap: '16px',
+    flexWrap: 'wrap',
+  },
+  btnBackSmall: {
+    padding: '8px 18px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '50px',
+    color: '#F2F2F2',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    whiteSpace: 'nowrap',
+  },
+  titleSection: {
+    flex: 1,
+    textAlign: 'center',
+    minWidth: '200px',
+  },
+  matchTitle: {
+    fontSize: 'clamp(20px, 4vw, 32px)',
+    fontWeight: '800',
+    color: '#F2F2F2',
+    marginBottom: '6px',
+  },
+  matchTeams: {
+    fontSize: 'clamp(14px, 2.5vw, 18px)',
+    color: '#999999',
+    fontWeight: '500',
+  },
+  liveBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 16px',
+    background: 'rgba(200, 255, 58, 0.15)',
+    color: '#C8FF3A',
+    borderRadius: '50px',
+    fontSize: '13px',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  pulseDot: {
+    width: '7px',
+    height: '7px',
+    borderRadius: '50%',
+    background: '#C8FF3A',
+    boxShadow: '0 0 10px #C8FF3A',
+    animation: 'pulse 1.5s ease-in-out infinite',
+  },
+  statusBanner: {
+    padding: 'clamp(12px, 2vw, 16px) clamp(16px, 3vw, 24px)',
+    background: 'linear-gradient(135deg, rgba(200, 255, 58, 0.1) 0%, rgba(180, 255, 0, 0.1) 100%)',
+    border: '1px solid rgba(200, 255, 58, 0.2)',
+    borderRadius: '12px',
+    marginBottom: '20px',
+    textAlign: 'center',
+    fontSize: 'clamp(14px, 2.5vw, 16px)',
+    color: '#C8FF3A',
+    fontWeight: '600',
+  },
+  tabs: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '28px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    overflowX: 'auto',
+    WebkitOverflowScrolling: 'touch',
+  },
+  tab: {
+    padding: 'clamp(12px, 2vw, 16px) clamp(20px, 3vw, 32px)',
+    background: 'transparent',
+    border: 'none',
+    borderBottom: '2px solid transparent',
+    color: '#999999',
+    fontSize: '15px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    whiteSpace: 'nowrap',
+  },
+  tabActive: {
+    color: '#C8FF3A',
+    borderBottomColor: '#C8FF3A',
+  },
+  scorePanel: {
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '16px',
+    padding: 'clamp(20px, 3vw, 32px)',
+    marginBottom: '20px',
+  },
+  scoreHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px',
+  },
+  scoreMain: {
+    textAlign: 'center',
+    marginBottom: '24px',
+  },
+  runsWickets: {
+    fontSize: '56px',
+    fontWeight: '900',
+    color: '#F2F2F2',
+    letterSpacing: '-0.02em',
+  },
+  oversDisplay: {
+    fontSize: '18px',
+    color: '#999999',
+    marginTop: '8px',
+  },
+  runRateInfo: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '32px',
+    padding: '16px',
+    background: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: '12px',
+    marginBottom: '24px',
+  },
+  rateItem: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+  },
+  rateLabel: {
+    fontSize: '14px',
+    color: '#666666',
+    fontWeight: '600',
+  },
+  rateValue: {
+    fontSize: '16px',
+    color: '#C8FF3A',
+    fontWeight: '700',
+  },
+  sectionTitle: {
+    fontSize: '14px',
+    color: '#999999',
+    textTransform: 'uppercase',
+    fontWeight: '700',
+    letterSpacing: '0.5px',
+    marginBottom: '12px',
+  },
+  item: {
+    padding: '12px 16px',
+    background: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    borderRadius: '8px',
+    color: '#F2F2F2',
+    fontSize: '15px',
+    marginBottom: '8px',
+  },
+  ballsContainer: {
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+  },
+  ball: {
+    width: '40px',
+    height: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '50%',
+    fontSize: '14px',
+    fontWeight: '700',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    color: '#F2F2F2',
+  },
+  ballDot: {
+    background: 'rgba(153, 153, 153, 0.2)',
+    color: '#999999',
+  },
+  ballFour: {
+    background: 'rgba(200, 255, 58, 0.15)',
+    border: '1px solid #C8FF3A',
+    color: '#C8FF3A',
+  },
+  ballSix: {
+    background: 'linear-gradient(135deg, #C8FF3A 0%, #B4FF00 100%)',
+    color: '#0C0C0C',
+  },
+  ballWicket: {
+    background: 'rgba(255, 82, 82, 0.15)',
+    border: '1px solid #FF5252',
+    color: '#FF5252',
+  },
+  ballExtra: {
+    background: 'rgba(255, 193, 7, 0.15)',
+    border: '1px solid #FFC107',
+    color: '#FFC107',
+  },
+  statsSection: {
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '16px',
+    padding: '24px',
+    marginBottom: '24px',
+  },
+  statsTable: {
+    width: '100%',
+  },
+  tableHeader: {
+    display: 'grid',
+    gridTemplateColumns: '2fr repeat(5, 1fr)',
+    gap: '16px',
+    padding: '12px 16px',
+    background: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: '8px 8px 0 0',
+    fontSize: '13px',
+    fontWeight: '700',
+    color: '#666666',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  tableRow: {
+    display: 'grid',
+    gridTemplateColumns: '2fr repeat(5, 1fr)',
+    gap: '16px',
+    padding: '16px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+    fontSize: '15px',
+    color: '#F2F2F2',
+  },
+  tableRowActive: {
+    background: 'rgba(200, 255, 58, 0.05)',
+  },
+  colName: {
+    fontWeight: '600',
+  },
+  colStat: {
+    textAlign: 'center',
+    color: '#999999',
+  },
+  battingBadge: {
+    display: 'inline-block',
+    marginLeft: '8px',
+    padding: '2px 6px',
+    background: '#C8FF3A',
+    color: '#0C0C0C',
+    borderRadius: '4px',
+    fontSize: '11px',
+    fontWeight: '700',
+  },
+  infoCard: {
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '16px',
+    padding: '32px',
+  },
+  infoRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '16px 0',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+  },
+  infoLabel: {
+    fontSize: '15px',
+    color: '#666666',
+    fontWeight: '600',
+  },
+  infoValue: {
+    fontSize: '15px',
+    color: '#F2F2F2',
+    fontWeight: '600',
+  },
+  infoResult: {
+    color: '#C8FF3A',
+    fontWeight: '700',
+  },
+};
 
 const LiveMatchViewer = () => {
   const { matchId } = useParams();
@@ -20,13 +347,14 @@ const LiveMatchViewer = () => {
       return;
     }
 
-    // Real-time listener for specific match
-    const matchRef = ref(database, `matches/${matchId}`);
-    const unsubscribe = onValue(
-      matchRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setMatch({ id: matchId, ...snapshot.val() });
+    // Real-time listener for specific match document
+    const matchDoc = doc(db, "matches", matchId);
+    
+    const unsubscribe = onSnapshot(
+      matchDoc,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setMatch({ id: docSnap.id, ...docSnap.data() });
           setLoading(false);
         } else {
           setError("Match not found");
@@ -45,26 +373,41 @@ const LiveMatchViewer = () => {
 
   if (loading) {
     return (
-      <div className="live-match-viewer">
+      <div style={styles.page}>
         <Navbar />
-        <div className="loading-container">
-          <div className="spinner-large"></div>
-          <p>Loading match data...</p>
+        <div style={styles.container}>
+          <div style={styles.loadingContainer}>
+            <div style={styles.spinner}></div>
+            <p style={{ color: '#999999', fontSize: '16px' }}>Loading match data...</p>
+          </div>
         </div>
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
 
   if (error || !match) {
     return (
-      <div className="live-match-viewer">
+      <div style={styles.page}>
         <Navbar />
-        <div className="error-container">
-          <div className="error-icon">⚠️</div>
-          <h2>{error || "Match not found"}</h2>
-          <button className="btn-back" onClick={() => navigate("/live-matches")}>
-            ← Back to Matches
-          </button>
+        <div style={styles.container}>
+          <div style={styles.errorContainer}>
+            <h2 style={{ fontSize: '28px', color: '#F2F2F2', marginBottom: '12px' }}>
+              {error || "Match not found"}
+            </h2>
+            <button 
+              style={styles.btnBack}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              onClick={() => navigate("/live-matches")}
+            >
+              Back to Matches
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -107,12 +450,12 @@ const LiveMatchViewer = () => {
 
   const getBallClass = (ball) => {
     const b = ball.toUpperCase();
-    if (b === 'W') return "ball wicket";
-    if (b === '4') return "ball four";
-    if (b === '6') return "ball six";
-    if (b.includes('WD') || b.includes('NB')) return "ball extra";
-    if (b === '0') return "ball dot";
-    return "ball";
+    if (b === 'W') return { ...styles.ball, ...styles.ballWicket };
+    if (b === '4') return { ...styles.ball, ...styles.ballFour };
+    if (b === '6') return { ...styles.ball, ...styles.ballSix };
+    if (b.includes('WD') || b.includes('NB')) return { ...styles.ball, ...styles.ballExtra };
+    if (b === '0') return { ...styles.ball, ...styles.ballDot };
+    return styles.ball;
   };
 
   const battingTeam = getTeamName(match.battingCardTitle);
@@ -122,205 +465,255 @@ const LiveMatchViewer = () => {
   const currentBatsmen = parseBatsmen(match.batsman1, match.batsman2);
   const overBalls = parseCurrentOver(match.currentOver);
 
-  const ScoreboardTab = () => (
-    <div className="scorecard-section">
-      {/* Current Score */}
-      <div className="current-score-panel">
-        <div className="score-header">
-          <h2>{battingTeam}</h2>
-          {!match.matchFinished && (
-            <span className="live-indicator">
-              <span className="live-dot"></span> LIVE
-            </span>
+  const ScoreboardTab = () => {
+    const hasResult = match.result && match.result.trim() !== "";
+    const hasWonMessage = match.leadTrail && (match.leadTrail.includes("won") || match.leadTrail.includes("Won"));
+    const isLive = !hasResult && !hasWonMessage;
+
+    return (
+      <div>
+        {/* Current Score */}
+        <div style={styles.scorePanel}>
+          <div style={styles.scoreHeader}>
+            <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#F2F2F2', margin: 0 }}>
+              {battingTeam}
+            </h2>
+            {isLive && (
+              <span style={styles.liveBadge}>
+                <span style={styles.pulseDot}></span> LIVE
+              </span>
+            )}
+          </div>
+          
+          <div style={styles.scoreMain}>
+            <div style={styles.runsWickets}>
+              {match.score || "0/0"}
+            </div>
+            <div style={styles.oversDisplay}>
+              ({currentOvers} overs)
+            </div>
+          </div>
+
+          <div style={styles.runRateInfo}>
+            <div style={styles.rateItem}>
+              <span style={styles.rateLabel}>Run Rate:</span>
+              <span style={styles.rateValue}>{runRate}</span>
+            </div>
+          </div>
+
+          {/* Current Batsmen */}
+          {currentBatsmen.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={styles.sectionTitle}>At Crease:</h4>
+              {currentBatsmen.map((batsman, idx) => (
+                <div key={idx} style={styles.item}>
+                  {batsman}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Current Bowler */}
+          {match.bowler && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={styles.sectionTitle}>Bowling:</h4>
+              <div style={styles.item}>{match.bowler}</div>
+            </div>
+          )}
+
+          {/* Current Over */}
+          {overBalls.length > 0 && (
+            <div>
+              <h4 style={styles.sectionTitle}>This Over:</h4>
+              <div style={styles.ballsContainer}>
+                {overBalls.map((ball, idx) => (
+                  <span key={idx} style={getBallClass(ball)}>
+                    {ball}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-        
-        <div className="score-main">
-          <div className="runs-wickets">
-            {match.score || "0/0"}
-          </div>
-          <div className="overs-display">
-            ({currentOvers} overs)
-          </div>
-        </div>
 
-        <div className="run-rate-info">
-          <div className="rate-item">
-            <span className="rate-label">Run Rate:</span>
-            <span className="rate-value">{runRate}</span>
-          </div>
-        </div>
-
-        {/* Current Batsmen */}
-        {currentBatsmen.length > 0 && (
-          <div className="current-batsmen">
-            <h4>At Crease:</h4>
-            {currentBatsmen.map((batsman, idx) => (
-              <div key={idx} className="batsman-item">
-                {batsman}
+        {/* Batsmen Stats */}
+        {match.battingStats && match.battingStats.length > 0 && (
+          <div style={styles.statsSection}>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#F2F2F2', marginBottom: '20px' }}>
+              Batsmen
+            </h3>
+            <div style={styles.statsTable}>
+              <div style={styles.tableHeader}>
+                <div style={styles.colName}>Batsman</div>
+                <div style={styles.colStat}>R</div>
+                <div style={styles.colStat}>B</div>
+                <div style={styles.colStat}>4s/6s</div>
+                <div style={styles.colStat}>SR</div>
+                <div style={styles.colStat}>Out</div>
               </div>
-            ))}
+              {match.battingStats.map((batter, idx) => (
+                <div key={idx} style={{
+                  ...styles.tableRow,
+                  ...(!batter.out && styles.tableRowActive),
+                }}>
+                  <div style={styles.colName}>
+                    {batter.playerName}
+                    {!batter.out && <span style={styles.battingBadge}>*</span>}
+                  </div>
+                  <div style={styles.colStat}>{batter.runs}</div>
+                  <div style={styles.colStat}>{batter.balls}</div>
+                  <div style={styles.colStat}>{batter.boundaries}</div>
+                  <div style={styles.colStat}>{batter.strikeRate}</div>
+                  <div style={styles.colStat}>{batter.out ? "✓" : "-"}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Current Bowler */}
-        {match.bowler && (
-          <div className="current-bowler">
-            <h4>Bowling:</h4>
-            <div className="bowler-item">{match.bowler}</div>
-          </div>
-        )}
-
-        {/* Current Over */}
-        {overBalls.length > 0 && (
-          <div className="current-over">
-            <h4>This Over:</h4>
-            <div className="balls-container">
-              {overBalls.map((ball, idx) => (
-                <span key={idx} className={getBallClass(ball)}>
-                  {ball}
-                </span>
+        {/* Bowlers Stats */}
+        {match.bowlingStats && match.bowlingStats.length > 0 && (
+          <div style={styles.statsSection}>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#F2F2F2', marginBottom: '20px' }}>
+              Bowlers
+            </h3>
+            <div style={styles.statsTable}>
+              <div style={{ ...styles.tableHeader, gridTemplateColumns: '2fr repeat(4, 1fr)' }}>
+                <div style={styles.colName}>Bowler</div>
+                <div style={styles.colStat}>O</div>
+                <div style={styles.colStat}>R</div>
+                <div style={styles.colStat}>W</div>
+                <div style={styles.colStat}>Econ</div>
+              </div>
+              {match.bowlingStats.map((bowler, idx) => (
+                <div key={idx} style={{ ...styles.tableRow, gridTemplateColumns: '2fr repeat(4, 1fr)' }}>
+                  <div style={styles.colName}>{bowler.playerName}</div>
+                  <div style={styles.colStat}>{bowler.overs}</div>
+                  <div style={styles.colStat}>{bowler.runs}</div>
+                  <div style={styles.colStat}>{bowler.wickets}</div>
+                  <div style={styles.colStat}>{bowler.economy}</div>
+                </div>
               ))}
             </div>
           </div>
         )}
       </div>
-
-      {/* Batsmen Stats */}
-      {match.battingStats && match.battingStats.length > 0 && (
-        <div className="batsmen-section">
-          <h3>Batsmen</h3>
-          <div className="stats-table">
-            <div className="table-header">
-              <div className="col-name">Batsman</div>
-              <div className="col-stat">R</div>
-              <div className="col-stat">B</div>
-              <div className="col-stat">4s/6s</div>
-              <div className="col-stat">SR</div>
-              <div className="col-stat">Out</div>
-            </div>
-            {match.battingStats.map((batter, idx) => (
-              <div key={idx} className={`table-row ${!batter.out ? "active" : ""}`}>
-                <div className="col-name">
-                  {batter.playerName}
-                  {!batter.out && <span className="batting-badge">*</span>}
-                </div>
-                <div className="col-stat">{batter.runs}</div>
-                <div className="col-stat">{batter.balls}</div>
-                <div className="col-stat">{batter.boundaries}</div>
-                <div className="col-stat">{batter.strikeRate}</div>
-                <div className="col-stat">{batter.out ? "✓" : "-"}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Bowlers Stats */}
-      {match.bowlingStats && match.bowlingStats.length > 0 && (
-        <div className="bowlers-section">
-          <h3>Bowlers</h3>
-          <div className="stats-table">
-            <div className="table-header">
-              <div className="col-name">Bowler</div>
-              <div className="col-stat">O</div>
-              <div className="col-stat">R</div>
-              <div className="col-stat">W</div>
-              <div className="col-stat">Econ</div>
-            </div>
-            {match.bowlingStats.map((bowler, idx) => (
-              <div key={idx} className="table-row">
-                <div className="col-name">{bowler.playerName}</div>
-                <div className="col-stat">{bowler.overs}</div>
-                <div className="col-stat">{bowler.runs}</div>
-                <div className="col-stat">{bowler.wickets}</div>
-                <div className="col-stat">{bowler.economy}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   const MatchInfoTab = () => (
-    <div className="match-info-section">
-      <div className="info-card">
-        <h3>Match Details</h3>
-        <div className="info-row">
-          <span className="info-label">Match ID:</span>
-          <span className="info-value">{match.id}</span>
+    <div>
+      <div style={styles.infoCard}>
+        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#F2F2F2', marginBottom: '24px' }}>
+          Match Details
+        </h3>
+        <div style={styles.infoRow}>
+          <span style={styles.infoLabel}>Match ID:</span>
+          <span style={styles.infoValue}>{match.id}</span>
         </div>
-        <div className="info-row">
-          <span className="info-label">Teams:</span>
-          <span className="info-value">{battingTeam} vs {bowlingTeam}</span>
+        <div style={styles.infoRow}>
+          <span style={styles.infoLabel}>Teams:</span>
+          <span style={styles.infoValue}>{battingTeam} vs {bowlingTeam}</span>
         </div>
-        <div className="info-row">
-          <span className="info-label">Status:</span>
-          <span className="info-value">{match.matchStatus}</span>
+        <div style={styles.infoRow}>
+          <span style={styles.infoLabel}>Status:</span>
+          <span style={styles.infoValue}>{match.matchStatus}</span>
         </div>
-        <div className="info-row">
-          <span className="info-label">Current Score:</span>
-          <span className="info-value">{match.score}</span>
+        <div style={styles.infoRow}>
+          <span style={styles.infoLabel}>Current Score:</span>
+          <span style={styles.infoValue}>{match.score}</span>
         </div>
-        <div className="info-row">
-          <span className="info-label">Overs:</span>
-          <span className="info-value">{match.overs}</span>
+        <div style={styles.infoRow}>
+          <span style={styles.infoLabel}>Overs:</span>
+          <span style={styles.infoValue}>{match.overs}</span>
         </div>
         {match.leadTrail && (
-          <div className="info-row result-row">
-            <span className="info-label">Situation:</span>
-            <span className="info-value result">{match.leadTrail}</span>
+          <div style={styles.infoRow}>
+            <span style={styles.infoLabel}>Situation:</span>
+            <span style={{ ...styles.infoValue, ...styles.infoResult }}>{match.leadTrail}</span>
           </div>
         )}
-        {match.matchFinished && (
-          <div className="info-row">
-            <span className="info-label">Match Result:</span>
-            <span className="info-value result">Match Completed</span>
+        {match.result && (
+          <div style={{ ...styles.infoRow, borderBottom: 'none' }}>
+            <span style={styles.infoLabel}>Match Result:</span>
+            <span style={{ ...styles.infoValue, ...styles.infoResult }}>{match.result}</span>
           </div>
         )}
       </div>
     </div>
   );
 
+  const hasResult = match.result && match.result.trim() !== "";
+  const hasWonMessage = match.leadTrail && (match.leadTrail.includes("won") || match.leadTrail.includes("Won"));
+  const isLive = !hasResult && !hasWonMessage;
+
   return (
-    <div className="live-match-viewer">
+    <div style={styles.page}>
       <Navbar />
 
-      <div className="match-viewer-container">
+      <div style={styles.container}>
         {/* Header */}
-        <div className="match-header">
-          <button className="btn-back-small" onClick={() => navigate("/live-matches")}>
+        <div style={styles.header}>
+          <button 
+            style={styles.btnBackSmall}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#C8FF3A';
+              e.currentTarget.style.color = '#C8FF3A';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.color = '#F2F2F2';
+            }}
+            onClick={() => navigate("/live-matches")}
+          >
             ← Back
           </button>
-          <div className="match-title-section">
-            <h1>{match.id}</h1>
-            <div className="match-teams">{battingTeam} vs {bowlingTeam}</div>
+          <div style={styles.titleSection}>
+            <h1 style={styles.matchTitle}>{match.id}</h1>
+            <div style={styles.matchTeams}>{battingTeam} vs {bowlingTeam}</div>
           </div>
-          {!match.matchFinished && (
-            <span className="live-badge">
-              <span className="pulse-dot"></span> LIVE
+          {isLive && (
+            <span style={styles.liveBadge}>
+              <span style={styles.pulseDot}></span> LIVE
             </span>
           )}
         </div>
 
         {/* Match Status Banner */}
         {match.leadTrail && (
-          <div className="match-status-banner">
+          <div style={styles.statusBanner}>
             {match.leadTrail}
           </div>
         )}
 
         {/* Tabs */}
-        <div className="viewer-tabs">
+        <div style={styles.tabs}>
           <button
-            className={`viewer-tab ${activeTab === "scorecard" ? "active" : ""}`}
+            style={{
+              ...styles.tab,
+              ...(activeTab === "scorecard" && styles.tabActive),
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== "scorecard") e.currentTarget.style.color = '#F2F2F2';
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== "scorecard") e.currentTarget.style.color = '#999999';
+            }}
             onClick={() => setActiveTab("scorecard")}
           >
             Scorecard
           </button>
           <button
-            className={`viewer-tab ${activeTab === "info" ? "active" : ""}`}
+            style={{
+              ...styles.tab,
+              ...(activeTab === "info" && styles.tabActive),
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== "info") e.currentTarget.style.color = '#F2F2F2';
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== "info") e.currentTarget.style.color = '#999999';
+            }}
             onClick={() => setActiveTab("info")}
           >
             Match Info
@@ -328,11 +721,27 @@ const LiveMatchViewer = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="tab-content">
+        <div>
           {activeTab === "scorecard" && <ScoreboardTab />}
           {activeTab === "info" && <MatchInfoTab />}
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; box-shadow: 0 0 10px #C8FF3A; }
+          50% { opacity: 0.7; box-shadow: 0 0 20px #C8FF3A; }
+        }
+        @media (max-width: 768px) {
+          .table-header, .table-row {
+            font-size: 12px;
+            gap: 8px;
+          }
+        }
+      `}</style>
     </div>
   );
 };
