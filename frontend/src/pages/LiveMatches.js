@@ -266,17 +266,29 @@ function LiveMatches() {
           });
         });
 
-        // Determine match status
-        const live = matchesArray.filter(m => {
+        // Determine match status - check multiple indicators for completion
+        // First, filter out stopped/inaccessible matches
+        const activeMatches = matchesArray.filter(m => !isMatchStopped(m));
+        
+        const live = activeMatches.filter(m => {
+          // Match is completed if any of these are true
           const hasResult = m.result && m.result.trim() !== "";
-          const hasWonMessage = m.leadTrail && (m.leadTrail.includes("won") || m.leadTrail.includes("Won"));
-          return !hasResult && !hasWonMessage;
+          const hasWonMessage = m.leadTrail && (m.leadTrail.includes("won") || m.leadTrail.includes("Won") || m.leadTrail.includes("WON"));
+          const matchStatusComplete = m.matchStatus && (m.matchStatus.toLowerCase().includes("match complete") || m.matchStatus.toLowerCase().includes("completed"));
+          const isFinished = m.matchFinished === true || m.status === "finished" || m.status === "completed";
+          
+          // Only show in live if NONE of the completion indicators are present
+          return !hasResult && !hasWonMessage && !matchStatusComplete && !isFinished;
         });
         
-        const completed = matchesArray.filter(m => {
+        const completed = activeMatches.filter(m => {
+          // Match is completed if ANY of these are true
           const hasResult = m.result && m.result.trim() !== "";
-          const hasWonMessage = m.leadTrail && (m.leadTrail.includes("won") || m.leadTrail.includes("Won"));
-          return hasResult || hasWonMessage;
+          const hasWonMessage = m.leadTrail && (m.leadTrail.includes("won") || m.leadTrail.includes("Won") || m.leadTrail.includes("WON"));
+          const matchStatusComplete = m.matchStatus && (m.matchStatus.toLowerCase().includes("match complete") || m.matchStatus.toLowerCase().includes("completed"));
+          const isFinished = m.matchFinished === true || m.status === "finished" || m.status === "completed";
+          
+          return hasResult || hasWonMessage || matchStatusComplete || isFinished;
         });
 
         setLiveMatches(live);
@@ -309,6 +321,31 @@ function LiveMatches() {
     return match ? match[1] : "0.00";
   };
 
+  const isMatchStopped = (match) => {
+    // Match is stopped if it has no recent activity and isn't completed
+    const hasNoScore = !match.score || match.score === "0/0" || match.score.trim() === "";
+    const hasNoStatus = !match.matchStatus || match.matchStatus.trim() === "";
+    const hasNoResult = !match.result || match.result.trim() === "";
+    const hasNoLeadTrail = !match.leadTrail || match.leadTrail.trim() === "";
+    
+    // If match has no meaningful data, it's likely stopped/inaccessible
+    return hasNoScore && hasNoStatus && hasNoResult && hasNoLeadTrail;
+  };
+
+  const getWinnerInfo = (match) => {
+    // Extract winner from result or leadTrail
+    if (match.result && match.result.trim() !== "") {
+      return match.result;
+    }
+    if (match.leadTrail && (match.leadTrail.includes("won") || match.leadTrail.includes("Won") || match.leadTrail.includes("WON"))) {
+      return match.leadTrail;
+    }
+    if (match.matchStatus && match.matchStatus.toLowerCase().includes("won")) {
+      return match.matchStatus;
+    }
+    return "Match Completed";
+  };
+
   const MatchCard = ({ match }) => {
     const [isHovered, setIsHovered] = useState(false);
     const battingTeam = getTeamName(match.battingCardTitle);
@@ -317,8 +354,10 @@ function LiveMatches() {
     const runRate = getRunRate(match.runRate);
     
     const hasResult = match.result && match.result.trim() !== "";
-    const hasWonMessage = match.leadTrail && (match.leadTrail.includes("won") || match.leadTrail.includes("Won"));
-    const isLive = !hasResult && !hasWonMessage;
+    const hasWonMessage = match.leadTrail && (match.leadTrail.includes("won") || match.leadTrail.includes("Won") || match.leadTrail.includes("WON"));
+    const matchStatusComplete = match.matchStatus && (match.matchStatus.toLowerCase().includes("match complete") || match.matchStatus.toLowerCase().includes("completed"));
+    const isFinished = match.matchFinished === true || match.status === "finished" || match.status === "completed";
+    const isLive = !hasResult && !hasWonMessage && !matchStatusComplete && !isFinished;
 
     const cardStyle = {
       ...styles.matchCard,
@@ -381,9 +420,16 @@ function LiveMatches() {
             <span>RR: {runRate}</span>
           </div>
 
-          {!isLive && (match.result || match.leadTrail) && (
-            <div style={styles.resultBox}>
-              {match.result || match.leadTrail}
+          {!isLive && (
+            <div style={{
+              ...styles.resultBox,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}>
+              <span style={{ fontSize: '16px' }}>🏆</span>
+              <span>{getWinnerInfo(match)}</span>
             </div>
           )}
           

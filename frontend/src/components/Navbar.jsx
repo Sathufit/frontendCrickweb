@@ -31,6 +31,7 @@ const Navbar = () => {
 
   const navLinks = [
     { to: "/", label: "Home" },
+    { to: "/live-matches", label: "Watch Live" },
     { to: "/stats", label: "Batting Stats" },
     { to: "/wicket-analysis", label: "Wicket Stats" },
     { to: "/analyst", label: "Analysis" },
@@ -113,9 +114,19 @@ const Navbar = () => {
                     <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                   </svg>
                 )}
-                {link.label === 'Stats' && (
+                {link.label === 'Watch Live' && (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                  </svg>
+                )}
+                {link.label === 'Batting Stats' && (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                  </svg>
+                )}
+                {link.label === 'Wicket Stats' && (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.5 13.5c0 2-2.5 3.5-2.5 5h-2c0-1.5-2.5-3-2.5-5 0-1.93 1.57-3.5 3.5-3.5s3.5 1.57 3.5 3.5zm-2.5 6.5h-2v2h2v-2z"/>
                   </svg>
                 )}
                 {link.label === 'Analysis' && (
