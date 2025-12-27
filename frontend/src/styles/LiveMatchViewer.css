@@ -1,0 +1,876 @@
+/* LiveMatchViewer.css - Premium Cinematic Design */
+
+.live-match-viewer {
+  min-height: 100vh;
+  background: #0c0c0c;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+
+/* Background effects */
+.live-match-viewer::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.match-viewer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 120px 20px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.match-header {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 30px 35px;
+  margin-bottom: 35px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.btn-back-small {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-back-small:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.match-title-section {
+  flex: 1;
+  text-align: center;
+}
+
+.match-title-section h1 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  color: white;
+  margin-bottom: 10px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.match-teams {
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff4757, #ff6b7a);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+/* Tabs */
+.viewer-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 35px;
+  flex-wrap: wrap;
+}
+
+.viewer-tab {
+  padding: 14px 35px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.viewer-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.viewer-tab.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+}
+
+/* Tab Content */
+.tab-content {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 35px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  min-height: 500px;
+}
+
+/* Scorecard Section */
+.scorecard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.current-score-panel {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.score-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+.score-main {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.runs-wickets {
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.overs-display {
+  font-size: 1.5rem;
+  opacity: 0.9;
+}
+
+.run-rate-info {
+  display: flex;
+  gap: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  flex-wrap: wrap;
+}
+
+.rate-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rate-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.rate-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.rate-item.target .rate-value {
+  color: #ffd700;
+}
+
+/* Current Over */
+.current-over {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.current-over h4 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.balls-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ball {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.ball.dot {
+  background: #95a5a6;
+  border-color: #7f8c8d;
+}
+
+.ball.wicket {
+  background: #e74c3c;
+  border-color: #c0392b;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.ball.four {
+  background: #3498db;
+  border-color: #2980b9;
+  color: white;
+}
+
+.ball.six {
+  background: #9b59b6;
+  border-color: #8e44ad;
+  color: white;
+}
+
+.ball.extra {
+  background: #f39c12;
+  border-color: #e67e22;
+  color: white;
+  font-size: 0.8rem;
+}
+
+/* Stats Tables */
+.batsmen-section,
+.bowlers-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 28px;
+  border-radius: 15px;
+}
+
+.batsmen-section h3,
+.bowlers-section h3 {
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.stats-table {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr repeat(5, 1fr);
+  gap: 10px;
+  padding: 16px 20px;
+  align-items: center;
+}
+
+.table-header {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
+}
+
+.table-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.table-row.active {
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.15), rgba(39, 174, 96, 0.15));
+  border-left: 3px solid #2ecc71;
+  font-weight: 600;
+}
+
+.col-name {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.col-stat {
+  text-align: center;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.batting-badge {
+  display: inline-block;
+  background: #27ae60;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  margin-left: 5px;
+}
+
+.dismissal-info {
+  font-size: 0.85rem;
+  color: #e74c3c;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+.empty-message {
+  padding: 30px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+/* Commentary Section */
+.commentary-section h3 {
+  font-size: 1.8rem;
+  color: white;
+  margin-bottom: 25px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.commentary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.commentary-item {
+  display: flex;
+  gap: 20px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.commentary-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: #764ba2;
+  transform: translateX(5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.ball-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 60px;
+}
+
+.over-ball {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #667eea;
+  text-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.ball-badge {
+  width: 40px;
+  height: 40px;
+  font-size: 0.9rem;
+}
+
+.ball-description {
+  flex: 1;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+.wicket-text {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+.extra-text {
+  color: #f39c12;
+  font-weight: 600;
+}
+
+/* Match Info Section */
+.match-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 28px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.info-card h3 {
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 20px;
+  font-weight: 700;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.info-value {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: right;
+}
+
+.info-value.result {
+  color: #2ecc71;
+  font-size: 1.1rem;
+  text-shadow: 0 2px 10px rgba(46, 204, 113, 0.3);
+}
+
+.result-row {
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.15), rgba(39, 174, 96, 0.15));
+  padding: 16px;
+  border-radius: 10px;
+  margin-top: 12px;
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.players-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.player-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.player-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+/* Loading & Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: white;
+  text-align: center;
+  padding: 40px;
+}
+
+.spinner-large {
+  width: 80px;
+  height: 80px;
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #667eea;
+  border-right-color: #764ba2;
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+  margin-bottom: 25px;
+}
+
+.loading-container p {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.error-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.error-container h2 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+  color: white;
+}
+
+.btn-back {
+  padding: 15px 35px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-back:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .match-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .match-title-section h1 {
+    font-size: 1.5rem;
+  }
+
+  .match-teams {
+    font-size: 1rem;
+  }
+
+  .runs-wickets {
+    font-size: 3rem;
+  }
+
+  .overs-display {
+    font-size: 1.2rem;
+  }
+
+  .run-rate-info {
+    gap: 15px;
+  }
+
+  .table-header,
+  .table-row {
+    grid-template-columns: 2fr repeat(5, 0.8fr);
+    padding: 12px 10px;
+    font-size: 0.85rem;
+  }
+
+  .commentary-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ball-info {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .players-list {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .viewer-tabs {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .viewer-tab {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Current Batsmen Section */
+.current-batsmen {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(102, 126, 234, 0.08);
+  border-left: 3px solid #667eea;
+  border-radius: 8px;
+}
+
+.current-batsmen h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #667eea;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.batsman-item {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s ease;
+}
+
+.batsman-item:last-child {
+  margin-bottom: 0;
+}
+
+.batsman-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(3px);
+}
+
+/* Current Bowler Section */
+.current-bowler {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(118, 75, 162, 0.08);
+  border-left: 3px solid #764ba2;
+  border-radius: 8px;
+}
+
+.current-bowler h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a78bfa;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.bowler-item {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s ease;
+}
+
+.bowler-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(3px);
+}
+
+/* Current Over Section */
+.current-over {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.current-over h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.balls-container {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ball {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.ball.dot {
+  background: rgba(156, 163, 175, 0.15);
+  border-color: #9ca3af;
+  color: #d1d5db;
+}
+
+.ball.four {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+  border-color: #3b82f6;
+  color: #60a5fa;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.ball.six {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(126, 34, 206, 0.2));
+  border-color: #a855f7;
+  color: #c084fc;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  animation: pulse 2s infinite;
+}
+
+.ball.wicket {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+  border-color: #ef4444;
+  color: #f87171;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
+
+.ball.extra {
+  background: rgba(251, 191, 36, 0.15);
+  border-color: #fbbf24;
+  color: #fcd34d;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.7);
+  }
+}
+
+/* Match Status Banner */
+.match-status-banner {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Batting Badge */
+.batting-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: #10b981;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+/* Result Display */
+.result-row {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result {
+  font-weight: 600;
+  color: #a78bfa;
+}

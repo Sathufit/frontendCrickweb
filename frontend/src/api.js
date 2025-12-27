@@ -102,3 +102,50 @@ export const fetchPlayerStats = async () => {
     throw error;
   }
 };
+
+// ✅ Live Match API Functions
+
+// Fetch all live matches
+export const fetchLiveMatches = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/api/live-matches`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching live matches:", error.response?.data || error);
+    return [];
+  }
+};
+
+// Fetch specific live match by ID
+export const fetchLiveMatch = async (matchId) => {
+  try {
+    const response = await axios.get(`${API_URL}/api/live-match/${matchId}`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching live match:", error.response?.data || error);
+    throw error;
+  }
+};
+
+// Create a new live match
+export const createLiveMatch = async (matchData) => {
+  try {
+    const response = await axios.post(`${API_URL}/api/live-match`, matchData);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error creating live match:", error.response?.data || error);
+    throw error;
+  }
+};
+
+// Add a ball to live match
+export const addBallToMatch = async (matchId, ballData) => {
+  try {
+    const response = await axios.post(`${API_URL}/api/live-match/${matchId}/ball`, ballData);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error adding ball to match:", error.response?.data || error);
+    throw error;
+  }
+};
+

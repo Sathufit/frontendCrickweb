@@ -16,22 +16,29 @@
       content="
         default-src 'self';
         
-        script-src 'self' 'unsafe-inline' 'unsafe-eval';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://www.googletagmanager.com https://www.google-analytics.com;
         
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         
         font-src 'self' data: https://fonts.gstatic.com;
         
-        img-src 'self' data: https://images.unsplash.com;
+        img-src 'self' data: https://images.unsplash.com https://www.google-analytics.com;
         
         connect-src 
           'self' 
           http://localhost:5001 
           https://friendspherecricweb.onrender.com
           https://firestore.googleapis.com
-          wss://firestore.googleapis.com;
+          wss://firestore.googleapis.com
+          https://*.firebaseio.com
+          wss://*.firebaseio.com
+          https://firebase.googleapis.com
+          https://firebaseinstallations.googleapis.com
+          https://www.google-analytics.com
+          https://analytics.google.com
+          https://stats.g.doubleclick.net;
 
-        frame-ancestors 'self';
+        frame-src https://*.firebaseio.com;
       ">
 
     <link rel="apple-touch-icon" href="/images/1.png" />

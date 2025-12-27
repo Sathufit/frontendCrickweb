@@ -255,8 +255,8 @@ const Home = () => {
             Where champions are made, legends are born, and every match tells a story
           </p>
           <div className="hero-cta stagger-5">
-            <NavLink to="/live-match" className="btn-primary">
-              <span>Watch Live Match</span>
+            <NavLink to="/live-matches" className="btn-primary">
+              <span>Watch Live Matches</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
               </svg>
@@ -340,7 +340,7 @@ const Home = () => {
               <p className="feature-description">
                 Real-time ball-by-ball updates with comprehensive scorecards and player statistics
               </p>
-              <NavLink to="/live-match" className="feature-link">
+              <NavLink to="/live-matches" className="feature-link">
                 Explore →
               </NavLink>
             </div>
@@ -390,7 +390,7 @@ const Home = () => {
             <p className="cta-text">
               Join thousands of fans tracking their favorite team in real-time
             </p>
-            <NavLink to="/live-match" className="btn-primary btn-large">
+            <NavLink to="/live-matches" className="btn-primary btn-large">
               <span>Start Watching Now</span>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>

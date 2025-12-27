@@ -15,6 +15,8 @@ import ManageRuns from "./pages/ManageRuns";
 import ManageWickets from "./pages/ManageWickets";
 import WicketAnalysis from "./pages/WicketAnalysis";
 import DailyReport from "./pages/DailyReport";
+import LiveMatches from "./pages/LiveMatches";
+import LiveMatchViewer from "./pages/LiveMatchViewer";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -32,6 +34,10 @@ function App() {
         <Route path="/analyst" element={<Analyst />} />
         <Route path="/wicket-analysis" element={<WicketAnalysis />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        
+        {/* Live Match Routes */}
+        <Route path="/live-matches" element={<LiveMatches />} />
+        <Route path="/live-match/:matchId" element={<LiveMatchViewer />} />
 
         {/* Admin Routes */}
         <Route path="/admin-dashboard" element={<AdminDashboard />}>

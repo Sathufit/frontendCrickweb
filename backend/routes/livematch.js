@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const LiveMatchStat = require("../models/LiveMatchStatSchema");
+// Firebase sync removed - frontend connects directly to Firebase Realtime Database
 
 const router = express.Router();
 
@@ -214,6 +215,9 @@ router.post("/live-match", async (req, res) => {
 
     // ✅ Save to Database
     await newMatch.save();
+    
+    // Note: Frontend connects directly to Firebase Realtime Database for live updates
+    
     console.log("✅ New match created successfully.");
     return res.status(201).json({ message: "✅ Match created", match: newMatch });
 
@@ -430,6 +434,8 @@ router.post("/live-match/:id/ball", async (req, res) => {
 
     // ✅ Save match state to DB
     await match.save();
+
+    // Note: Frontend connects directly to Firebase Realtime Database for live updates
 
     // ✅ Respond to frontend
     res.json({
