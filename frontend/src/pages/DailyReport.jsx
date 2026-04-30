@@ -8,21 +8,24 @@ import '../styles/AnalyticsImproved.css';
 
 const API_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:5001"
-  : "https://frontyardcricket.onrender.com";
+  : "https://frontyard.sathush.dev";
 
 const DailyReport = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState('');
 
   const fetchReport = async () => {
     if (!selectedDate) return;
     setLoading(true);
+    setFetchError('');
     try {
       const res = await axios.get(`${API_URL}/daily-report?date=${selectedDate}`);
       setReport(res.data);
     } catch (err) {
       console.error("Failed to fetch report", err);
+      setFetchError("Failed to load report. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -126,6 +129,12 @@ const DailyReport = () => {
             Generate Report
           </button>
         </div>
+
+        {fetchError && (
+          <div className="message-box error" style={{ marginBottom: '1.5rem' }}>
+            <span>{fetchError}</span>
+          </div>
+        )}
 
         {loading ? (
           <div className="loading-analytics">

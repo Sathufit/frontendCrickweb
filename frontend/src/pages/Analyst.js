@@ -38,11 +38,11 @@ export const playerStats = {
     { name: "Dulshan Thanoj", fifties: "9", image: "/images/1.4.JPG" },
     { name: "Shanaka", fifties: "7", image: "/images/12.jpeg" },
     { name: "Savindu Weerarathna", fifties: "4", image: "/images/3.jpeg" },
-    { name: "Nidula Lokuge", fifties: "4", image: "/images/" },
+    { name: "Nidula Lokuge", fifties: "4", image: null },
     { name: "Farhan Navufal", fifties: "1", image: "/images/7.jpg" },
     { name: "Dihindu Nimsath", fifties: "1", image: "/images/1.3.jpg" },
-    { name: "Ravindu Nanayakkara", fifties: "1", image: "/images/" },
-    { name: "Ayesh Jeewantha", fifties: "1", image: "/images/" },
+    { name: "Ravindu Nanayakkara", fifties: "1", image: null },
+    { name: "Ayesh Jeewantha", fifties: "1", image: null },
     { name: "Reshan Kavinga", fifties: "1" }
   ]
 };

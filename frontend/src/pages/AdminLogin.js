@@ -2,16 +2,24 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AdminPagesImproved.css";
 
+// Credentials stored as env vars; fallback values for local dev only
+const ADMIN_USER = process.env.REACT_APP_ADMIN_USERNAME || "admin";
+const ADMIN_PASS = process.env.REACT_APP_ADMIN_PASSWORD || "cricket2024";
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // Simple authentication - in production, this should be secure
-    if (username && password) {
+    setError("");
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
+      sessionStorage.setItem("isAdmin", "true");
       navigate("/admin-dashboard");
+    } else {
+      setError("Invalid username or password.");
     }
   };
 
@@ -30,6 +38,11 @@ const AdminLogin = () => {
         <p className="login-subtitle">Enter your credentials to access the dashboard</p>
 
         <form className="login-form" onSubmit={handleLogin}>
+          {error && (
+            <div className="message-box error" style={{ marginBottom: "16px" }}>
+              <span>{error}</span>
+            </div>
+          )}
           <div className="form-group">
             <label className="form-label">Username</label>
             <input

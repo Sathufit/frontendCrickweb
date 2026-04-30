@@ -40,7 +40,7 @@ const PlayerStats = () => {
         const processedData = (Array.isArray(data) ? data : []).map(player => {
           const calculatedAverage = player.totalOuts > 0
             ? (player.totalRuns / player.totalOuts)
-            : (player.totalRuns > 0 ? Infinity : 0);
+            : player.totalRuns > 0 ? player.totalRuns : 0; // not out: use total runs as average
 
           const centuriesData = playerMilestones.mostCenturies.find(p => p.name === player.name);
           const fiftiesData = playerMilestones.mostFifties.find(p => p.name === player.name);

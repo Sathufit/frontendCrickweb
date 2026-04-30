@@ -21,6 +21,7 @@ import LiveMatchViewer from "./pages/LiveMatchViewer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./styles.css";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -39,13 +40,15 @@ function App() {
         <Route path="/live-matches" element={<LiveMatches />} />
         <Route path="/live-match/:matchId" element={<LiveMatchViewer />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />}>
-          <Route path="add-runs" element={<AddRuns />} />
-          <Route path="add-wickets" element={<AddWickets />} />
-          <Route path="manage-runs" element={<ManageRuns />} />
-          <Route path="manage-wickets" in element={<ManageWickets />} />
-          <Route path="daily-report" element={<DailyReport />} />
+        {/* Admin Routes — protected */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/admin-dashboard" element={<AdminDashboard />}>
+            <Route path="add-runs" element={<AddRuns />} />
+            <Route path="add-wickets" element={<AddWickets />} />
+            <Route path="manage-runs" element={<ManageRuns />} />
+            <Route path="manage-wickets" element={<ManageWickets />} />
+            <Route path="daily-report" element={<DailyReport />} />
+          </Route>
         </Route>
       </Routes>
 

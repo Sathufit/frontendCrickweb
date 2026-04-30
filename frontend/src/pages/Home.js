@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import "./HomeStyles.css";
+import { fetchRuns, fetchWickets } from "../api";
 
 const Home = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -63,18 +64,16 @@ const Home = () => {
     };
   }, [menuOpen]);
 
-  // Fetch club data
+  // Fetch real club data
   useEffect(() => {
     const fetchClubData = async () => {
       setLoading(true);
       try {
-        await new Promise(res => setTimeout(res, 1500)); 
-        
-        setClubStats({
-          totalRuns: 12457,
-          totalInnings: 312,
-          totalWickets: 289,
-        });
+        const [runsData, wicketsData] = await Promise.all([fetchRuns(), fetchWickets()]);
+        const totalRuns = runsData.reduce((sum, r) => sum + (r.runs || 0), 0);
+        const totalInnings = runsData.reduce((sum, r) => sum + (r.innings || 0), 0);
+        const totalWickets = wicketsData.reduce((sum, w) => sum + (w.wickets || 0), 0);
+        setClubStats({ totalRuns, totalInnings, totalWickets });
       } catch (error) {
         console.error("Failed to fetch club stats:", error);
       } finally {

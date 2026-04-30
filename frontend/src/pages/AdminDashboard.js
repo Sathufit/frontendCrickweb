@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../styles/AdminPagesImproved.css";
 
 const AdminDashboard = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [animateHeader, setAnimateHeader] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Update time every minute
@@ -22,6 +23,11 @@ const AdminDashboard = () => {
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
+  const handleLogout = () => {
+    sessionStorage.removeItem("isAdmin");
+    navigate("/");
+  };
+
 
   // Menu items for dynamic rendering
   const menuItems = [
@@ -34,7 +40,6 @@ const AdminDashboard = () => {
       { path: "manage-wickets", label: "Manage Wickets", icon: <path fill="currentColor" d="M21,9H3V11H21V9M21,5H3V7H21V5M3,19H10V17H3V19M3,15H14V13H3V15Z" /> }
     ]},
     { section: "Analytics", items: [
-      { path: "performance", label: "Performance", icon: <path fill="currentColor" d="M9,17H7V10H9V17M13,17H11V7H13V17M17,17H15V13H17V17M19,19H5V5H19V19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3Z" /> },
       { path: "daily-report", label: "Reports", icon: <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M9,13V19H7V13H9M15,15V19H17V15H15M11,13V19H13V13H11Z" /> }
     ]}
   ];
@@ -110,18 +115,12 @@ const AdminDashboard = () => {
           </ul>
           
           <div className="sidebar-footer">
-            <Link to="settings" className="settings-link" onClick={toggleMobileMenu}>
-              <svg className="settings-icon" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
-              </svg>
-              <span>Settings</span>
-            </Link>
-            <Link to="logout" className="logout-link" onClick={toggleMobileMenu}>
+            <button className="logout-link" onClick={handleLogout} style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', color: 'inherit' }}>
               <svg className="logout-icon" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z" />
               </svg>
               <span>Logout</span>
-            </Link>
+            </button>
           </div>
         </nav>
 

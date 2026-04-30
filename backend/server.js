@@ -149,7 +149,15 @@ app.put("/runs/:id", async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ message: "Invalid ID format" });
 
-    const updatedRun = await Run.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { name, venue, runs, innings, outs, date } = req.body;
+    if (!name || !venue || runs == null || innings == null || outs == null || !date)
+      return res.status(400).json({ message: "❌ All fields are required" });
+
+    const updatedRun = await Run.findByIdAndUpdate(
+      req.params.id,
+      { name, venue, runs, innings, outs, date },
+      { new: true, runValidators: true }
+    );
     if (!updatedRun)
       return res.status(404).json({ message: "❌ Run not found" });
 

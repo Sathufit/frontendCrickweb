@@ -1,8 +1,9 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 
 const ProtectedRoute = () => {
-  return <Outlet />; // ✅ No authentication needed
+  const isAdmin = sessionStorage.getItem("isAdmin") === "true";
+  return isAdmin ? <Outlet /> : <Navigate to="/admin-login" replace />;
 };
 
 export default ProtectedRoute;
