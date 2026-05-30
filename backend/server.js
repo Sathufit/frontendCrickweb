@@ -49,7 +49,9 @@ const Run = mongoose.model("runs", new mongoose.Schema({
   runs: Number,
   innings: Number,
   outs: Number,
-  date: String
+  date: String,
+  fifties: { type: Number, default: 0 },
+  hundreds: { type: Number, default: 0 }
 }));
 
 const Wicket = mongoose.model("wickets", new mongoose.Schema({
@@ -118,11 +120,11 @@ app.get("/wickets", async (req, res) => {
 
 app.post("/runs", async (req, res) => {
   try {
-    const { name, venue, runs, innings, outs, date } = req.body;
+    const { name, venue, runs, innings, outs, date, fifties = 0, hundreds = 0 } = req.body;
     if (!name || !venue || runs == null || innings == null || outs == null || !date)
       return res.status(400).json({ message: "❌ All fields are required" });
 
-    const newRun = new Run({ name, venue, runs, innings, outs, date });
+    const newRun = new Run({ name, venue, runs, innings, outs, date, fifties, hundreds });
     await newRun.save();
     res.status(201).json({ message: "✅ Run added successfully", newRun });
   } catch (err) {
@@ -149,13 +151,13 @@ app.put("/runs/:id", async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ message: "Invalid ID format" });
 
-    const { name, venue, runs, innings, outs, date } = req.body;
+    const { name, venue, runs, innings, outs, date, fifties = 0, hundreds = 0 } = req.body;
     if (!name || !venue || runs == null || innings == null || outs == null || !date)
       return res.status(400).json({ message: "❌ All fields are required" });
 
     const updatedRun = await Run.findByIdAndUpdate(
       req.params.id,
-      { name, venue, runs, innings, outs, date },
+      { name, venue, runs, innings, outs, date, fifties, hundreds },
       { new: true, runValidators: true }
     );
     if (!updatedRun)

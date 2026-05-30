@@ -42,6 +42,8 @@ const AddRuns = () => {
     innings: "",
     outs: "",
     date: "",
+    fifties: "",
+    hundreds: ""
   });
 
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -73,6 +75,8 @@ const AddRuns = () => {
         innings: "",
         outs: "",
         date: "",
+        fifties: "",
+        hundreds: ""
       });
     } catch (error) {
       console.error("❌ Error adding run:", error.response?.data || error);
@@ -177,6 +181,33 @@ const AddRuns = () => {
                   min="1"
                   max="2"
                   required
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Number of 50s</label>
+                <input
+                  type="number"
+                  name="fifties"
+                  className="form-input"
+                  placeholder="e.g. 1"
+                  value={formData.fifties}
+                  onChange={handleChange}
+                  min="0"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Number of 100s</label>
+                <input
+                  type="number"
+                  name="hundreds"
+                  className="form-input"
+                  placeholder="e.g. 0"
+                  value={formData.hundreds}
+                  onChange={handleChange}
+                  min="0"
                 />
               </div>
             </div>
