@@ -179,7 +179,6 @@ const AddRuns = () => {
                   value={formData.innings}
                   onChange={handleChange}
                   min="1"
-                  max="2"
                   required
                 />
               </div>
