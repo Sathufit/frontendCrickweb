@@ -8,29 +8,7 @@ const PlayerStats = () => {
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: 'average', direction: 'descending' });
 
-  const playerMilestones = {
-    mostCenturies: [
-      { name: "Yamila Dilhara", centuries: "7" },
-      { name: "Sathush Nanayakkara", centuries: "4" },
-      { name: "Chanuka de Silva", centuries: "2" },
-      { name: "Achala Shashvika", centuries: "1" }
-    ],
-    mostFifties: [
-      { name: "Yamila Dilhara", fifties: "31" },
-      { name: "Sathush Nanayakkara", fifties: "22" },
-      { name: "Chanuka de Silva", fifties: "13" },
-      { name: "Achala Shashvika", fifties: "11" },
-      { name: "Dulshan Thanoj", fifties: "9" },
-      { name: "Dinal Chamith", fifties: "7" },
-      { name: "Savindu Weerarathna", fifties: "4" },
-      { name: "Nidula Hansaja", fifties: "4" },
-      { name: "Farhan Navufal", fifties: "1" },
-      { name: "Dihindu Nimsath", fifties: "1" },
-      { name: "Ravindu Nanayakkara", fifties: "1" },
-      { name: "Ayesh Jeewantha", fifties: "1" },
-      { name: "Reshan Kavinga", fifties: "1" }
-    ]
-  };
+  // No hardcoded milestones; use API data
 
   useEffect(() => {
     const loadPlayerStats = async () => {
@@ -40,19 +18,14 @@ const PlayerStats = () => {
         const processedData = (Array.isArray(data) ? data : []).map(player => {
           const calculatedAverage = player.totalOuts > 0
             ? (player.totalRuns / player.totalOuts)
-            : player.totalRuns > 0 ? player.totalRuns : 0; // not out: use total runs as average
-
-          const centuriesData = playerMilestones.mostCenturies.find(p => p.name === player.name);
-          const fiftiesData = playerMilestones.mostFifties.find(p => p.name === player.name);
-
+            : player.totalRuns > 0 ? player.totalRuns : 0;
           return {
             ...player,
             average: calculatedAverage,
-            centuries: centuriesData ? centuriesData.centuries : "0",
-            fifties: fiftiesData ? fiftiesData.fifties : "0"
+            fifties: player.fifties || 0,
+            centuries: player.hundreds || 0
           };
         });
-        
         sortAndSetData(processedData, sortConfig.key, sortConfig.direction);
       } catch (error) {
         console.error("Error fetching player stats:", error);

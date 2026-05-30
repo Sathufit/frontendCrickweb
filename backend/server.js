@@ -71,7 +71,9 @@ app.get("/players/stats", async (req, res) => {
           _id: "$name",
           totalRuns: { $sum: "$runs" },
           totalInnings: { $sum: "$innings" },
-          totalOuts: { $sum: "$outs" }
+          totalOuts: { $sum: "$outs" },
+          fifties: { $sum: "$fifties" },
+          hundreds: { $sum: "$hundreds" }
         }
       },
       {
@@ -81,6 +83,8 @@ app.get("/players/stats", async (req, res) => {
           totalRuns: 1,
           totalInnings: 1,
           totalOuts: 1,
+          fifties: 1,
+          hundreds: 1,
           average: {
             $cond: {
               if: { $gt: ["$totalOuts", 0] },
