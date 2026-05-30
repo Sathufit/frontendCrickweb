@@ -8,7 +8,29 @@ const PlayerStats = () => {
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: 'average', direction: 'descending' });
 
-  // No hardcoded milestones; use API data
+  const playerMilestones = {
+    mostCenturies: [
+      { name: "Yamila Dilhara", centuries: "7" },
+      { name: "Sathush Nanayakkara", centuries: "4" },
+      { name: "Chanuka de Silva", centuries: "2" },
+      { name: "Achala Shashvika", centuries: "1" }
+    ],
+    mostFifties: [
+      { name: "Yamila Dilhara", fifties: "31" },
+      { name: "Sathush Nanayakkara", fifties: "22" },
+      { name: "Chanuka de Silva", fifties: "13" },
+      { name: "Achala Shashvika", fifties: "11" },
+      { name: "Dulshan Thanoj", fifties: "9" },
+      { name: "Dinal Chamith", fifties: "7" },
+      { name: "Savindu Weerarathna", fifties: "4" },
+      { name: "Nidula Hansaja", fifties: "4" },
+      { name: "Farhan Navufal", fifties: "1" },
+      { name: "Dihindu Nimsath", fifties: "1" },
+      { name: "Ravindu Nanayakkara", fifties: "1" },
+      { name: "Ayesh Jeewantha", fifties: "1" },
+      { name: "Reshan Kavinga", fifties: "1" }
+    ]
+  };
 
   useEffect(() => {
     const loadPlayerStats = async () => {
@@ -19,11 +41,21 @@ const PlayerStats = () => {
           const calculatedAverage = player.totalOuts > 0
             ? (player.totalRuns / player.totalOuts)
             : player.totalRuns > 0 ? player.totalRuns : 0;
+
+          // Get old milestone values
+          const centuriesData = playerMilestones.mostCenturies.find(p => p.name === player.name);
+          const fiftiesData = playerMilestones.mostFifties.find(p => p.name === player.name);
+          const oldFifties = fiftiesData ? parseInt(fiftiesData.fifties) : 0;
+          const oldCenturies = centuriesData ? parseInt(centuriesData.centuries) : 0;
+          // Add new DB values
+          const totalFifties = oldFifties + (parseInt(player.fifties) || 0);
+          const totalCenturies = oldCenturies + (parseInt(player.hundreds) || 0);
+
           return {
             ...player,
             average: calculatedAverage,
-            fifties: player.fifties || 0,
-            centuries: player.hundreds || 0
+            fifties: totalFifties,
+            centuries: totalCenturies
           };
         });
         sortAndSetData(processedData, sortConfig.key, sortConfig.direction);
